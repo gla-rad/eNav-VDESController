@@ -30,7 +30,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class VDESController {
 
 	/**
-	 * The main function that runs the application.
+	 * The main function to run the application.
 	 *
 	 * @param args 		The application arguments
 	 */
