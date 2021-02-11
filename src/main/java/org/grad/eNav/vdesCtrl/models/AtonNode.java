@@ -19,13 +19,15 @@ package org.grad.eNav.vdesCtrl.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang.StringUtils;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
+import java.beans.Transient;
+import java.util.*;
 
 /**
  * The AtoN Node Class.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class AtonNode implements IJsonSerializable {
 
@@ -42,7 +44,7 @@ public class AtonNode implements IJsonSerializable {
     @JsonProperty("tags")
     @JsonSerialize(using = AtonTagJsonSerialization.Serializer.class)
     @JsonDeserialize(using = AtonTagJsonSerialization.Deserializer.class)
-    private AtonTag[] tags;
+    private List<AtonTag> tags = new ArrayList<>();
 
     /**
      * Gets timestamp.
@@ -67,7 +69,7 @@ public class AtonNode implements IJsonSerializable {
      *
      * @param tags New value of tags.
      */
-    public void setTags(AtonTag[] tags) {
+    public void setTags(List<AtonTag> tags) {
         this.tags = tags;
     }
 
@@ -157,7 +159,7 @@ public class AtonNode implements IJsonSerializable {
      *
      * @return Value of tags.
      */
-    public AtonTag[] getTags() {
+    public List<AtonTag> getTags() {
         return tags;
     }
 
@@ -230,14 +232,49 @@ public class AtonNode implements IJsonSerializable {
         if (this == o) return true;
         if (!(o instanceof AtonNode)) return false;
         AtonNode atonNode = (AtonNode) o;
-        return Objects.equals(id, atonNode.id) && Objects.equals(lat, atonNode.lat) && Objects.equals(lon, atonNode.lon) && Objects.equals(user, atonNode.user) && Objects.equals(uid, atonNode.uid) && Objects.equals(visible, atonNode.visible) && Objects.equals(version, atonNode.version) && Objects.equals(changeset, atonNode.changeset) && Objects.equals(timestamp, atonNode.timestamp) && Arrays.equals(tags, atonNode.tags);
+        return Objects.equals(id, atonNode.id) && Objects.equals(lat, atonNode.lat) && Objects.equals(lon, atonNode.lon) && Objects.equals(user, atonNode.user) && Objects.equals(uid, atonNode.uid) && Objects.equals(visible, atonNode.visible) && Objects.equals(version, atonNode.version) && Objects.equals(changeset, atonNode.changeset) && Objects.equals(timestamp, atonNode.timestamp) && Objects.equals(tags, atonNode.tags);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, lat, lon, user, uid, visible, version, changeset, timestamp);
-        result = 31 * result + Arrays.hashCode(tags);
+        int result = Objects.hash(id, lat, lon, user, uid, visible, version, changeset, timestamp, tags);
         return result;
+    }
+
+    /**
+     * Returns the AtoN UID
+     * @return the AtoN UID
+     */
+    @Transient
+    public String getAtonUid() {
+        return getTagValue(AtonTag.TAG_ATON_UID);
+    }
+
+
+    /**
+     * Returns the value of the tag with the given key. Returns null if the tag does not exist
+     * @param k the key
+     * @return the value of the tag with the given key. Returns null if the tag does not exist
+     */
+    @Transient
+    public String getTagValue(String k) {
+        AtonTag atonUidTag = getTag(k);
+        return atonUidTag == null ? null : atonUidTag.getV();
+    }
+
+    /**
+     * Returns the tag with the given key. Returns null if the tag does not exist
+     * @param k the key
+     * @return the tag with the given key. Returns null if the tag does not exist
+     */
+    @Transient
+    public AtonTag getTag(String k) {
+        return StringUtils.isBlank(k)
+                ? null
+                : tags.stream()
+                .filter(t -> k.equals(t.getK()))
+                .findFirst()
+                .orElse(null);
     }
 }

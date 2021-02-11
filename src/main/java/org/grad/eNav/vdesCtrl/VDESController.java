@@ -23,6 +23,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * The VDES Controller Micro-Service.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @SpringBootApplication
 @EnableDiscoveryClient

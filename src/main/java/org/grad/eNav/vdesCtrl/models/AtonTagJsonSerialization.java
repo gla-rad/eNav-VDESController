@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 /**
  * Used for serializing and de-serializing an AtonTag array as Maps.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class AtonTagJsonSerialization {
 

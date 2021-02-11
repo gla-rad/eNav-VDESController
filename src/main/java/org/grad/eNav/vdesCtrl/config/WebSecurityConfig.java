@@ -40,6 +40,8 @@ import javax.servlet.DispatcherType;
 
 /**
  * The Web Security Configuration.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Configuration
 @EnableWebSecurity

@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * properties. Hence all implementing classes should e.g. take care not to
  * instantiate lists to empty lists, but leave them as null until an actual
  * value is added.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @JsonSerialize
 @JsonIgnoreProperties(ignoreUnknown = true)

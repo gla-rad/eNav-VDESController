@@ -26,6 +26,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 /**
  * The Feign Interface For the Niord Client.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
 @FeignClient(name = "niord")

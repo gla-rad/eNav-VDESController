@@ -21,7 +21,9 @@ import java.util.Objects;
 
 /**
  * The Search Result Class containing the search output.
- * @param <T>
+ *
+ * @param <T>       The search result data class type
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class SearchResult<T> implements IJsonSerializable {
 

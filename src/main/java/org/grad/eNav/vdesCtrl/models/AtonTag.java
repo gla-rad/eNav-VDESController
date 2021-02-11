@@ -18,8 +18,19 @@ package org.grad.eNav.vdesCtrl.models;
 
 /**
  * The AtoN Tag Class.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class AtonTag implements IJsonSerializable {
+
+    // Custom AtoN tags
+    public static final String TAG_ATON_UID         = "seamark:ref";
+    public static final String TAG_LIGHT_NUMBER     = "seamark:light:ref";
+    public static final String TAG_INT_LIGHT_NUMBER = "seamark:light:int_ref";
+    public static final String TAG_LOCALITY         = "seamark:locality";
+    public static final String TAG_AIS_NUMBER       = "seamark:ais:ref";
+    public static final String TAG_RACON_NUMBER     = "seamark:racon:ref";
+    public static final String TAG_INT_RACON_NUMBER = "seamark:racon:int_ref";
 
     // Class Variables
     String k;
