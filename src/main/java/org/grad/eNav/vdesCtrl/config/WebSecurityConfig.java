@@ -1,4 +1,4 @@
-package org.thls.eNav.config;
+package org.grad.eNav.vdesCtrl.config;
 
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;

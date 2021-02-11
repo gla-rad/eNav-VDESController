@@ -1,4 +1,4 @@
-package org.thls.eNav.controllers;
+package org.grad.eNav.vdesCtrl.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
