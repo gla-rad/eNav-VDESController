@@ -136,7 +136,11 @@ public class AtonGDSService {
                     AtonGDSListener dsListener = null;
                     try {
                         dsListener = this.applicationContext.getBean(AtonGDSListener.class);
-                        dsListener.init(this.consumer, new GeomesaAton().getSimpleFeatureType());
+                        dsListener.init(this.consumer,
+                                        new GeomesaAton().getSimpleFeatureType(),
+                                        listener.getAddress(),
+                                        listener.getPort(),
+                                        listener.getPolygon());
                     } catch (IOException e) {
                         log.error(e.getMessage());
                     }

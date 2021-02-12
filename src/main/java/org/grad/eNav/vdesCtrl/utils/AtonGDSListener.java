@@ -36,6 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * The AtoN Geomesa Data Store Listener Class
@@ -62,6 +66,9 @@ public class AtonGDSListener {
     private DataStore consumer;
     private FeatureListener listener;
     private SimpleFeatureType sft;
+    private String vdesAddress;
+    private Integer vdesPort;
+    private List<Double> listenerArea;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -70,11 +77,24 @@ public class AtonGDSListener {
      *
      * @param consumer      The data store to consume the messages from
      */
-    public void init(DataStore consumer, SimpleFeatureType sft) throws IOException {
+    public void init(DataStore consumer,
+                     SimpleFeatureType sft,
+                     String vdesAddress,
+                     Integer vdesPort,
+                     List<Double> listenerArea) throws IOException {
         this.consumer = consumer;
         this.sft = sft;
+        this.vdesAddress = vdesAddress;
+        this.vdesPort = vdesPort;
+        this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (featureEvent -> this.listenToEvents(featureEvent));
         this.consumer.getFeatureSource(sft.getTypeName()).addFeatureListener(listener);
+
+        // Log an information message
+        log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
+                this.vdesAddress,
+                this.vdesPort,
+                this.listenerArea.stream().map(String::valueOf).collect(Collectors.joining(","))));
     }
 
     /**

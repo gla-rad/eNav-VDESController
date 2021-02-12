@@ -34,6 +34,8 @@ import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import javax.servlet.DispatcherType;
@@ -63,6 +65,19 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     }
 
     /**
+     * Define a slightly more flexible HTTP Firewall configuration that allows
+     * characters like semicolons, slashes and percentages.
+     */
+    @Bean
+    protected HttpFirewall securityHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowSemicolon(true);
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        return firewall;
+    }
+
+    /**
      * Forwarded header filter filter registration bean.
      * <p>
      * This corrects the urls produced by the microservice when accessed from a proxy server.
@@ -75,7 +90,7 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
      * @return the filter registration bean
      */
     @Bean
-    FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
+    protected FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
         final FilterRegistrationBean<ForwardedHeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>();
         filterRegistrationBean.setFilter(new ForwardedHeaderFilter());
         filterRegistrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.ERROR);
@@ -108,20 +123,27 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     /**
      * Override this method to configure {@link WebSecurity} so that we ignore
      * certain requests like swagger, css etc.
+     *
+     * @param webSecurity The web security
+     * @throws Exception Exception thrown while configuring the security
      */
     @Override
-    public void configure(WebSecurity web) throws Exception {
-        //This will not attempt to authenticate these end points.
-        //Saves on validation requests.
-        web.ignoring().antMatchers(
-                "/webjars/**",  //bootstrap
-                "/css/**",                  //css files
-                "/js/**",                   //js files
-                "/actuator/health",         //spring health actuator
-                "/v2/**",
-                "/swagger-resources/**",
-                "/swagger-resources",
-                "/favicon.ico"
+    public void configure(WebSecurity webSecurity) throws Exception {
+        super.configure(webSecurity);
+        webSecurity
+                // Set some alternative firewal rules to allow extra characters
+                .httpFirewall(securityHttpFirewall())
+                //This will not attempt to authenticate these end points.
+                //Saves on validation requests.
+                .ignoring().antMatchers(
+                    "/webjars/**",  //bootstrap
+                    "/css/**",                  //css files
+                    "/js/**",                   //js files
+                    "/actuator/health",         //spring health actuator
+                    "/v2/**",
+                    "/swagger-resources/**",
+                    "/swagger-resources",
+                    "/favicon.ico"
         );
     }
 
