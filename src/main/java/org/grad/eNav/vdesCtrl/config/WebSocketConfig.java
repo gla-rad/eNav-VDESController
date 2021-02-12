@@ -61,8 +61,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/"+prefix);
-        config.setApplicationDestinationPrefixes("/"+ atonDataEndpoint);
+        config.enableSimpleBroker("/"+ this.prefix);
+        config.setApplicationDestinationPrefixes("/"+ this.atonDataEndpoint);
     }
 
     /**
@@ -73,7 +73,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/"+ webSocketName).setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/" + this.webSocketName).setAllowedOrigins("*").withSockJS();
     }
 
 }

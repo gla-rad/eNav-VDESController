@@ -55,10 +55,9 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
      * in order to perform the authentication.
      *
      * @param auth The authentication manager builder
-     * @throws Exception
      */
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
         KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
         keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
         auth.authenticationProvider(keycloakAuthenticationProvider);
@@ -82,7 +81,7 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
      * <p>
      * This corrects the urls produced by the microservice when accessed from a proxy server.
      * E.g. Api gateway:
-     * my-service.com/style.css -> apigateway.com/my-service/style.css
+     * my-service.com/style.css -> api-gateway.com/my-service/style.css
      * <p>
      * The proxy server should be sending the forwarded header address as a header
      * which this filter will pick up and resolve for us.
@@ -131,7 +130,7 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     public void configure(WebSecurity webSecurity) throws Exception {
         super.configure(webSecurity);
         webSecurity
-                // Set some alternative firewal rules to allow extra characters
+                // Set some alternative firewall rules to allow extra characters
                 .httpFirewall(securityHttpFirewall())
                 //This will not attempt to authenticate these end points.
                 //Saves on validation requests.

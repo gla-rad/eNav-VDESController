@@ -39,6 +39,6 @@ public interface NiordClient {
      * @return The search result of the AtoNs search
      */
     @RequestMapping(value = "/rest/atons/search", method = GET)
-    public SearchResult<AtonNode> atonSearch();
+    SearchResult<AtonNode> atonSearch();
 
 }

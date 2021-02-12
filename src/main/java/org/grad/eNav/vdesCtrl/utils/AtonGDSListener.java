@@ -87,7 +87,7 @@ public class AtonGDSListener {
         this.vdesAddress = vdesAddress;
         this.vdesPort = vdesPort;
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
-        this.listener = (featureEvent -> this.listenToEvents(featureEvent));
+        this.listener = (this::listenToEvents);
         this.consumer.getFeatureSource(sft.getTypeName()).addFeatureListener(listener);
 
         // Log an information message

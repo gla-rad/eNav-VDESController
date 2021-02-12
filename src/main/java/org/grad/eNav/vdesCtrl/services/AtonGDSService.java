@@ -157,7 +157,7 @@ public class AtonGDSService {
     @PreDestroy
     public void destroy() {
         log.info("Geomesa Data Store is shutting down...");
-        this.dsListeners.stream().forEach(listener -> listener.destroy());
+        this.dsListeners.forEach(AtonGDSListener::destroy);
         this.atonDataChannel.destroy();
         this.consumer.dispose();
     }
@@ -166,9 +166,9 @@ public class AtonGDSService {
      * Creates the Geomesa Data Store from scratch. There is no problem if the
      * store already exists, this will do nothing.
      *
-     * @param params the parameters for the generating the datastore
-     * @return the generated data store
-     * @throws IOException
+     * @param params        The parameters for the generating the datastore
+     * @return The generated data store
+     * @throws IOException IO Exception thrown while accessing the data store
      */
     private DataStore createDataStore(Map<String, String> params) throws IOException {
         log.info("Creating GeoMesa Data Store");

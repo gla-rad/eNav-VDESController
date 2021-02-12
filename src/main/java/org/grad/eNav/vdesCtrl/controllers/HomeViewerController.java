@@ -72,10 +72,9 @@ public class HomeViewerController {
      *
      * @param request The logout request
      * @return The home page
-     * @throws ServletException
      */
     @GetMapping(path = "/login")
-    public ModelAndView login(HttpServletRequest request) throws ServletException {
+    public ModelAndView login(HttpServletRequest request) {
         return new ModelAndView("redirect:" + "/");
     }
 
@@ -84,7 +83,7 @@ public class HomeViewerController {
      *
      * @param request The logout request
      * @return The home page
-     * @throws ServletException
+     * @throws ServletException Servlet Exception during the logout
      */
     @GetMapping(path = "/logout")
     public ModelAndView logout(HttpServletRequest request) throws ServletException {
