@@ -125,7 +125,7 @@ public class AtonGDSListener {
                 // Publish the message
                 Message<SimpleFeature> channelMsg = MessageBuilder
                         .withPayload(feature)
-                        .setHeader(MessageHeaders.CONTENT_TYPE, "endpoint")
+                        .setHeader(MessageHeaders.CONTENT_TYPE, String.format("%s:%d", this.vdesAddress, this.vdesPort))
                         .build();
                 this.atonDataChannel.send(channelMsg);
             }

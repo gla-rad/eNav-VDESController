@@ -38,7 +38,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     /**
      * The WebSocket Name
      */
-    @Value("${gla.rad.vdes-ctlr.web-socket.name:vdes-ctlr-websocket}")
+    @Value("${gla.rad.vdes-ctlr.web-socket.name:vdes-ctrl-websocket}")
     private String webSocketName;
 
     /**
@@ -73,7 +73,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/"+ webSocketName).withSockJS();
+        registry.addEndpoint("/"+ webSocketName).setAllowedOrigins("*").withSockJS();
     }
 
 }

@@ -140,10 +140,7 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                     "/css/**",                  //css files
                     "/js/**",                   //js files
                     "/actuator/health",         //spring health actuator
-                    "/v2/**",
-                    "/swagger-resources/**",
-                    "/swagger-resources",
-                    "/favicon.ico"
+                    "/favicon.ico"              //the favicon
         );
     }
 
@@ -162,10 +159,14 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         httpSecurity
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/actuator/*")
-                .hasRole("user")
-                .anyRequest()
-                .permitAll();
+                .antMatchers(
+                        "/webjars/**",      //bootstrap
+                        "/js/**", 						//js files
+                        "/css/**", 						//css files
+                        "/favicon.ico",                 //the favicon
+                        "/actuator/health"				//spring health actuator
+                ).permitAll()
+                .anyRequest().authenticated();
     }
 
 }
