@@ -153,7 +153,7 @@ public class AtonGDSService {
     @PreDestroy
     public void destroy() {
         log.info("Geomesa Data Store is shutting down...");
-//        this.dsListeners.stream().forEach(listener -> listener.destroy());
+        this.dsListeners.stream().forEach(listener -> listener.destroy());
         this.atonDataChannel.destroy();
         this.consumer.dispose();
     }

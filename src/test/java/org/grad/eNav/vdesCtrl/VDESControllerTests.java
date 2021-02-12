@@ -2,12 +2,15 @@ package org.grad.eNav.vdesCtrl;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
-class TemplateApplicationTests {
+@TestPropertySource("classpath:application.properties")
+class VDESControllerTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }
