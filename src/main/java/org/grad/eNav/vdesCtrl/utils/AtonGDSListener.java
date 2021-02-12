@@ -18,10 +18,8 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
-import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -40,10 +38,10 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 
 /**
- * The RadarListener Class
+ * The AtoN Geomesa Data Store Listener Class
  *
- * This class defines the main operation of the radar listening operation
- * on the radar data broadcasts.
+ * This class defines the main operation of the AtoN listening operation
+ * on the Geomesa Kafka Data Store.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -51,7 +49,7 @@ import java.io.IOException;
 @Transactional
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
-public class DataStoreListener {
+public class AtonGDSListener {
 
     /**
      * The AtoN Data Channel to publish the incoming data to.

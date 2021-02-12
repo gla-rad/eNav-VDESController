@@ -44,7 +44,7 @@ public class AtonNode implements IJsonSerializable {
     @JsonProperty("tags")
     @JsonSerialize(using = AtonTagJsonSerialization.Serializer.class)
     @JsonDeserialize(using = AtonTagJsonSerialization.Deserializer.class)
-    private List<AtonTag> tags = new ArrayList<>();
+    private AtonTag[] tags;
 
     /**
      * Gets timestamp.
@@ -69,7 +69,7 @@ public class AtonNode implements IJsonSerializable {
      *
      * @param tags New value of tags.
      */
-    public void setTags(List<AtonTag> tags) {
+    public void setTags(AtonTag[] tags) {
         this.tags = tags;
     }
 
@@ -159,7 +159,7 @@ public class AtonNode implements IJsonSerializable {
      *
      * @return Value of tags.
      */
-    public List<AtonTag> getTags() {
+    public AtonTag[] getTags() {
         return tags;
     }
 
@@ -232,13 +232,14 @@ public class AtonNode implements IJsonSerializable {
         if (this == o) return true;
         if (!(o instanceof AtonNode)) return false;
         AtonNode atonNode = (AtonNode) o;
-        return Objects.equals(id, atonNode.id) && Objects.equals(lat, atonNode.lat) && Objects.equals(lon, atonNode.lon) && Objects.equals(user, atonNode.user) && Objects.equals(uid, atonNode.uid) && Objects.equals(visible, atonNode.visible) && Objects.equals(version, atonNode.version) && Objects.equals(changeset, atonNode.changeset) && Objects.equals(timestamp, atonNode.timestamp) && Objects.equals(tags, atonNode.tags);
+        return Objects.equals(id, atonNode.id) && Objects.equals(lat, atonNode.lat) && Objects.equals(lon, atonNode.lon) && Objects.equals(user, atonNode.user) && Objects.equals(uid, atonNode.uid) && Objects.equals(visible, atonNode.visible) && Objects.equals(version, atonNode.version) && Objects.equals(changeset, atonNode.changeset) && Objects.equals(timestamp, atonNode.timestamp) && Arrays.equals(tags, atonNode.tags);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, lat, lon, user, uid, visible, version, changeset, timestamp, tags);
+        int result = Objects.hash(id, lat, lon, user, uid, visible, version, changeset, timestamp);
+        result = 31 * result + Arrays.hashCode(tags);
         return result;
     }
 
@@ -250,7 +251,6 @@ public class AtonNode implements IJsonSerializable {
     public String getAtonUid() {
         return getTagValue(AtonTag.TAG_ATON_UID);
     }
-
 
     /**
      * Returns the value of the tag with the given key. Returns null if the tag does not exist
@@ -272,7 +272,7 @@ public class AtonNode implements IJsonSerializable {
     public AtonTag getTag(String k) {
         return StringUtils.isBlank(k)
                 ? null
-                : tags.stream()
+                : Arrays.asList(tags).stream()
                 .filter(t -> k.equals(t.getK()))
                 .findFirst()
                 .orElse(null);

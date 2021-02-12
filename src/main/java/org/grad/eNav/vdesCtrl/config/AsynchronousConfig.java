@@ -45,7 +45,6 @@ public class AsynchronousConfig {
         taskExecutor.setCorePoolSize(100);
         taskExecutor.setThreadNamePrefix("worker-");
         return taskExecutor;
-//        return new ThreadPoolTaskExecutor (Executors.newFixedThreadPool(10));
     }
 
 }
