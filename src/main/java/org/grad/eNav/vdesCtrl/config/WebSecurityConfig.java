@@ -138,7 +138,8 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                     "/webjars/**",  //bootstrap
                     "/css/**",                  //css files
                     "/js/**",                   //js files
-                    "/actuator/health",         //spring health actuator
+                    "/actuator",                //spring health actuator
+                    "/actuator/*",               //spring health actuator
                     "/favicon.ico"              //the favicon
         );
     }
@@ -163,7 +164,8 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                         "/js/**", 						//js files
                         "/css/**", 						//css files
                         "/favicon.ico",                 //the favicon
-                        "/actuator/health"				//spring health actuator
+                        "/actuator",                    //spring health actuator
+                        "/actuator/**"                   //spring health actuator
                 ).permitAll()
                 .anyRequest().authenticated();
     }
