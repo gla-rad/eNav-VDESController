@@ -18,9 +18,7 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataUtilities;
-import org.grad.eNav.vdesCtrl.models.AtonNode;
-import org.grad.eNav.vdesCtrl.models.AtonTag;
-import org.locationtech.jts.geom.Point;
+import org.grad.eNav.vdesCtrl.models.GeomesaAton;
 import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +29,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -82,20 +78,13 @@ public class AtonMessageHandler implements MessageHandler {
         SimpleFeature feature = SimpleFeature.class.cast(message.getPayload());
 
         // A simple debug message;
-        log.info(DataUtilities.encodeFeature((feature)));
+        log.debug(DataUtilities.encodeFeature((feature)));
 
         // Create the AtoN Node message
-        AtonNode atonNode = new AtonNode();
-        atonNode.setUser((String)feature.getAttribute("user"));
-        atonNode.setTimestamp((Date)feature.getAttribute("timestamp"));
-        atonNode.setLon(((Point)feature.getAttribute("geom")).getX());
-        atonNode.setLat(((Point)feature.getAttribute("geom")).getY());
-        List<AtonTag> tags = new ArrayList<>();
-        tags.add(new AtonTag("atonUID", (String)feature.getAttribute("atonUID")));
-        atonNode.setTags(tags.toArray(new AtonTag[]{}));
-
-        // And publish it at the appropriate endpoint
-        this.webSocket.convertAndSend(String.format("/%s/%s", prefix, endpoint), atonNode);
+        new GeomesaAton()
+                .retrieveData(Collections.singletonList(feature))
+                .stream()
+                .forEach(aton ->  this.webSocket.convertAndSend(String.format("/%s/%s", prefix, endpoint), aton));
     }
 
 }

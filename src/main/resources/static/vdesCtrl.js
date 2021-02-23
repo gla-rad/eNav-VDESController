@@ -69,8 +69,13 @@ function showMessage(aton) {
         $("#incoming").html("");
         noOfMessages = 0;
     }
+
+    // Some debug messages
+    console.log("Received aton: ");
+    console.log(aton);
+
     // And add the entry to the table
-    $("#incoming").append("<tr class=\"d-flex\"><td class=\"col-4\">" + aton.tags["atonUID"]
+    $("#incoming").append("<tr class=\"d-flex\"><td class=\"col-4\">" + aton.tags["seamark:ref"]
         + "</td><td class=\"col-4\">" + aton.timestamp + "</td>"
         + "</td><td class=\"col-2\">" + aton.lat + "</td>"
         + "</td><td class=\"col-2\">" + aton.lon + "</td></tr>");
