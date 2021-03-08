@@ -1,5 +1,6 @@
 package org.grad.eNav.vdesCtrl;
 
+import org.geotools.data.DataStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,5 +23,16 @@ public class TestConfiguration {
 	@Bean
 	RegistrationListener registrationListener() {
 		return mock(RegistrationListener.class);
+	}
+
+	/**
+	 * MOck a Geomesa Data Store bean so that we pretend we have a connection
+	 * while the actual GS Data Store configuration is not enabled.
+	 *
+	 * @return the Geomesa Data Store bean
+	 */
+	@Bean
+	DataStore gsDataStore() {
+		return mock(DataStore.class);
 	}
 }

@@ -18,7 +18,7 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataUtilities;
-import org.grad.eNav.vdesCtrl.models.GeomesaAton;
+import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +43,7 @@ import java.util.Objects;
  */
 @Component
 @Slf4j
-public class AtonMessageHandler implements MessageHandler {
+public class S125MessageHandler implements MessageHandler {
 
     /**
      * The General Destination Prefix
@@ -58,9 +58,9 @@ public class AtonMessageHandler implements MessageHandler {
     private SimpMessagingTemplate webSocket;
 
     /**
-     * This is a simple handles for the incoming messages. This is a generic
+     * This is a simple handler for the incoming messages. This is a generic
      * handler for any type of Spring Integration messages but it should really
-     * only be used for the ones containing RadarMessage payloads.
+     * only be used for the ones containing S-125 message payloads.
      *
      * @param message               The message to be handled
      * @throws MessagingException   The Messaging exceptions that might occur
@@ -81,7 +81,7 @@ public class AtonMessageHandler implements MessageHandler {
         log.debug(DataUtilities.encodeFeature((feature)));
 
         // Create the AtoN Node message
-        new GeomesaAton()
+        new GeomesaS125()
                 .retrieveData(Collections.singletonList(feature))
                 .stream()
                 .forEach(aton ->  this.webSocket.convertAndSend(String.format("/%s/%s", prefix, endpoint), aton));

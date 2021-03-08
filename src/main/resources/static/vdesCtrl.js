@@ -63,22 +63,21 @@ function disconnect() {
  * If more messages than the maximum number are receives, it will clear out
  * the table and start over.
  */
-function showMessage(aton) {
+function showMessage(msg) {
     // For too many messages clear out the incoming table
     if(noOfMessages >= maxNoOfMessages) {
         $("#incoming").html("");
         noOfMessages = 0;
     }
 
-    // Some debug messages
-    console.log("Received aton: ");
-    console.log(aton);
-
     // And add the entry to the table
-    $("#incoming").append("<tr class=\"d-flex\"><td class=\"col-4\">" + aton.tags["seamark:ref"]
-        + "</td><td class=\"col-4\">" + aton.timestamp + "</td>"
-        + "</td><td class=\"col-2\">" + aton.lat + "</td>"
-        + "</td><td class=\"col-2\">" + aton.lon + "</td></tr>");
+    $("#incoming").append("<tr class=\"d-flex\"><td class=\"col-4\">" + msg.atonUID
+        + "</td><td class=\"col-4\">" + new Date() + "</td>"
+        + "</td><td id=\"" + msg.atonUID + "Content\" class=\"col-4\"></td>");
+    // Add the content XML as text
+    $("#" + msg.atonUID + "Content").text(msg.content);
+
+    // Increase the number of shown messages
     noOfMessages++;
 }
 

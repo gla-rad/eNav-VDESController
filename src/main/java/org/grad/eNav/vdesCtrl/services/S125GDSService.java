@@ -20,12 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
-import org.grad.eNav.vdesCtrl.models.GeomesaAton;
-import org.grad.eNav.vdesCtrl.utils.AtonMessageHandler;
-import org.grad.eNav.vdesCtrl.utils.AtonGDSListener;
+import org.grad.eNav.vdesCtrl.models.GeomesaS125;
+import org.grad.eNav.vdesCtrl.utils.S125MessageHandler;
+import org.grad.eNav.vdesCtrl.utils.S125GDSListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,25 +47,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class AtonGDSService {
-
-    /**
-     * The Kafka Brokers addresses.
-     */
-    @Value("${kafka.brokers:localhost:9092}" )
-    private String kafkaBrokers;
-
-    /**
-     * The Kafka Zookeepers addresses.
-     */
-    @Value("${kafka.zookeepers:localhost:2181}" )
-    private String kafkaZookeepers;
-
-    /**
-     * The Number of Kafka Consumers.
-     */
-    @Value("${kafka.consumer.count:1}" )
-    private Integer noKafkaConsumers;
+public class S125GDSService {
 
     /**
      * The Application Context
@@ -86,17 +66,23 @@ public class AtonGDSService {
      */
     @Autowired
     @Qualifier("atonDataChannel")
-    private PublishSubscribeChannel atonDataChannel;
+    private PublishSubscribeChannel atonPublishChannel;
 
     /**
      * The AtoN Message Handler
      */
     @Autowired
-    private AtonMessageHandler atonMessageHandler;
+    private S125MessageHandler s125MessageHandler;
+
+    /**
+     * The Geomesa Data Store.
+     */
+    @Autowired
+    @Qualifier("gsDataStore")
+    DataStore consumer;
 
     // Service Variables
-    private DataStore consumer;
-    private List<AtonGDSListener> dsListeners;
+    private List<S125GDSListener> dsListeners;
 
     /**
      * Once the service has been initialised, we can that start the execution
@@ -108,36 +94,24 @@ public class AtonGDSService {
     public void init() {
         log.info("Geomesa Data Store Service is booting up...");
 
-        Map<String, String> params = new HashMap<>();
-        params.put("kafka.brokers", kafkaBrokers);
-        params.put("kafka.zookeepers", kafkaZookeepers);
-        params.put("kafka.consumer.count", Objects.toString(noKafkaConsumers));
-
-        // Create the producer
-        try {
-            this.consumer = this.createDataStore(params);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-
-        // Create the AtoN Schema
+        // Create the consumer
         if(this.consumer == null) {
             log.error("Unable to connect to data store");
             return;
         }
 
         // Register a new listeners to the data channels
-        atonDataChannel.subscribe(atonMessageHandler);
+        atonPublishChannel.subscribe(s125MessageHandler);
 
         // Get and initialise a the listener workers
         this.dsListeners = this.atonListenerProperties.getListeners()
                 .stream()
                 .map(listener -> {
-                    AtonGDSListener dsListener = null;
+                    S125GDSListener dsListener = null;
                     try {
-                        dsListener = this.applicationContext.getBean(AtonGDSListener.class);
+                        dsListener = this.applicationContext.getBean(S125GDSListener.class);
                         dsListener.init(this.consumer,
-                                        new GeomesaAton().getSimpleFeatureType(),
+                                        new GeomesaS125().getSimpleFeatureType(),
                                         listener.getAddress(),
                                         listener.getPort(),
                                         listener.getPolygon());
@@ -157,8 +131,8 @@ public class AtonGDSService {
     @PreDestroy
     public void destroy() {
         log.info("Geomesa Data Store is shutting down...");
-        this.dsListeners.forEach(AtonGDSListener::destroy);
-        this.atonDataChannel.destroy();
+        this.dsListeners.forEach(S125GDSListener::destroy);
+        this.atonPublishChannel.destroy();
         this.consumer.dispose();
     }
 

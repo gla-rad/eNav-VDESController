@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
-public class AtonGDSListener {
+public class S125GDSListener {
 
     /**
      * The AtoN Data Channel to publish the incoming data to.
