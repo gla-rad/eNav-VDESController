@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -88,9 +87,8 @@ public class S125GDSService {
         this.dsListeners = this.atonListenerProperties.getListeners()
                 .stream()
                 .map(listener -> {
-                    S125GDSListener dsListener = null;
+                    S125GDSListener dsListener = this.applicationContext.getBean(S125GDSListener.class);
                     try {
-                        dsListener = this.applicationContext.getBean(S125GDSListener.class);
                         dsListener.init(this.consumer,
                                         new GeomesaS125(listener.getPolygon()),
                                         listener.getAddress(),
@@ -98,6 +96,7 @@ public class S125GDSService {
                                         listener.getPolygon());
                     } catch (IOException e) {
                         log.error(e.getMessage());
+                        return null;
                     }
                     return  dsListener;
                 })
