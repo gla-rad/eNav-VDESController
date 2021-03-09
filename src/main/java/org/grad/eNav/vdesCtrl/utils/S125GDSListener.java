@@ -120,21 +120,19 @@ public class S125GDSListener {
      * @param featureEvent      The feature event that took place
      */
     private void listenToEvents(FeatureEvent featureEvent) {
-        // Couldn't find a better way so for now read all inputs and evaluate on
-        // the fly to see if the incoming message belongs to this listener.
-        if(!this.geomesaData.getSubsetFilter().evaluate(featureEvent)) {
+        // We are only interested in Kafka Feature Messages, otherwise don't bother
+        if(!(featureEvent instanceof  KafkaFeatureEvent)) {
             return;
         }
 
-        log.info("Received FeatureEvent from schema '" + this.geomesaData.getTypeName() + "' of type '" + featureEvent.getType() + "'");
-
         // For feature additions/changes
-        if (featureEvent.getType() == FeatureEvent.Type.ADDED || featureEvent.getType() == FeatureEvent.Type.CHANGED) {
+        if (featureEvent.getType() == FeatureEvent.Type.CHANGED) {
             // Extract the S-125 message and send it
             Optional.of(featureEvent)
                     .filter(KafkaFeatureEvent.KafkaFeatureChanged.class::isInstance)
                     .map(KafkaFeatureEvent.KafkaFeatureChanged.class::cast)
                     .map(KafkaFeatureEvent.KafkaFeatureChanged::feature)
+                    .filter(this.geomesaData.getSubsetFilter()::evaluate)
                     .map(Collections::singletonList)
                     .map(sl -> new GeomesaS125().retrieveData(sl))
                     .orElseGet(Collections::emptyList)
@@ -151,6 +149,7 @@ public class S125GDSListener {
                     .filter(KafkaFeatureEvent.KafkaFeatureChanged.class::isInstance)
                     .map(KafkaFeatureEvent.KafkaFeatureChanged.class::cast)
                     .map(KafkaFeatureEvent.KafkaFeatureChanged::feature)
+                    .filter(this.geomesaData.getSubsetFilter()::evaluate)
                     .map(Collections::singletonList)
                     .map(sl -> new GeomesaS125().retrieveData(sl))
                     .orElseGet(Collections::emptyList)

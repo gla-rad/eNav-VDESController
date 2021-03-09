@@ -217,8 +217,8 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
         // here, we use a polygon (POLYGON) predicate as an example. This is
         // useful for a general query area.
         try {
-            String cqlGeometry = "POLYGON(geom,"
-                    + String.join(",", this.bounds.stream().map(String::valueOf).collect(Collectors.toList()))
+            String cqlGeometry = "BBOX(geom, "
+                    + String.join(", ", this.bounds.stream().map(String::valueOf).collect(Collectors.toList()))
                     + ")";
 
             // We use geotools ECQL class to parse a CQL string into a Filter object

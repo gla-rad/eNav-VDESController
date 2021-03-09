@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
+import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -105,26 +106,19 @@ public class S125WebSocketService implements MessageHandler {
         String endpoint = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
 
         // Check that this seems ot be a valid message
-        if(!(message.getPayload() instanceof SimpleFeature)) {
+        if(!(message.getPayload() instanceof S125Node)) {
             log.warn("Radar message handler received a message with erroneous format.");
             return;
         }
 
-        // Create the AtoN Node message
-        Optional.of(message)
-                .map(Message::getPayload)
-                .map(SimpleFeature.class::cast)
-                .map(Collections::singletonList)
-                .map(new GeomesaS125()::retrieveData)
-                .orElseGet(Collections::emptyList)
-                .stream()
-                .forEach(aton -> {
-                    // A simple debug message;
-                    log.debug(String.format("Received AtoN Message with UID: %s.", aton.getAtonUID()));
+        // Get the Aton Node payload
+        S125Node s125Node = (S125Node) message.getPayload();
 
-                    // Now push the aton node down the web-socket stream
-                    this.pushAton(this.webSocket, String.format("/%s/%s", prefix, endpoint), aton);
-                });
+        // A simple debug message;
+        log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
+
+        // Now push the aton node down the web-socket stream
+        this.pushAton(this.webSocket, String.format("/%s/%s", prefix, endpoint), s125Node);
     }
 
     /**
