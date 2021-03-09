@@ -39,12 +39,12 @@ public class PubSubChannelConfig {
 
     /**
      * Defining a publish subscribe Spring Integration channel to exchange
-     * the incoming radar data between the application components.
+     * the incoming AtoN data between the application components.
      *
      * @return The publish subscribe message channel
      */
     @Bean
-    public PublishSubscribeChannel atonDataChannel() {
+    public PublishSubscribeChannel atonPublishChannel() {
         PublishSubscribeChannel pubsubChannel = new PublishSubscribeChannel();
         pubsubChannel.setErrorHandler(new PubSubErrorHandler());
         return pubsubChannel;

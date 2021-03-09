@@ -20,16 +20,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.grad.eNav.vdesCtrl.models.GeomesaData;
+import org.grad.eNav.vdesCtrl.models.GeomesaS125;
+import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,16 +60,18 @@ public class S125GDSListener {
      * The AtoN Data Channel to publish the incoming data to.
      */
     @Autowired
-    @Qualifier("atonDataChannel")
-    private PublishSubscribeChannel atonDataChannel;
+    @Qualifier("atonPublishChannel")
+    private PublishSubscribeChannel atonPublishChannel;
 
     // Component Variables
     private DataStore consumer;
     private FeatureListener listener;
-    private SimpleFeatureType sft;
+    private GeomesaData geomesaData;
     private String vdesAddress;
     private Integer vdesPort;
     private List<Double> listenerArea;
+    private SimpleFeatureSource featureSource;
+    private String dataChannelTopic;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -78,17 +81,21 @@ public class S125GDSListener {
      * @param consumer      The data store to consume the messages from
      */
     public void init(DataStore consumer,
-                     SimpleFeatureType sft,
+                     GeomesaData geomesaData,
                      String vdesAddress,
                      Integer vdesPort,
                      List<Double> listenerArea) throws IOException {
         this.consumer = consumer;
-        this.sft = sft;
+        this.geomesaData = geomesaData;
         this.vdesAddress = vdesAddress;
         this.vdesPort = vdesPort;
+        this.dataChannelTopic = String.format("%s:%d", this.vdesAddress, this.vdesPort);
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
-        this.consumer.getFeatureSource(sft.getTypeName()).addFeatureListener(listener);
+
+        // And add the feature listener to start reading
+        this.featureSource = this.consumer.getFeatureSource(this.geomesaData.getTypeName());
+        this.featureSource.addFeatureListener(listener);
 
         // Log an information message
         log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
@@ -104,11 +111,7 @@ public class S125GDSListener {
     @PreDestroy
     public void destroy() {
         log.info("AtoN Data Listener is shutting down...");
-        try {
-            this.consumer.getFeatureSource(this.sft.getTypeName()).removeFeatureListener(this.listener);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.featureSource.removeFeatureListener(this.listener);
     }
 
     /**
@@ -117,21 +120,43 @@ public class S125GDSListener {
      * @param featureEvent      The feature event that took place
      */
     private void listenToEvents(FeatureEvent featureEvent) {
-        log.info("Received FeatureEvent from schema '" + this.sft.getTypeName() + "' of type '" + featureEvent.getType() + "'");
-        if(featureEvent.getType() == FeatureEvent.Type.CHANGED) {
-            // We only listen to kafka events for processing
-            if(featureEvent instanceof KafkaFeatureEvent.KafkaFeatureChanged) {
-                SimpleFeature feature = ((KafkaFeatureEvent.KafkaFeatureChanged) featureEvent).feature();
-                // Publish the message
-                Message<SimpleFeature> channelMsg = MessageBuilder
-                        .withPayload(feature)
-                        .setHeader(MessageHeaders.CONTENT_TYPE, String.format("%s:%d", this.vdesAddress, this.vdesPort))
-                        .build();
-                this.atonDataChannel.send(channelMsg);
-            }
+        // Couldn't find a better way so for now read all inputs and evaluate on
+        // the fly to see if the incoming message belongs to this listener.
+        if(!this.geomesaData.getSubsetFilter().evaluate(featureEvent)) {
+            return;
         }
-        else if(featureEvent.getType() == FeatureEvent.Type.REMOVED) {
-            log.info("Received Delete for filter: " + featureEvent.getFilter());
+
+        log.info("Received FeatureEvent from schema '" + this.geomesaData.getTypeName() + "' of type '" + featureEvent.getType() + "'");
+
+        // For feature additions/changes
+        if (featureEvent.getType() == FeatureEvent.Type.ADDED || featureEvent.getType() == FeatureEvent.Type.CHANGED) {
+            // Extract the S-125 message and send it
+            Optional.of(featureEvent)
+                    .filter(KafkaFeatureEvent.KafkaFeatureChanged.class::isInstance)
+                    .map(KafkaFeatureEvent.KafkaFeatureChanged.class::cast)
+                    .map(KafkaFeatureEvent.KafkaFeatureChanged::feature)
+                    .map(Collections::singletonList)
+                    .map(sl -> new GeomesaS125().retrieveData(sl))
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .map(MessageBuilder::withPayload)
+                    .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.dataChannelTopic))
+                    .map(MessageBuilder::build)
+                    .forEach(this.atonPublishChannel::send);
+        }
+        // For feature deletions,
+        else if (featureEvent.getType() == FeatureEvent.Type.REMOVED) {
+            // Extract the S-125 message and just log it
+            Optional.of(featureEvent)
+                    .filter(KafkaFeatureEvent.KafkaFeatureChanged.class::isInstance)
+                    .map(KafkaFeatureEvent.KafkaFeatureChanged.class::cast)
+                    .map(KafkaFeatureEvent.KafkaFeatureChanged::feature)
+                    .map(Collections::singletonList)
+                    .map(sl -> new GeomesaS125().retrieveData(sl))
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .map(S125Node::getAtonUID)
+                    .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
         }
     }
 
