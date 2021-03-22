@@ -21,6 +21,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.S125Node;
@@ -71,8 +72,7 @@ public class S125GDSListener {
     private DataStore consumer;
     private FeatureListener listener;
     private GeomesaData geomesaData;
-    private String vdesAddress;
-    private Integer vdesPort;
+    private AtonListenerProperties.Listener properties;
     private List<Double> listenerArea;
     private SimpleFeatureSource featureSource;
     private String dataChannelTopic;
@@ -89,14 +89,11 @@ public class S125GDSListener {
      */
     public void init(DataStore consumer,
                      GeomesaData geomesaData,
-                     String vdesAddress,
-                     Integer vdesPort,
-                     List<Double> listenerArea) throws IOException {
+                     AtonListenerProperties.Listener properties) throws IOException {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
-        this.vdesAddress = vdesAddress;
-        this.vdesPort = vdesPort;
-        this.dataChannelTopic = String.format("%s:%d", this.vdesAddress, this.vdesPort);
+        this.properties = properties;
+        this.dataChannelTopic = String.format("%s:%d", properties.getAddress(), properties.getPort());
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
 
@@ -109,8 +106,8 @@ public class S125GDSListener {
 
         // Log an information message
         log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
-                this.vdesAddress,
-                this.vdesPort,
+                properties.getAddress(),
+                properties.getPort(),
                 this.listenerArea.stream().map(String::valueOf).collect(Collectors.joining(","))));
     }
 
@@ -181,16 +178,13 @@ public class S125GDSListener {
      */
     private S125Node sendDatagram(S125Node message) {
         // Extract the message to construct the UDP payload
-        byte[] buffer = message.getContent().getBytes();
+        byte[] buffer = VDES1000Util.vdeFromS125(message,
+                properties.getPiSeqNo(), properties.getMmsi()).getBytes();
 
         // Create and send the UDP datagram packet
         try {
-            DatagramPacket packet = new DatagramPacket(
-                    buffer,
-                    buffer.length,
-                    InetAddress.getByName(this.vdesAddress),
-                    this.vdesPort
-            );
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+                    InetAddress.getByName(properties.getAddress()), properties.getPort());
             this.vdesSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());

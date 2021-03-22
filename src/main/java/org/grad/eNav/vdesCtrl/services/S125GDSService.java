@@ -91,9 +91,7 @@ public class S125GDSService {
                     try {
                         dsListener.init(this.consumer,
                                         new GeomesaS125(listener.getPolygon()),
-                                        listener.getAddress(),
-                                        listener.getPort(),
-                                        listener.getPolygon());
+                                        listener);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                         return null;

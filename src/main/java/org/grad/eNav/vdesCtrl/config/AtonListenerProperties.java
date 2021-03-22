@@ -64,15 +64,26 @@ public class AtonListenerProperties {
         // Class Variables
         private String address;
         private int port;
+        private int piSeqNo;
+        private int mmsi;
         private List<Double> polygon;
 
         /**
-         * Sets new polygon.
+         * Sets new address.
          *
-         * @param polygon New value of polygon.
+         * @param address New value of address.
          */
-        public void setPolygon(List<Double> polygon) {
-            this.polygon = polygon;
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        /**
+         * Gets address.
+         *
+         * @return Value of address.
+         */
+        public String getAddress() {
+            return address;
         }
 
         /**
@@ -94,21 +105,48 @@ public class AtonListenerProperties {
         }
 
         /**
-         * Sets new address.
+         * Sets new piSeqNo.
          *
-         * @param address New value of address.
+         * @param piSeqNo New value of piSeqNo.
          */
-        public void setAddress(String address) {
-            this.address = address;
+        public void setPiSeqNo(int piSeqNo) {
+            this.piSeqNo = piSeqNo;
         }
 
         /**
-         * Gets address.
+         * Gets piSeqNo.
          *
-         * @return Value of address.
+         * @return Value of piSeqNo.
          */
-        public String getAddress() {
-            return address;
+        public int getPiSeqNo() {
+            return piSeqNo;
+        }
+
+        /**
+         * Sets new MMSI.
+         *
+         * @param mmsi New value of MMSI.
+         */
+        public void setMmsi(int mmsi) {
+            this.mmsi = mmsi;
+        }
+
+        /**
+         * Gets MMSI.
+         *
+         * @return Value of MMSI.
+         */
+        public int getMmsi() {
+            return mmsi;
+        }
+
+        /**
+         * Sets new polygon.
+         *
+         * @param polygon New value of polygon.
+         */
+        public void setPolygon(List<Double> polygon) {
+            this.polygon = polygon;
         }
 
         /**
@@ -130,9 +168,12 @@ public class AtonListenerProperties {
             return "Listener{" +
                     "address='" + address + '\'' +
                     ", port=" + port +
+                    ", ipSeqNo=" + piSeqNo +
+                    ", MMSI=" + mmsi +
                     ", polygon=" + polygon +
                     '}';
         }
+
     }
 
 }
