@@ -16,9 +16,14 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import org.grad.eNav.vdesCtrl.models.S125.DataSet;
 import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayInputStream;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -32,9 +37,29 @@ import java.util.zip.Checksum;
  */
 public class VDES1000Util {
 
+    /**
+     * A first take to construct VDE sentences based on an S125 message.
+     * It remains to be seems what kind of information is required through
+     * the S125 and if we can actually send AtoN messages or something else.
+     *
+     * @param s125Node      The S125 XML node message
+     * @param piSeqNo       The VDES-1000 PI Sequence Number
+     * @param mmsi          The VDES-1000 MMSI number
+     * @return The constructor VDE sentence
+     */
     public static String vdeFromS125(S125Node s125Node, int piSeqNo, int mmsi) {
         // Create a string builder to start ith
         StringBuilder vdeBuilder = new StringBuilder();
+
+        // Un-package the S125 message
+        JAXBContext jaxbContext = null;
+        try {
+            jaxbContext = JAXBContext.newInstance(DataSet.class);
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            DataSet s125 = (DataSet) jaxbUnmarshaller.unmarshal(new ByteArrayInputStream(s125Node.getContent().getBytes()));
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
 
         // Build the prefix
         vdeBuilder.append("$AI");                       // Prefix
@@ -69,4 +94,5 @@ public class VDES1000Util {
         crc32.update(bytes, 0, bytes.length);
         return crc32.getValue();
     }
+
 }
