@@ -79,7 +79,6 @@ public class S125GDSListener {
 
     // The VDES UDP Connection
     private DatagramSocket vdesSocket;
-    private InetAddress vdesInetAddress;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -103,7 +102,6 @@ public class S125GDSListener {
 
         // Create the UDP Connection to the VDES stations
         this.vdesSocket = new DatagramSocket();
-        this.vdesInetAddress = InetAddress.getByName(this.vdesAddress);
 
         // And add the feature listener to start reading
         this.featureSource = this.consumer.getFeatureSource(this.geomesaData.getTypeName());
@@ -183,11 +181,16 @@ public class S125GDSListener {
      */
     private S125Node sendDatagram(S125Node message) {
         // Extract the message to construct the UDP payload
-        byte[] buf = message.toString().getBytes();
+        byte[] buffer = message.getContent().getBytes();
 
-        // Create the UDP datagram packet
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, this.vdesInetAddress, 16384);
+        // Create and send the UDP datagram packet
         try {
+            DatagramPacket packet = new DatagramPacket(
+                    buffer,
+                    buffer.length,
+                    InetAddress.getByName(this.vdesAddress),
+                    this.vdesPort
+            );
             this.vdesSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
