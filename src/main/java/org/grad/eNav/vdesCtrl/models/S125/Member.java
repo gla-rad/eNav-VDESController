@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Member {
 
     // Member Variables
-    S125_NavAidStructure s125_navAidStructure;
+    S125_NavAidStructure S125_NavAidStructure;
 
     /**
      * Gets s125_navAidStructure.
@@ -36,16 +36,16 @@ public class Member {
      * @return Value of s125_navAidStructure.
      */
     public S125_NavAidStructure getS125_navAidStructure() {
-        return s125_navAidStructure;
+        return S125_NavAidStructure;
     }
 
     /**
      * Sets new s125_navAidStructure.
      *
-     * @param s125_navAidStructure New value of s125_navAidStructure.
+     * @param S125_NavAidStructure New value of s125_navAidStructure.
      */
     @XmlElement
-    public void setS125_navAidStructure(S125_NavAidStructure s125_navAidStructure) {
-        this.s125_navAidStructure = s125_navAidStructure;
+    public void setS125_NavAidStructure(S125_NavAidStructure S125_NavAidStructure) {
+        this.S125_NavAidStructure = S125_NavAidStructure;
     }
 }

@@ -29,27 +29,27 @@ import java.util.List;
 public class DataSet {
 
     // Dataset Members
-    List<Member> members;
-    List<IMember> iMembers;
+    List<Member> member;
+    List<IMember> imember;
 
     /**
      * Sets new members.
      *
-     * @param members New value of members.
+     * @param member New value of members.
      */
     @XmlElement
-    public void setMembers(List<Member> members) {
-        this.members = members;
+    public void setMember(List<Member> member) {
+        this.member = member;
     }
 
     /**
      * Sets new iMembers.
      *
-     * @param iMembers New value of iMembers.
+     * @param imember New value of iMembers.
      */
     @XmlElement
-    public void setIMembers(List<IMember> iMembers) {
-        this.iMembers = iMembers;
+    public void setIMember(List<IMember> imember) {
+        this.imember = imember;
     }
 
     /**
@@ -57,8 +57,8 @@ public class DataSet {
      *
      * @return Value of iMembers.
      */
-    public List<IMember> getIMembers() {
-        return iMembers;
+    public List<IMember> getIMember() {
+        return imember;
     }
 
     /**
@@ -66,7 +66,7 @@ public class DataSet {
      *
      * @return Value of members.
      */
-    public List<Member> getMembers() {
-        return members;
+    public List<Member> getMember() {
+        return member;
     }
 }
