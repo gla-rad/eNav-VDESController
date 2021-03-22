@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Member {
 
     // Member Variables
-    @XmlElement
     S125_NavAidStructure s125_navAidStructure;
 
     /**
@@ -45,6 +44,7 @@ public class Member {
      *
      * @param s125_navAidStructure New value of s125_navAidStructure.
      */
+    @XmlElement
     public void setS125_navAidStructure(S125_NavAidStructure s125_navAidStructure) {
         this.s125_navAidStructure = s125_navAidStructure;
     }

@@ -29,9 +29,7 @@ import java.util.List;
 public class DataSet {
 
     // Dataset Members
-    @XmlElement
     List<Member> members;
-    @XmlElement
     List<IMember> iMembers;
 
     /**
@@ -39,6 +37,7 @@ public class DataSet {
      *
      * @param members New value of members.
      */
+    @XmlElement
     public void setMembers(List<Member> members) {
         this.members = members;
     }
@@ -48,6 +47,7 @@ public class DataSet {
      *
      * @param iMembers New value of iMembers.
      */
+    @XmlElement
     public void setIMembers(List<IMember> iMembers) {
         this.iMembers = iMembers;
     }
