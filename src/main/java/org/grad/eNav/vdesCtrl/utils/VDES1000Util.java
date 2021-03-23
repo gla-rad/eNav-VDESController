@@ -16,12 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import org.grad.eNav.vdesCtrl.models.S125.DataSet;
+import _int.iho.s125gml._1.DatasetType;
 import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBIntrospector;
 import javax.xml.bind.Unmarshaller;
 import java.io.ByteArrayInputStream;
 import java.util.zip.CRC32;
@@ -38,6 +39,27 @@ import java.util.zip.Checksum;
 public class VDES1000Util {
 
     /**
+     * The S125Node object containds the S125 XML content of the message. We
+     * can easily translate that into an S125 DatasetType object so that it
+     * can be accessed more efficiently.
+     *
+     * @param s125Node          The S125Node object to be unmarshalled
+     * @return The unmarshalled S125 DatasetType object
+     * @throws JAXBException
+     */
+    public static DatasetType unmarshallS125(S125Node s125Node) throws JAXBException {
+        // Create the JAXB objects
+        JAXBContext jaxbContext = JAXBContext.newInstance(DatasetType.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+
+        // Transform the S125 context into an input stream
+        ByteArrayInputStream is = new ByteArrayInputStream(s125Node.getContent().getBytes());
+
+        // And translate
+        return (DatasetType)JAXBIntrospector.getValue(jaxbUnmarshaller.unmarshal(is));
+    }
+
+    /**
      * A first take to construct VDE sentences based on an S125 message.
      * It remains to be seems what kind of information is required through
      * the S125 and if we can actually send AtoN messages or something else.
@@ -47,19 +69,9 @@ public class VDES1000Util {
      * @param mmsi          The VDES-1000 MMSI number
      * @return The constructor VDE sentence
      */
-    public static String vdeFromS125(S125Node s125Node, int piSeqNo, int mmsi) {
+    public static String s125ToVDE(DatasetType dataset, int piSeqNo, int mmsi) {
         // Create a string builder to start ith
         StringBuilder vdeBuilder = new StringBuilder();
-
-        // Un-package the S125 message
-        JAXBContext jaxbContext = null;
-        try {
-            jaxbContext = JAXBContext.newInstance(DataSet.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            DataSet s125 = (DataSet) jaxbUnmarshaller.unmarshal(new ByteArrayInputStream(s125Node.getContent().getBytes()));
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
 
         // Build the prefix
         vdeBuilder.append("$AI");                       // Prefix
@@ -71,7 +83,7 @@ public class VDES1000Util {
         vdeBuilder.append(",");
         vdeBuilder.append("");                          // Dest MMSI - Null for broadcast
         vdeBuilder.append(",");
-        vdeBuilder.append(s125Node.getContent());       // Data
+        vdeBuilder.append(dataset.getId());             // Data
         vdeBuilder.append(",");
         vdeBuilder.append("0");                         // Fill bits
         vdeBuilder.append("*");                         // Delimiter

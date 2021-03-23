@@ -159,6 +159,13 @@
 			<version>5.11.2</version>
 		</dependency>
 
+		<!-- S-125 -->
+		<dependency>
+			<groupId>org.grad.eNav</groupId>
+			<artifactId>S125</artifactId>
+			<version>0.1-GRAD</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

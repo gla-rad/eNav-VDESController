@@ -14,38 +14,37 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.S125;
-
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+package org.grad.eNav.vdesCtrl.models;
 
 /**
- * The S125 Member Class.
+ * The PubSubMsgHeaders Enum.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-@XmlRootElement
-public class Member {
+public enum PubSubMsgHeaders {
+    ADDRESS("ADDRESS"),
+    PORT("PORT"),
+    PI_SEQ_NO("PI_SEQ_NO"),
+    MMSI("MMSI");
 
-    // Member Variables
-    S125_NavAidStructure s125_NavAidStructure;
+    // Enum Variables
+    private String header;
 
     /**
-     * Gets s125_navAidStructure.
+     * The PubSubMsgHeaders Enum Constructor.
      *
-     * @return Value of s125_navAidStructure.
+     * @param header        The PubSub Message header
      */
-    public S125_NavAidStructure getS125_navAidStructure() {
-        return s125_NavAidStructure;
+    PubSubMsgHeaders(String header) {
+        this.header = header;
     }
 
     /**
-     * Sets new s125_navAidStructure.
+     * Gets the PubSub Messages header.
      *
-     * @param s125_NavAidStructure New value of s125_navAidStructure.
+     * @return The PubSub Messages heade
      */
-    @XmlElement(name = "S125_NavAidStructure")
-    public void setS125_NavAidStructure(S125_NavAidStructure s125_NavAidStructure) {
-        this.s125_NavAidStructure = s125_NavAidStructure;
+    public String getHeader() {
+        return header;
     }
 }

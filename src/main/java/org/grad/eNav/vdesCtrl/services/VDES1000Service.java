@@ -16,41 +16,42 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
+import _int.iho.s125gml._1.DatasetType;
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.S125Node;
+import org.grad.eNav.vdesCtrl.utils.VDES1000Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Objects;
 
 /**
- * The S125WebSocketService Class
+ * The VDES1000Service Class
  *
  * This class implements a handler for the AtoN messages coming into a Spring
- * Integration channel. It basically just publishes them to another channel,
- * which happens to be a web-socket implementation.
+ * Integration channel. It will then translate the content using JAXB and
+ * generate the UDP sentences to be sent down to the VDES-1000 stations.
  *
  * @author Nikolaos Vastardis
  */
 @Service
 @Slf4j
-public class S125WebSocketService implements MessageHandler {
-
-    /**
-     * The General Destination Prefix
-     */
-    @Value("${gla.rad.radar-service.web-socket.prefix:topic}")
-    private String prefix;
+public class VDES1000Service implements MessageHandler {
 
     /**
      * The AtoN Publish Channel to listen the AtoN messages to.
@@ -59,11 +60,8 @@ public class S125WebSocketService implements MessageHandler {
     @Qualifier("atonPublishChannel")
     private PublishSubscribeChannel atonPublishChannel;
 
-    /**
-     * Attach the web-socket as a simple messaging template
-     */
-    @Autowired
-    private SimpMessagingTemplate webSocket;
+    // The VDES UDP Connection
+    private DatagramSocket vdesSocket;
 
     /**
      * The service post-construct operations where the handler auto-registers
@@ -71,8 +69,13 @@ public class S125WebSocketService implements MessageHandler {
      * monitor the channel for all inputs coming through the REST API.
      */
     @PostConstruct
-    public void init() {
-        log.info("AtoN Message Web Socket Service is booting up...");
+    public void init() throws SocketException {
+        log.info("VDES-1000 Service is booting up...");
+
+        // Create the UDP Connection to the VDES stations
+        this.vdesSocket = new DatagramSocket();
+
+        // And subscribe to the pub-sub channel
         this.atonPublishChannel.subscribe(this);
     }
 
@@ -82,10 +85,13 @@ public class S125WebSocketService implements MessageHandler {
      */
     @PreDestroy
     public void destroy() {
-        log.info("AtoN Message Web Socket Service is shutting down...");
+        log.info("VDES-1000 Service is shutting down...");
         if (this.atonPublishChannel != null) {
             this.atonPublishChannel.destroy();
         }
+
+        /// And close the socket
+        this.vdesSocket.close();
     }
 
     /**
@@ -106,24 +112,53 @@ public class S125WebSocketService implements MessageHandler {
 
         // Get the header and payload of the incoming message
         String endpoint = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        String address = Objects.toString(message.getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
+        int port = Integer.parseInt(Objects.toString(message.getHeaders().get(PubSubMsgHeaders.PORT.getHeader())));
+        int piseqno = Integer.parseInt(Objects.toString(message.getHeaders().get(PubSubMsgHeaders.PI_SEQ_NO.getHeader())));
+        int mmsi = Integer.parseInt(Objects.toString(message.getHeaders().get(PubSubMsgHeaders.MMSI.getHeader())));
         S125Node s125Node = (S125Node) message.getPayload();
 
         // A simple debug message;
-        log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
+        log.debug(String.format("Sending AtoN Message with UID: %s to VDES station %s.", s125Node.getAtonUID(), endpoint));
 
-        // Now push the aton node down the web-socket stream
-        this.pushAton(this.webSocket, String.format("/%s/%s", prefix, endpoint), s125Node);
+        // Now send the S125 message to the VDES station
+        this.sendDatagram(address, port, piseqno, mmsi, s125Node);
+
     }
 
     /**
-     * Pushes a new/updated AtoN node into the Web-Socket messaging template.
+     * The main function that sends the UDP package to the VDES station. To
+     * make the streaming operation easier, we are actually returning the
+     * provided message for each successful transmission.
      *
-     * @param messagingTemplate     The web-socket messaging template
-     * @param topic                 The topic of the web-socket
-     * @param payload               The payload to be pushed
+     * @param address       The address to send the datagram to
+     * @param port          The port to send the datagram to
+     * @param piseqno       The PI sequence number of the VDES station
+     * @param mmsi          The MMSI of the VDES station
+     * @param message       The S125 message to be transmitted
+     * @return The S125 message to be transmitted
      */
-    private void pushAton(SimpMessagingTemplate messagingTemplate, String topic, Object payload) {
-        messagingTemplate.convertAndSend(topic, payload);
+    private void sendDatagram(String address, int port, int piseqno, int mmsi, S125Node message) {
+        // First translate the message content into a Java object using JAXB
+        DatasetType dataset = null;
+        try {
+            dataset = VDES1000Util.unmarshallS125(message);
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage());
+            return;
+        }
+
+        // Construct the UDP message for the VDES station
+        byte[] buffer = VDES1000Util.s125ToVDE(dataset, piseqno, mmsi).getBytes();
+
+        // Create and send the UDP datagram packet
+        try {
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+                    InetAddress.getByName(address), port);
+            this.vdesSocket.send(packet);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
     }
 
 }

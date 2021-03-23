@@ -24,6 +24,7 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
+import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,12 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -77,9 +74,6 @@ public class S125GDSListener {
     private SimpleFeatureSource featureSource;
     private String dataChannelTopic;
 
-    // The VDES UDP Connection
-    private DatagramSocket vdesSocket;
-
     /**
      * Once the listener has been initialised, it will create a consumer of
      * the data store provided and publish the incoming messages into the
@@ -96,9 +90,6 @@ public class S125GDSListener {
         this.dataChannelTopic = String.format("%s:%d", properties.getAddress(), properties.getPort());
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
-
-        // Create the UDP Connection to the VDES stations
-        this.vdesSocket = new DatagramSocket();
 
         // And add the feature listener to start reading
         this.featureSource = this.consumer.getFeatureSource(this.geomesaData.getTypeName());
@@ -144,10 +135,12 @@ public class S125GDSListener {
                     .map(sl -> new GeomesaS125().retrieveData(sl))
                     .orElseGet(Collections::emptyList)
                     .stream()
-                    .map(this::sendDatagram)
-                    .filter(Objects::nonNull)
                     .map(MessageBuilder::withPayload)
                     .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.dataChannelTopic))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), properties.getAddress()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), properties.getPort()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), properties.getPiSeqNo()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), properties.getMmsi()))
                     .map(MessageBuilder::build)
                     .forEach(this.atonPublishChannel::send);
         }
@@ -166,33 +159,6 @@ public class S125GDSListener {
                     .map(S125Node::getAtonUID)
                     .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
         }
-    }
-
-    /**
-     * The main function that sends the UDP package to the VDES station. To
-     * make the streaming operation easier, we are actually returning the
-     * provided message for each successful transmission.
-     *
-     * @param message       The S125 message to be transmitted
-     * @return The S125 message to be transmitted
-     */
-    private S125Node sendDatagram(S125Node message) {
-        // Extract the message to construct the UDP payload
-        byte[] buffer = VDES1000Util.vdeFromS125(message,
-                properties.getPiSeqNo(), properties.getMmsi()).getBytes();
-
-        // Create and send the UDP datagram packet
-        try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(properties.getAddress()), properties.getPort());
-            this.vdesSocket.send(packet);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            return null;
-        }
-
-        // Now return the message
-        return message;
     }
 
 }
