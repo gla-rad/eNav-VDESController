@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s125gml._1.DatasetType;
+import _int.iho.s125.gml._1.DatasetType;
 import org.grad.eNav.vdesCtrl.models.S125Node;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
 
@@ -64,7 +64,7 @@ public class VDES1000Util {
      * It remains to be seems what kind of information is required through
      * the S125 and if we can actually send AtoN messages or something else.
      *
-     * @param s125Node      The S125 XML node message
+     * @param dataset       The S125 XML node message
      * @param piSeqNo       The VDES-1000 PI Sequence Number
      * @param mmsi          The VDES-1000 MMSI number
      * @return The constructor VDE sentence
