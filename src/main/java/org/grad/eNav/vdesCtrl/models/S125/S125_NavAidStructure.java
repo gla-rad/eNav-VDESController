@@ -36,19 +36,9 @@ public class S125_NavAidStructure {
      *
      * @param atonType New value of atonType.
      */
-    @XmlElement
+    @XmlElement(name = "atonType")
     public void setAtonType(String atonType) {
         this.atonType = atonType;
-    }
-
-    /**
-     * Sets new deploymentType.
-     *
-     * @param deploymentType New value of deploymentType.
-     */
-    @XmlElement
-    public void setDeploymentType(String deploymentType) {
-        this.deploymentType = deploymentType;
     }
 
     /**
@@ -58,6 +48,16 @@ public class S125_NavAidStructure {
      */
     public String getAtonType() {
         return atonType;
+    }
+
+    /**
+     * Sets new deploymentType.
+     *
+     * @param deploymentType New value of deploymentType.
+     */
+    @XmlElement(name = "deploymentType")
+    public void setDeploymentType(String deploymentType) {
+        this.deploymentType = deploymentType;
     }
 
     /**
