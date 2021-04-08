@@ -25,6 +25,17 @@
 		<kafka.version>2.1.1</kafka.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>grad</id>
+			<url>http://gla-rrnav1.dyndns.org:8081/repository/grad/</url>
+		</repository>
+		<repository>
+			<id>grad-snapshots</id>
+			<url>http://gla-rrnav1.dyndns.org:8081/repository/grad-snapshots/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 
 		<dependency>
@@ -163,7 +174,8 @@
 		<dependency>
 			<groupId>org.grad.eNav</groupId>
 			<artifactId>S125</artifactId>
-			<version>0.1-GRAD</version>
+			<version>0.1</version>
+			<classifier>jdk8</classifier>
 		</dependency>
 
 		<dependency>
