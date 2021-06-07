@@ -1,0 +1,183 @@
+/*
+ * Copyright (c) 2021 GLA UK Research and Development Directive
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.grad.eNav.vdesCtrl.models.domain;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * The Node Class
+ * <p></p>
+ * This class defines the database structure of the station node entries. These
+ * are any types of S-100/S-200 IALA product specification objects that are
+ * attributed to a station at the current time. It can also be used to bootstrap
+ * the station, when no previous messages has been received.
+ *
+ * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
+ */
+@Entity
+@Table(name = "node")
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Node {
+
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private BigInteger id;
+
+    @NotNull
+    @Column(name = "uid")
+    private String uid;
+
+    @NotNull
+    @Column(name = "type", columnDefinition = "varchar(30) default 'S_125'")
+    private NodeType type;
+
+    @NotNull
+    @Type(type="text")
+    @Column(name = "message")
+    private String message;
+
+    @ManyToMany(mappedBy = "docs")
+    @JsonIgnore
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<Station> stations = new HashSet<>();
+
+    /**
+     * Gets id.
+     *
+     * @return the id
+     */
+    public BigInteger getId() {
+        return id;
+    }
+
+    /**
+     * Sets id.
+     *
+     * @param id the id
+     */
+    public void setId(BigInteger id) {
+        this.id = id;
+    }
+
+    /**
+     * Gets uid.
+     *
+     * @return the uid
+     */
+    public String getUid() {
+        return uid;
+    }
+
+    /**
+     * Sets uid.
+     *
+     * @param uid the uid
+     */
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    /**
+     * Gets type.
+     *
+     * @return the type
+     */
+    public NodeType getType() {
+        return type;
+    }
+
+    /**
+     * Sets type.
+     *
+     * @param type the type
+     */
+    public void setType(NodeType type) {
+        this.type = type;
+    }
+
+    /**
+     * Gets message.
+     *
+     * @return the message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Sets message.
+     *
+     * @param message the message
+     */
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    /**
+     * Gets stations.
+     *
+     * @return the stations
+     */
+    public Set<Station> getStations() {
+        return stations;
+    }
+
+    /**
+     * Sets stations.
+     *
+     * @param stations the stations
+     */
+    public void setStations(Set<Station> stations) {
+        this.stations = stations;
+    }
+
+    /**
+     * Overrides the equality operator of the class.
+     *
+     * @param o the object to check the equality
+     * @return whether the two objects are equal
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Node)) return false;
+        Node node = (Node) o;
+        return Objects.equals(id, node.id);
+    }
+
+    /**
+     * Overrides the hashcode generation of the object.
+     *
+     * @return the generated hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+}
