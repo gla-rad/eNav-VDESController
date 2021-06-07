@@ -18,7 +18,6 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
-import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.utils.S125GDSListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +51,10 @@ public class S125GDSService {
     private ApplicationContext applicationContext;
 
     /**
-     * The AtoN Listener Properties
+     * The Stations Service
      */
     @Autowired
-    private AtonListenerProperties atonListenerProperties;
+    private StationService stationService;
 
     /**
      * The Geomesa Data Store.
@@ -84,14 +83,14 @@ public class S125GDSService {
         }
 
         // Get and initialise a the listener workers
-        this.dsListeners = this.atonListenerProperties.getListeners()
+        this.stationService.findAll()
                 .stream()
-                .map(listener -> {
+                .map(station -> {
                     S125GDSListener dsListener = this.applicationContext.getBean(S125GDSListener.class);
                     try {
                         dsListener.init(this.consumer,
-                                        new GeomesaS125(listener.getPolygon()),
-                                        listener);
+                                        new GeomesaS125(station.getGeometry()),
+                                        station);
                     } catch (IOException e) {
                         log.error(e.getMessage());
                         return null;

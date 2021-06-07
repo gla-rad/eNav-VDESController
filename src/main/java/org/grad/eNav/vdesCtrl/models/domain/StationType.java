@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.models.domain;
 /**
  * The Station Type Enum.
  * <p></p>
- * This enumeration defines the types of stations currenlty supported by the
+ * This enumeration defines the types of stations currently supported by the
  * VDES Controller microservice. Although the service is primarily for
  * controlling the VDES-1000 station, there is no reason why we cannot also
  * support other types of AIS message stations.
@@ -27,6 +27,6 @@ package org.grad.eNav.vdesCtrl.models.domain;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public enum StationType {
-    VDES1000,
+    VDES_1000,
     GNU_RADIO
 }

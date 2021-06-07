@@ -22,6 +22,7 @@ import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geomesa.utils.interop.SimpleFeatureTypes;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -42,7 +43,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
     private SimpleFeatureType sft = null;
     private List<SimpleFeature> features = null;
     private List<Query> queries = null;
-    private List<Double> bounds = null;
+    private Geometry geometry = null;
 
     /**
      * Empty Constructor
@@ -54,28 +55,28 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
     /**
      * Constructor with a specified bounds area.
      *
-     * @param bounds    The bounds area edges list
+     * @param geometry    The geometry of the Geomesa S125 object
      */
-    public GeomesaS125(List<Double> bounds) {
-        this.bounds = bounds;
+    public GeomesaS125(Geometry geometry) {
+        this.geometry = geometry;
     }
 
     /**
-     * Sets new bounds.
+     * Sets new geometry.
      *
-     * @param bounds New value of bounds.
+     * @param geometry New value of geometry.
      */
-    public void setBounds(List<Double> bounds) {
-        this.bounds = bounds;
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
     }
 
     /**
-     * Gets bounds.
+     * Gets geometry.
      *
-     * @return Value of bounds.
+     * @return Value of geometry.
      */
-    public List<Double> getBounds() {
-        return bounds;
+    public Geometry getGeometry() {
+        return geometry;
     }
 
 
@@ -209,7 +210,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
     @Override
     public Filter getSubsetFilter() {
         // For no or invalid filters, just reject everything
-        if(Optional.ofNullable(bounds).map(List::size).orElse(0) <= 0) {
+        if(Optional.ofNullable(geometry).map(Geometry::isEmpty).orElse(Boolean.TRUE)) {
             return Filter.EXCLUDE;
         }
 
@@ -218,7 +219,11 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
         // useful for a general query area.
         try {
             String cqlGeometry = "BBOX(geom, "
-                    + String.join(", ", this.bounds.stream().map(String::valueOf).collect(Collectors.toList()))
+                    + String.join(", ",
+                            Arrays.asList(this.geometry.getCoordinates())
+                                    .stream().map(c -> c.getX() + ", " + c.getY())
+                                    .collect(Collectors.toList())
+                    )
                     + ")";
 
             // We use geotools ECQL class to parse a CQL string into a Filter object

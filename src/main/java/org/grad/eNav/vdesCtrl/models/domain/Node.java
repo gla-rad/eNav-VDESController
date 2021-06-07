@@ -54,6 +54,7 @@ public class Node {
     private String uid;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", columnDefinition = "varchar(30) default 'S_125'")
     private NodeType type;
 
@@ -62,7 +63,7 @@ public class Node {
     @Column(name = "message")
     private String message;
 
-    @ManyToMany(mappedBy = "docs")
+    @ManyToMany(mappedBy = "nodes")
     @JsonIgnore
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Station> stations = new HashSet<>();

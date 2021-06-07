@@ -18,8 +18,11 @@ package org.grad.eNav.vdesCtrl.repos;
 
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for the Station entity.
@@ -27,5 +30,27 @@ import java.math.BigInteger;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public interface StationRepo  extends JpaRepository<Station, BigInteger> {
+
+    /**
+     * Find all with eager relationships list.
+     *
+     * @return The complete station list
+     */
+    @Query("select distinct station " +
+            " from Station station " +
+            " left join fetch station.nodes ")
+    List<Station> findAllWithEagerRelationships();
+
+    /**
+     * Find one with eager relationships design.
+     *
+     * @param id The id
+     * @return The matching station
+     */
+    @Query("select distinct station " +
+            " from Station station " +
+            " left join fetch station.nodes " +
+            " where station.id =:id")
+    Station findOneWithEagerRelationships(@Param("id") BigInteger id);
 
 }

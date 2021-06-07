@@ -21,11 +21,11 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.S125Node;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,7 +69,7 @@ public class S125GDSListener {
     private DataStore consumer;
     private FeatureListener listener;
     private GeomesaData geomesaData;
-    private AtonListenerProperties.Listener properties;
+    private Station station;
     private List<Double> listenerArea;
     private SimpleFeatureSource featureSource;
     private String dataChannelTopic;
@@ -83,11 +83,11 @@ public class S125GDSListener {
      */
     public void init(DataStore consumer,
                      GeomesaData geomesaData,
-                     AtonListenerProperties.Listener properties) throws IOException {
+                     Station station) throws IOException {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
-        this.properties = properties;
-        this.dataChannelTopic = String.format("%s:%d", properties.getAddress(), properties.getPort());
+        this.station = station;
+        this.dataChannelTopic = String.format("%s:%d", station.getIpAddress(), station.getPort());
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
 
@@ -97,8 +97,8 @@ public class S125GDSListener {
 
         // Log an information message
         log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
-                properties.getAddress(),
-                properties.getPort(),
+                station.getIpAddress(),
+                station.getPort(),
                 this.listenerArea.stream().map(String::valueOf).collect(Collectors.joining(","))));
     }
 
@@ -137,10 +137,10 @@ public class S125GDSListener {
                     .stream()
                     .map(MessageBuilder::withPayload)
                     .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.dataChannelTopic))
-                    .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), properties.getAddress()))
-                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), properties.getPort()))
-                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), properties.getPiSeqNo()))
-                    .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), properties.getMmsi()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), station.getIpAddress()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), station.getPort()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), station.getPiSeqNo()))
+                    .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), station.getMmsi()))
                     .map(MessageBuilder::build)
                     .forEach(this.atonPublishChannel::send);
         }

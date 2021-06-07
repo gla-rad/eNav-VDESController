@@ -30,6 +30,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The type Station.
+ */
 @Entity
 @Table(name = "station")
 @Cacheable
@@ -55,6 +58,15 @@ public class Station {
     private Integer port;
 
     @NotNull
+    @Column(name = "piSeqNo", nullable = false, columnDefinition = "bigint default 0")
+    private Long piSeqNo;
+
+    @NotNull
+    @Column(name = "mmsi", nullable = false)
+    private String mmsi;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
     private StationType type;
 
@@ -68,7 +80,7 @@ public class Station {
     @JoinTable(name = "station_nodes",
             joinColumns = @JoinColumn(name="station_id", referencedColumnName="ID"),
             inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="ID"))
-    private Set<Node> docs = new HashSet<>();
+    private Set<Node> nodes = new HashSet<>();
 
     /**
      * Gets id.
@@ -179,21 +191,57 @@ public class Station {
     }
 
     /**
-     * Gets docs.
+     * Gets pi seq no.
      *
-     * @return the docs
+     * @return the pi seq no
      */
-    public Set<Node> getDocs() {
-        return docs;
+    public Long getPiSeqNo() {
+        return piSeqNo;
     }
 
     /**
-     * Sets docs.
+     * Sets pi seq no.
      *
-     * @param docs the docs
+     * @param piSeqNo the pi seq no
      */
-    public void setDocs(Set<Node> docs) {
-        this.docs = docs;
+    public void setPiSeqNo(Long piSeqNo) {
+        this.piSeqNo = piSeqNo;
+    }
+
+    /**
+     * Gets mmsi.
+     *
+     * @return the mmsi
+     */
+    public String getMmsi() {
+        return mmsi;
+    }
+
+    /**
+     * Sets mmsi.
+     *
+     * @param mmsi the mmsi
+     */
+    public void setMmsi(String mmsi) {
+        this.mmsi = mmsi;
+    }
+
+    /**
+     * Gets nodes.
+     *
+     * @return the nodes
+     */
+    public Set<Node> getNodes() {
+        return nodes;
+    }
+
+    /**
+     * Sets nodes.
+     *
+     * @param nodes the nodes
+     */
+    public void setNodes(Set<Node> nodes) {
+        this.nodes = nodes;
     }
 
     /**

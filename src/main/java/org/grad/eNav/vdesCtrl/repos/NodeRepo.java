@@ -18,8 +18,11 @@ package org.grad.eNav.vdesCtrl.repos;
 
 import org.grad.eNav.vdesCtrl.models.domain.Node;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for the Node entity.
@@ -27,5 +30,27 @@ import java.math.BigInteger;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public interface NodeRepo extends JpaRepository<Node, BigInteger> {
+
+    /**
+     * Find all with eager relationships list.
+     *
+     * @return The complete station list
+     */
+    @Query("select distinct node " +
+            " from Node node " +
+            " left join fetch node.stations ")
+    List<Node> findAllWithEagerRelationships();
+
+    /**
+     * Find one with eager relationships design.
+     *
+     * @param id The id
+     * @return The matching station
+     */
+    @Query("select distinct node " +
+            " from Node node " +
+            " left join fetch node.stations " +
+            " where node.id =:id")
+    Node findOneWithEagerRelationships(@Param("id") BigInteger id);
 
 }

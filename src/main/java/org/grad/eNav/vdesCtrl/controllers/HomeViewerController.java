@@ -16,8 +16,8 @@
 
 package org.grad.eNav.vdesCtrl.controllers;
 
-import org.grad.eNav.vdesCtrl.config.AtonListenerProperties;
 import org.grad.eNav.vdesCtrl.feign.NiordClient;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,7 +42,7 @@ public class HomeViewerController {
      * The Radar Listener Properties.
      */
     @Autowired
-    private AtonListenerProperties atonListenerProperties;
+    private StationService stationService;
 
     /**
      * The Niord Client.
@@ -59,9 +59,9 @@ public class HomeViewerController {
     @GetMapping("/index.html")
     public String index(Model model) {
         // Add the properties to the UI model
-        model.addAttribute("endpoints", atonListenerProperties.getListeners()
+        model.addAttribute("endpoints", stationService.findAll()
                 .stream()
-                .map(l -> String.format("%s:%d", l.getAddress(), l.getPort()))
+                .map(station -> String.format("%s:%d", station.getIpAddress(), station.getPort()))
                 .collect(Collectors.toList()));
         // Return the rendered index
         return "index";
