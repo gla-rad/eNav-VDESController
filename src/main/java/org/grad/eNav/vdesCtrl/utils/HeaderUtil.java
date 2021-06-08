@@ -38,53 +38,9 @@ public class HeaderUtil {
      */
     public static HttpHeaders createAlert(String message, String param) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-mcsrApp-alert", message);
-        headers.add("X-mcsrApp-params", param);
+        headers.add("X-vdesCtrl-alert", message);
+        headers.add("X-vdesCtrl-params", param);
         return headers;
-    }
-
-    /**
-     * Create entity creation alert http headers.
-     *
-     * @param entityName the entity name
-     * @param param      the param
-     * @return the http headers
-     */
-    public static HttpHeaders createEntityCreationAlert(String entityName, String param) {
-        return createAlert("mcsrApp." + entityName + ".created", param);
-    }
-
-    /**
-     * Create entity update alert http headers.
-     *
-     * @param entityName the entity name
-     * @param param      the param
-     * @return the http headers
-     */
-    public static HttpHeaders createEntityUpdateAlert(String entityName, String param) {
-        return createAlert("mcsrApp." + entityName + ".updated", param);
-    }
-
-    /**
-     * Create entity deletion alert http headers.
-     *
-     * @param entityName the entity name
-     * @param param      the param
-     * @return the http headers
-     */
-    public static HttpHeaders createEntityDeletionAlert(String entityName, String param) {
-        return createAlert("mcsrApp." + entityName + ".deleted", param);
-    }
-
-    /**
-     * Create entity status update alert http headers.
-     *
-     * @param entityName the entity name
-     * @param param      the param
-     * @return the http headers
-     */
-    public static HttpHeaders createEntityStatusUpdateAlert(String entityName, String param) {
-        return createAlert("mcsrApp." + entityName + ".statusupdate", param);
     }
 
     /**
@@ -98,9 +54,42 @@ public class HeaderUtil {
     public static HttpHeaders createFailureAlert(String entityName, String errorKey, String defaultMessage) {
         log.error("Entity creation failed, {}", defaultMessage);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-mcsrApp-error", "error." + errorKey);
-        headers.add("X-mcsrApp-params", entityName);
+        headers.add("X-vdesCtrl-error", "error." + errorKey);
+        headers.add("X-vdesCtrl-params", entityName);
         return headers;
+    }
+
+    /**
+     * Create entity creation alert http headers.
+     *
+     * @param entityName the entity name
+     * @param param      the param
+     * @return the http headers
+     */
+    public static HttpHeaders createEntityCreationAlert(String entityName, String param) {
+        return createAlert("vdesCtrl." + entityName + ".created", param);
+    }
+
+    /**
+     * Create entity update alert http headers.
+     *
+     * @param entityName the entity name
+     * @param param      the param
+     * @return the http headers
+     */
+    public static HttpHeaders createEntityUpdateAlert(String entityName, String param) {
+        return createAlert("vdesCtrl." + entityName + ".updated", param);
+    }
+
+    /**
+     * Create entity deletion alert http headers.
+     *
+     * @param entityName the entity name
+     * @param param      the param
+     * @return the http headers
+     */
+    public static HttpHeaders createEntityDeletionAlert(String entityName, String param) {
+        return createAlert("vdesCtrl." + entityName + ".deleted", param);
     }
 
 }

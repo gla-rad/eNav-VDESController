@@ -26,7 +26,7 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import java.io.IOException;
 
 /**
- * The type Geometry json converter.
+ * The type Geometry JSON converter.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -63,7 +63,7 @@ public class GeometryJSONConverter {
         }
 
         try {
-            return new GeoJsonReader().read(jsonNode.asText());
+            return new GeoJsonReader().read(jsonNode.toString());
         } catch (ParseException e) {
             return null;
         }

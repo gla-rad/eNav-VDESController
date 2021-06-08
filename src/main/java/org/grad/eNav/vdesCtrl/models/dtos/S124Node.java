@@ -14,67 +14,67 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models;
+package org.grad.eNav.vdesCtrl.models.dtos;
 
 import java.util.Objects;
 
 /**
- * The S125 Node Class.
+ * The S124 Node Class.
  *
- * This node extends the S-100 abstract node to implement the S-125 messages
- * including the AtoN UID value.
+ * This node extends the S-100 abstract node to implement the S-124 messages
+ * including the Message ID value.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class S125Node extends S100AbstractNode {
+public class S124Node extends S100AbstractNode {
 
     // Class Variables
-    private String atonUID;
+    private String messageId;
 
     /**
      * The Fully Populated  Constructor.
      *
-     * @param atonUID       The AtoN UID
+     * @param messageId     The Message ID
      * @param bbox          The object bounding box
      * @param content       The XML content
      */
-    public S125Node(String atonUID, Double[] bbox, String content) {
+    public S124Node(String messageId, Double[] bbox, String content) {
         super(bbox, content);
-        this.atonUID = atonUID;
+        this.messageId = messageId;
     }
 
     /**
-     * Sets new atonUID.
+     * Sets new messageId.
      *
-     * @param atonUID New value of atonUID.
+     * @param messageId New value of messageId.
      */
-    public void setAtonUID(String atonUID) {
-        this.atonUID = atonUID;
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
     /**
-     * Gets atonUID.
+     * Gets messageId.
      *
-     * @return Value of atonUID.
+     * @return Value of messageId.
      */
-    public String getAtonUID() {
-        return atonUID;
+    public String getMessageId() {
+        return messageId;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof S125Node)) return false;
+        if (!(o instanceof S124Node)) return false;
         if (!super.equals(o)) return false;
-        S125Node s125Node = (S125Node) o;
-        return Objects.equals(atonUID, s125Node.atonUID);
+        S124Node s125Node = (S124Node) o;
+        return Objects.equals(messageId, s125Node.messageId);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), atonUID);
+        return Objects.hash(super.hashCode(), messageId);
     }
 
 }

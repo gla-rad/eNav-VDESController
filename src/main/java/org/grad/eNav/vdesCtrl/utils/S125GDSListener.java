@@ -24,8 +24,11 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
-import org.grad.eNav.vdesCtrl.models.S125Node;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,6 +67,18 @@ public class S125GDSListener {
     @Autowired
     @Qualifier("atonPublishChannel")
     private PublishSubscribeChannel atonPublishChannel;
+
+    /**
+     * The Station Service.
+     */
+    @Autowired
+    StationService stationService;
+
+    /**
+     * The SNode Service.
+     */
+    @Autowired
+    SNodeService sNodeService;
 
     // Component Variables
     private DataStore consumer;
@@ -135,6 +150,7 @@ public class S125GDSListener {
                     .map(sl -> new GeomesaS125().retrieveData(sl))
                     .orElseGet(Collections::emptyList)
                     .stream()
+                    .map(this::saveSNode)
                     .map(MessageBuilder::withPayload)
                     .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.dataChannelTopic))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), station.getIpAddress()))
@@ -159,6 +175,29 @@ public class S125GDSListener {
                     .map(S125Node::getAtonUID)
                     .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
         }
+    }
+
+    /**
+     * A helper that processes the S125Node entry provided and stored it in the
+     * database for future reference.
+     *
+     * @param s125Node  the S125Node to be saved
+     */
+    @Transactional
+    private S125Node saveSNode(S125Node s125Node){
+        // Create a new SNode entry
+        SNode sNode =Optional.ofNullable(this.sNodeService.findOneByUid(s125Node.getAtonUID())).orElseGet(() -> new SNode(s125Node));
+
+        // Save the SNode
+        this.sNodeService.save(sNode);
+
+        // Save the new SNode for the station
+        Station station = this.stationService.findOne(this.station.getId());
+        station.getNodes().add(sNode);
+        this.stationService.save(station);
+
+        // And return to continue a possible stream?
+        return s125Node;
     }
 
 }

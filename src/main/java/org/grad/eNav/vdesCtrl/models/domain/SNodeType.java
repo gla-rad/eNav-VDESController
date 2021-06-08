@@ -17,7 +17,7 @@
 package org.grad.eNav.vdesCtrl.models.domain;
 
 /**
- * The Node Type Enum.
+ * The SNode Type Enum.
  * <p></p>
  * This enumeration defines the types of stations nodes supported by the
  * VDES Controller microservice. Although the service is primarily for
@@ -26,7 +26,7 @@ package org.grad.eNav.vdesCtrl.models.domain;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public enum NodeType {
-    S100,
+public enum SNodeType {
+    S124,
     S125
 }

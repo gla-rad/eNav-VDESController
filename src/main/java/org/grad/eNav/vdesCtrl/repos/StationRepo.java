@@ -22,7 +22,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
-import java.util.List;
 
 /**
  * Spring Data JPA repository for the Station entity.
@@ -30,16 +29,6 @@ import java.util.List;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public interface StationRepo  extends JpaRepository<Station, BigInteger> {
-
-    /**
-     * Find all with eager relationships list.
-     *
-     * @return The complete station list
-     */
-    @Query("select distinct station " +
-            " from Station station " +
-            " left join fetch station.nodes ")
-    List<Station> findAllWithEagerRelationships();
 
     /**
      * Find one with eager relationships design.

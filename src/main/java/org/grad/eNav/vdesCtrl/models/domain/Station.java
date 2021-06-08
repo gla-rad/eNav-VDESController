@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Objects;
@@ -37,7 +38,7 @@ import java.util.Set;
 @Table(name = "station")
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Station {
+public class Station implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -70,8 +71,8 @@ public class Station {
     @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
     private StationType type;
 
-    @JsonSerialize(using = GeometryJSONSerializer.class, as=String.class)
-    @JsonDeserialize(using = GeometryJSONDeserializer.class, as=String.class)
+    @JsonSerialize(using = GeometryJSONSerializer.class)
+    @JsonDeserialize(using = GeometryJSONDeserializer.class)
     @Column(name = "geometry")
     private Geometry geometry;
 
@@ -80,7 +81,7 @@ public class Station {
     @JoinTable(name = "station_nodes",
             joinColumns = @JoinColumn(name="station_id", referencedColumnName="ID"),
             inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="ID"))
-    private Set<Node> nodes = new HashSet<>();
+    private Set<SNode> nodes = new HashSet<>();
 
     /**
      * Gets id.
@@ -231,7 +232,7 @@ public class Station {
      *
      * @return the nodes
      */
-    public Set<Node> getNodes() {
+    public Set<SNode> getNodes() {
         return nodes;
     }
 
@@ -240,7 +241,7 @@ public class Station {
      *
      * @param nodes the nodes
      */
-    public void setNodes(Set<Node> nodes) {
+    public void setNodes(Set<SNode> nodes) {
         this.nodes = nodes;
     }
 

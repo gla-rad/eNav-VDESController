@@ -21,6 +21,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.util.factory.Hints;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.locationtech.geomesa.utils.interop.SimpleFeatureTypes;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -218,13 +219,13 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
         // here, we use a polygon (POLYGON) predicate as an example. This is
         // useful for a general query area.
         try {
-            String cqlGeometry = "BBOX(geom, "
+            String cqlGeometry = "WITHIN(geom, Polygon(("
                     + String.join(", ",
                             Arrays.asList(this.geometry.getCoordinates())
-                                    .stream().map(c -> c.getX() + ", " + c.getY())
+                                    .stream().map(c -> c.getX() + " " + c.getY())
                                     .collect(Collectors.toList())
                     )
-                    + ")";
+                    + ")) )";
 
             // We use geotools ECQL class to parse a CQL string into a Filter object
             return ECQL.toFilter(cqlGeometry);

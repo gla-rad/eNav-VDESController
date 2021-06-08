@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.services;
 import _int.iho.s125.gml._1.DatasetType;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
-import org.grad.eNav.vdesCtrl.models.S125Node;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.utils.VDES1000Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

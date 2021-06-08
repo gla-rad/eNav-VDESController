@@ -14,7 +14,9 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models;
+package org.grad.eNav.vdesCtrl.models.dtos;
+
+import org.grad.eNav.vdesCtrl.models.IJsonSerializable;
 
 import java.util.Arrays;
 import java.util.Objects;

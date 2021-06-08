@@ -16,30 +16,36 @@
 
 package org.grad.eNav.vdesCtrl.repos;
 
-import org.grad.eNav.vdesCtrl.models.domain.Node;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
-import java.util.List;
 
 /**
- * Spring Data JPA repository for the Node entity.
+ * Spring Data JPA repository for the SNode entity.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public interface NodeRepo extends JpaRepository<Node, BigInteger> {
+public interface SNodeRepo extends JpaRepository<SNode, BigInteger> {
 
     /**
      * Find all with eager relationships list.
      *
      * @return The complete station list
      */
-    @Query("select distinct node " +
-            " from Node node " +
-            " left join fetch node.stations ")
-    List<Node> findAllWithEagerRelationships();
+    SNode findByUid(String uid);
+
+    /**
+     * Find all related to a specific station
+     *
+     * @return The pages list for that station
+     */
+    Page<SNode> findByStations(Station station, Pageable pageable);
 
     /**
      * Find one with eager relationships design.
@@ -47,10 +53,10 @@ public interface NodeRepo extends JpaRepository<Node, BigInteger> {
      * @param id The id
      * @return The matching station
      */
-    @Query("select distinct node " +
-            " from Node node " +
-            " left join fetch node.stations " +
-            " where node.id =:id")
-    Node findOneWithEagerRelationships(@Param("id") BigInteger id);
+    @Query("select distinct snode " +
+            " from SNode snode " +
+            " left join fetch snode.stations " +
+            " where snode.id = :id")
+    SNode findOneWithEagerRelationships(@Param("id") BigInteger id);
 
 }

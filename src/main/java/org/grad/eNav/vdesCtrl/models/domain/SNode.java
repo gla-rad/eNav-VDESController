@@ -17,6 +17,8 @@
 package org.grad.eNav.vdesCtrl.models.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 
@@ -28,7 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * The Node Class
+ * The SNode Class
  * <p></p>
  * This class defines the database structure of the station node entries. These
  * are any types of S-100/S-200 IALA product specification objects that are
@@ -41,7 +43,7 @@ import java.util.Set;
 @Table(name = "node")
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Node {
+public class SNode {
 
     private static final long serialVersionUID = 1L;
 
@@ -50,13 +52,13 @@ public class Node {
     private BigInteger id;
 
     @NotNull
-    @Column(name = "uid")
+    @Column(name = "uid", unique = true)
     private String uid;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type", columnDefinition = "varchar(30) default 'S_125'")
-    private NodeType type;
+    private SNodeType type;
 
     @NotNull
     @Type(type="text")
@@ -67,6 +69,34 @@ public class Node {
     @JsonIgnore
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Station> stations = new HashSet<>();
+
+    /**
+     * Instantiates a new S node.
+     */
+    public SNode() {
+    }
+
+    /**
+     * Instantiates a new S node.
+     *
+     * @param s124Node the s125 node
+     */
+    public SNode(S124Node s124Node) {
+        this.uid = s124Node.getMessageId();
+        this.type = SNodeType.S124;
+        this.message = s124Node.getContent();
+    }
+
+    /**
+     * Instantiates a new S node.
+     *
+     * @param s125Node the s125 node
+     */
+    public SNode(S125Node s125Node) {
+        this.uid = s125Node.getAtonUID();
+        this.type = SNodeType.S125;
+        this.message = s125Node.getContent();
+    }
 
     /**
      * Gets id.
@@ -109,7 +139,7 @@ public class Node {
      *
      * @return the type
      */
-    public NodeType getType() {
+    public SNodeType getType() {
         return type;
     }
 
@@ -118,7 +148,7 @@ public class Node {
      *
      * @param type the type
      */
-    public void setType(NodeType type) {
+    public void setType(SNodeType type) {
         this.type = type;
     }
 
@@ -167,9 +197,9 @@ public class Node {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Node)) return false;
-        Node node = (Node) o;
-        return Objects.equals(id, node.id);
+        if (!(o instanceof SNode)) return false;
+        SNode SNode = (SNode) o;
+        return Objects.equals(id, SNode.id);
     }
 
     /**

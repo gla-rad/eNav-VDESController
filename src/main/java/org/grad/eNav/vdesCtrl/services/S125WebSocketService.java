@@ -17,7 +17,7 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.models.S125Node;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
