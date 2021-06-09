@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s125.gml._1.DatasetType;
+import _int.iho.s125.gml._0.DatasetType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
 
