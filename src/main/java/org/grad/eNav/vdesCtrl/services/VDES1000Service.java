@@ -20,7 +20,7 @@ import _int.iho.s125.gml._0.DatasetType;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.utils.VDES1000Util;
+import org.grad.eNav.vdesCtrl.utils.VDES1000Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.integration.channel.PublishSubscribeChannel;
@@ -135,21 +135,18 @@ public class VDES1000Service implements MessageHandler {
      * @param port          The port to send the datagram to
      * @param piseqno       The PI sequence number of the VDES station
      * @param mmsi          The MMSI of the VDES station
-     * @param message       The S125 message to be transmitted
+     * @param s125Node       The S125 message to be transmitted
      * @return The S125 message to be transmitted
      */
-    private void sendDatagram(String address, int port, int piseqno, int mmsi, S125Node message) {
-        // First translate the message content into a Java object using JAXB
-        DatasetType dataset = null;
+    private void sendDatagram(String address, int port, int piseqno, int mmsi, S125Node s125Node) {
+        // Construct the UDP message for the VDES station
+        byte[] buffer = null;
         try {
-            dataset = VDES1000Util.unmarshallS125(message);
+            buffer = VDES1000Utils.s125ToVDE(s125Node, piseqno, mmsi).getBytes();
         } catch (JAXBException ex) {
             log.error(ex.getMessage());
             return;
         }
-
-        // Construct the UDP message for the VDES station
-        byte[] buffer = VDES1000Util.s125ToVDE(dataset, piseqno, mmsi).getBytes();
 
         // Create and send the UDP datagram packet
         try {

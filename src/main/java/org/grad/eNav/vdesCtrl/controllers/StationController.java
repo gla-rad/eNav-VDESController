@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
@@ -168,18 +169,12 @@ public class StationController {
      * GET /api/stations/{id}/nodes : Returns a paged list of all nodes in the
      * specified station.
      *
-     * @param page the page number to be retrieved
-     * @param size the number of entries on each page
      * @return the ResponseEntity with status 200 (OK) and the list of nodes in body
      */
     @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<SNode>> getStationSNodes(@PathVariable BigInteger id,
-                                                        @RequestParam("page") Optional<Integer> page,
-                                                        @RequestParam("size") Optional<Integer> size) {
+    public ResponseEntity<List<S125Node>> getStationSNodes(@PathVariable BigInteger id) {
         log.debug("REST request to get page of Station Nodes");
-        int currentPage = page.orElse(1);
-        int pageSize = size.orElse(10);
-        Page<SNode> stationPage = sNodeService.findAllForStation(id, PageRequest.of(currentPage - 1, pageSize));
-        return new ResponseEntity<>(stationPage.getContent(), HttpStatus.OK);
+        List<S125Node > nodeList = sNodeService.findAllForStation(id);
+        return new ResponseEntity<>(nodeList, HttpStatus.OK);
     }
 }

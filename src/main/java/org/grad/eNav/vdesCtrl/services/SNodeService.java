@@ -16,18 +16,30 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
+import _int.iho.s125.gml._0.DatasetType;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
+import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.bind.JAXBException;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service Implementation for managing Station SNodes.
@@ -92,12 +104,13 @@ public class SNodeService {
      * @return the list of nodes
      */
     @Transactional(readOnly = true)
-    public Page<SNode> findAllForStation(BigInteger stationId, Pageable pageable) {
+    public List<S125Node> findAllForStation(BigInteger stationId) {
         log.debug("Request to get all Nodes for Station: {}", stationId);
         return Optional.ofNullable(stationId)
                 .map(this.stationService::findOne)
-                .map(s -> this.sNodeRepo.findByStations(s, pageable))
-                .orElse(Page.empty());
+                .map(this.sNodeRepo::findByStations)
+                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     /**
@@ -147,5 +160,42 @@ public class SNodeService {
                 .map(this.sNodeRepo::findByUid)
                 .map(SNode::getId)
                 .ifPresent(this.sNodeRepo::deleteById);
+    }
+
+    /**
+     * This helper function translates the provided SNode domain object to
+     * a S100AbstractNode implementing DTO. This can be used when the service
+     * response to a client, rather than an internal component.
+     *
+     * @param snode the SNode object to be translated to a DTO
+     * @return the DTO generated from the provided SNode object
+     */
+    private S100AbstractNode toS100Dto(SNode snode) {
+        // Sanity check
+        if(Objects.isNull(snode)) {
+            return null;
+        }
+
+        // We first need to extract the bounding box of the snode message
+        JsonNode bbox = null;
+        try {
+            DatasetType s125Dataset = S100Utils.unmarshallS125(snode.getMessage());
+            List<Double> point = s125Dataset.getBoundedBy().getEnvelope().getLowerCorner().getValue();
+            String crsName = s125Dataset.getBoundedBy().getEnvelope().getSrsName();
+            Integer srid = Optional.ofNullable(crsName).map(crs -> crs.split(":")[1]).map(Integer::valueOf).orElse(null);
+            bbox = GeoJSONUtils.createGeoJSONPoint(point.get(0), point.get(1), srid);
+        } catch (JAXBException | NumberFormatException ex) {
+            log.error(ex.getMessage());
+        }
+
+        // Now construct the DTO based on the SNode type
+        switch (snode.getType()) {
+            case S124:
+                return new S124Node(snode.getUid(), bbox, snode.getMessage());
+            case S125:
+                return new S125Node(snode.getUid(), bbox, snode.getMessage());
+            default:
+                return null;
+        }
     }
 }

@@ -22,6 +22,7 @@ import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.util.factory.Hints;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.locationtech.geomesa.utils.interop.SimpleFeatureTypes;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -54,9 +55,9 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
     }
 
     /**
-     * Constructor with a specified bounds area.
+     * Constructor with a specified geometry area.
      *
-     * @param geometry    The geometry of the Geomesa S125 object
+     * @param geometry the geometry of the Geomesa S125 object
      */
     public GeomesaS125(Geometry geometry) {
         this.geometry = geometry;
@@ -65,7 +66,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
     /**
      * Sets new geometry.
      *
-     * @param geometry New value of geometry.
+     * @param geometry new value of geometry.
      */
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
@@ -141,7 +142,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
 
             for(S125Node node: s125Nodes) {
                 builder.set("atonUID", node.getAtonUID());
-                builder.set("geom", "POINT (" + node.getBbox()[0] + " " + node.getBbox()[1] + ")");
+                builder.set("geom", GeoJSONUtils.geoJSONPointToECQL(node.getBbox()));
                 builder.set("content", node.getContent());
 
                 // be sure to tell GeoTools explicitly that we want to use the ID we provided
@@ -176,7 +177,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
                         // Create the S125 Node message
                         new S125Node(
                                 ((String)feature.getAttribute("atonUID")),
-                                new Double[]{((Point)feature.getAttribute("geom")).getX(), ((Point)feature.getAttribute("geom")).getY()},
+                                GeoJSONUtils.createGeoJSONPoint(((Point)feature.getAttribute("geom")).getX(), ((Point)feature.getAttribute("geom")).getY()),
                                 ((String)feature.getAttribute("content"))
                         )
                 )
@@ -221,10 +222,10 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
         try {
             String cqlGeometry = "WITHIN(geom, Polygon(("
                     + String.join(", ",
-                            Arrays.asList(this.geometry.getCoordinates())
-                                    .stream().map(c -> c.getX() + " " + c.getY())
-                                    .collect(Collectors.toList())
-                    )
+                    Arrays.asList(this.geometry.getCoordinates())
+                            .stream().map(c -> c.getX() + " " + c.getY())
+                            .collect(Collectors.toList())
+            )
                     + ")) )";
 
             // We use geotools ECQL class to parse a CQL string into a Filter object
@@ -234,5 +235,4 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
             return Filter.EXCLUDE;
         }
     }
-
 }

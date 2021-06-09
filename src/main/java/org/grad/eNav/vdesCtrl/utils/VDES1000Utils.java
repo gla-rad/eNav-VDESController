@@ -20,11 +20,7 @@ import _int.iho.s125.gml._0.DatasetType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.JAXBIntrospector;
-import javax.xml.bind.Unmarshaller;
-import java.io.ByteArrayInputStream;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -36,40 +32,21 @@ import java.util.zip.Checksum;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class VDES1000Util {
-
-    /**
-     * The S125Node object containds the S125 XML content of the message. We
-     * can easily translate that into an S125 DatasetType object so that it
-     * can be accessed more efficiently.
-     *
-     * @param s125Node          The S125Node object to be unmarshalled
-     * @return The unmarshalled S125 DatasetType object
-     * @throws JAXBException
-     */
-    public static DatasetType unmarshallS125(S125Node s125Node) throws JAXBException {
-        // Create the JAXB objects
-        JAXBContext jaxbContext = JAXBContext.newInstance(DatasetType.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-        // Transform the S125 context into an input stream
-        ByteArrayInputStream is = new ByteArrayInputStream(s125Node.getContent().getBytes());
-
-        // And translate
-        return (DatasetType)JAXBIntrospector.getValue(jaxbUnmarshaller.unmarshal(is));
-    }
+public class VDES1000Utils {
 
     /**
      * A first take to construct VDE sentences based on an S125 message.
      * It remains to be seems what kind of information is required through
      * the S125 and if we can actually send AtoN messages or something else.
      *
-     * @param dataset       The S125 XML node message
+     * @param s125Node      The S125Node object to be translated
      * @param piSeqNo       The VDES-1000 PI Sequence Number
      * @param mmsi          The VDES-1000 MMSI number
      * @return The constructor VDE sentence
      */
-    public static String s125ToVDE(DatasetType dataset, int piSeqNo, int mmsi) {
+    public static String s125ToVDE(S125Node s125Node, int piSeqNo, int mmsi)  throws JAXBException {
+        DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
+
         // Create a string builder to start ith
         StringBuilder vdeBuilder = new StringBuilder();
 

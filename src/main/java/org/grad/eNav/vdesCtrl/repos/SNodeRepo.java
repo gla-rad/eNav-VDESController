@@ -18,13 +18,12 @@ package org.grad.eNav.vdesCtrl.repos;
 
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for the SNode entity.
@@ -45,7 +44,7 @@ public interface SNodeRepo extends JpaRepository<SNode, BigInteger> {
      *
      * @return The pages list for that station
      */
-    Page<SNode> findByStations(Station station, Pageable pageable);
+    List<SNode> findByStations(Station station);
 
     /**
      * Find one with eager relationships design.

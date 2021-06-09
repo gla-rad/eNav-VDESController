@@ -187,6 +187,7 @@ public class S125GDSListener {
     private S125Node saveSNode(S125Node s125Node){
         // Create a new SNode entry
         SNode sNode =Optional.ofNullable(this.sNodeService.findOneByUid(s125Node.getAtonUID())).orElseGet(() -> new SNode(s125Node));
+        sNode.setMessage(s125Node.getContent());
 
         // Save the SNode
         this.sNodeService.save(sNode);
