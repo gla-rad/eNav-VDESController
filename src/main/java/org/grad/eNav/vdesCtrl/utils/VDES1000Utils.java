@@ -25,10 +25,10 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 /**
- * The VDESS-1000 Utility Class.
+ * The VDES-1000 Utility Class.
  *
  * A static utility function class that allows easily manipulation of the VDES
- * 1000 station mesages.
+ * 1000 station messages.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */

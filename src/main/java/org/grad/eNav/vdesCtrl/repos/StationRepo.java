@@ -16,12 +16,15 @@
 
 package org.grad.eNav.vdesCtrl.repos;
 
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for the Station entity.
@@ -31,10 +34,17 @@ import java.math.BigInteger;
 public interface StationRepo  extends JpaRepository<Station, BigInteger> {
 
     /**
+     * Find all stations of a specific type
+     *
+     * @return the list of stations of that type
+     */
+    List<Station> findByType(StationType stationType);
+
+    /**
      * Find one with eager relationships design.
      *
      * @param id The id
-     * @return The matching station
+     * @return the matching station
      */
     @Query("select distinct station " +
             " from Station station " +

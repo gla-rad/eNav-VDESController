@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -74,6 +75,17 @@ public class StationService {
         log.debug("Request to get all Stations in a pageable search");
         Page<Station> result = this.stationRepo.findAll(pageable);
         return result;
+    }
+
+    /**
+     * Get all the stations of a specific type.
+     *
+     * @return the list of stations of that type
+     */
+    @Transactional(readOnly = true)
+    public List<Station> findAllByType(StationType stationType) {
+        log.debug("Request to get all Stations by type : {}", stationType.name());
+        return this.stationRepo.findByType(stationType);
     }
 
     /**

@@ -18,16 +18,21 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.utils.GrAisAdvertiser;
+import org.grad.eNav.vdesCtrl.utils.S125GDSListener;
 import org.grad.eNav.vdesCtrl.utils.VDES1000Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +43,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * The GnuRadion AIS Service Class
@@ -53,17 +64,24 @@ import java.net.SocketException;
  */
 @Service
 @Slf4j
-public class GrAisService implements MessageHandler {
+public class GrAisService {
 
     /**
-     * The AtoN Publish Channel to listen the AtoN messages to.
+     * The Application Context
      */
     @Autowired
-    @Qualifier("atonPublishChannel")
-    private PublishSubscribeChannel atonPublishChannel;
+    private ApplicationContext applicationContext;
 
-    // The VDES UDP Connection
-    private DatagramSocket vdesSocket;
+    /**
+     * The Station Service.
+     */
+    @Autowired
+    private StationService stationService;
+
+    /**
+     * The GNURadio UDP Connection.
+     */
+    private List<GrAisAdvertiser> grAisAdvertisers;
 
     /**
      * The service post-construct operations where the handler auto-registers
@@ -74,11 +92,22 @@ public class GrAisService implements MessageHandler {
     public void init() throws SocketException {
         log.info("GrAis Service is booting up...");
 
-        // Create the UDP Connection to the VDES stations
-        this.vdesSocket = new DatagramSocket();
-
-        // And subscribe to the pub-sub channel
-        this.atonPublishChannel.subscribe(this);
+        // Initialise the GNURadio AIS Advertisers, one per each station
+        this.grAisAdvertisers = Optional.of(StationType.GNU_RADIO)
+                .map(this.stationService::findAllByType)
+                .orElseGet(() -> Collections.emptyList())
+                .stream()
+                .map(station -> {
+                    GrAisAdvertiser grAisAdvertiser = this.applicationContext.getBean(GrAisAdvertiser.class);
+                    try {
+                        grAisAdvertiser.init(station);
+                    } catch (SocketException ex) {
+                        log.error(ex.getMessage());
+                        return null;
+                    }
+                    return grAisAdvertiser;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -87,82 +116,7 @@ public class GrAisService implements MessageHandler {
      */
     @PreDestroy
     public void destroy() {
-        log.info("GrAis Service is shutting down...");
-        if (this.atonPublishChannel != null) {
-            this.atonPublishChannel.destroy();
-        }
-
-        /// And close the socket
-        this.vdesSocket.close();
-    }
-
-    /**
-     * This is a simple handler for the incoming messages. This is a generic
-     * handler for any type of Spring Integration messages but it should really
-     * only be used for the ones containing S-125 message payloads.
-     *
-     * @param message               The message to be handled
-     * @throws MessagingException   The Messaging exceptions that might occur
-     */
-    @Override
-    public void handleMessage(Message<?> message) throws MessagingException {
-        // Check that we only listen to GNU_RADIO Content
-        StationType contentType = (StationType) message.getHeaders().get(MessageHeaders.CONTENT_TYPE);
-        if(contentType != StationType.GNU_RADIO) {
-            return;
-        }
-
-        // Check that this seems ot be a valid message
-        if(!(message.getPayload() instanceof S125Node)) {
-            log.warn("Radar message handler received a message with erroneous format.");
-            return;
-        }
-
-        // Get the header and payload of the incoming message
-        String address = (String) message.getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader());
-        Integer port = (Integer) message.getHeaders().get(PubSubMsgHeaders.PORT.getHeader());
-        Long piseqno = (Long) message.getHeaders().get(PubSubMsgHeaders.PI_SEQ_NO.getHeader());
-        String mmsi = (String) message.getHeaders().get(PubSubMsgHeaders.MMSI.getHeader());
-        S125Node s125Node = (S125Node) message.getPayload();
-
-        // A simple debug message;
-        log.debug(String.format("Sending AtoN Message with UID: %s to GNURadio station %s:%d.", s125Node.getAtonUID(), address, port));
-
-        // Now send the S125 message to the VDES station
-        this.sendDatagram(address, port, piseqno, mmsi, s125Node);
-
-    }
-
-    /**
-     * The main function that sends the UDP package to the VDES station. To
-     * make the streaming operation easier, we are actually returning the
-     * provided message for each successful transmission.
-     *
-     * @param address       The address to send the datagram to
-     * @param port          The port to send the datagram to
-     * @param piseqno       The PI sequence number of the VDES station
-     * @param mmsi          The MMSI of the VDES station
-     * @param s125Node       The S125 message to be transmitted
-     * @return The S125 message to be transmitted
-     */
-    private void sendDatagram(String address, int port, long piseqno, String mmsi, S125Node s125Node) {
-        // Construct the UDP message for the VDES station
-        byte[] buffer = null;
-        try {
-            buffer = VDES1000Utils.s125ToVDE(s125Node, piseqno, mmsi).getBytes();
-        } catch (JAXBException ex) {
-            log.error(ex.getMessage());
-            return;
-        }
-
-        // Create and send the UDP datagram packet
-        try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.vdesSocket.send(packet);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
+        this.grAisAdvertisers.forEach(GrAisAdvertiser::destroy);
     }
 
 }
