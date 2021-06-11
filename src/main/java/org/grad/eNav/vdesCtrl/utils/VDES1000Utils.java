@@ -44,7 +44,7 @@ public class VDES1000Utils {
      * @param mmsi          The VDES-1000 MMSI number
      * @return The constructor VDE sentence
      */
-    public static String s125ToVDE(S125Node s125Node, int piSeqNo, int mmsi)  throws JAXBException {
+    public static String s125ToVDE(S125Node s125Node, long piSeqNo, String mmsi)  throws JAXBException {
         DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
 
         // Create a string builder to start ith

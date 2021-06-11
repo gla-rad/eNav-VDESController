@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import _int.iho.s125.gml._0.DatasetType;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
@@ -39,20 +38,22 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Objects;
 
 /**
- * The VDES1000Service Class
+ * The GnuRadion AIS Service Class
  *
  * This class implements a handler for the AtoN messages coming into a Spring
  * Integration channel. It will then translate the content using JAXB and
- * generate the UDP sentences to be sent down to the VDES-1000 stations.
+ * generate the AIS sentences to be sent down to the GNURadio stations
+ * running the GR-AIX module.
+ *
+ * More Info: https://github.com/gla-rad/ais
  *
  * @author Nikolaos Vastardis
  */
 @Service
 @Slf4j
-public class VDES1000Service implements MessageHandler {
+public class GrAisService implements MessageHandler {
 
     /**
      * The AtoN Publish Channel to listen the AtoN messages to.
@@ -71,7 +72,7 @@ public class VDES1000Service implements MessageHandler {
      */
     @PostConstruct
     public void init() throws SocketException {
-        log.info("VDES-1000 Service is booting up...");
+        log.info("GrAis Service is booting up...");
 
         // Create the UDP Connection to the VDES stations
         this.vdesSocket = new DatagramSocket();
@@ -86,7 +87,7 @@ public class VDES1000Service implements MessageHandler {
      */
     @PreDestroy
     public void destroy() {
-        log.info("VDES-1000 Service is shutting down...");
+        log.info("GrAis Service is shutting down...");
         if (this.atonPublishChannel != null) {
             this.atonPublishChannel.destroy();
         }
@@ -105,9 +106,9 @@ public class VDES1000Service implements MessageHandler {
      */
     @Override
     public void handleMessage(Message<?> message) throws MessagingException {
-        // Check that we only listen to VDES-1000 Content
+        // Check that we only listen to GNU_RADIO Content
         StationType contentType = (StationType) message.getHeaders().get(MessageHeaders.CONTENT_TYPE);
-        if(contentType != StationType.VDES_1000) {
+        if(contentType != StationType.GNU_RADIO) {
             return;
         }
 
@@ -125,7 +126,7 @@ public class VDES1000Service implements MessageHandler {
         S125Node s125Node = (S125Node) message.getPayload();
 
         // A simple debug message;
-        log.debug(String.format("Sending AtoN Message with UID: %s to VDES station %s:%d.", s125Node.getAtonUID(), address, port));
+        log.debug(String.format("Sending AtoN Message with UID: %s to GNURadio station %s:%d.", s125Node.getAtonUID(), address, port));
 
         // Now send the S125 message to the VDES station
         this.sendDatagram(address, port, piseqno, mmsi, s125Node);

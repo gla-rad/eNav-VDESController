@@ -87,7 +87,6 @@ public class S125GDSListener {
     private Station station;
     private List<Double> listenerArea;
     private SimpleFeatureSource featureSource;
-    private String dataChannelTopic;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -102,7 +101,6 @@ public class S125GDSListener {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
         this.station = station;
-        this.dataChannelTopic = String.format("%s:%d", station.getIpAddress(), station.getPort());
         this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
 
@@ -150,15 +148,17 @@ public class S125GDSListener {
                     .map(sl -> new GeomesaS125().retrieveData(sl))
                     .orElseGet(Collections::emptyList)
                     .stream()
-                    .map(this::saveSNode)
                     .map(MessageBuilder::withPayload)
-                    .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.dataChannelTopic))
+                    .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.station.getType()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), station.getIpAddress()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), station.getPort()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), station.getPiSeqNo()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), station.getMmsi()))
                     .map(MessageBuilder::build)
-                    .forEach(this.atonPublishChannel::send);
+                    .forEach(msg -> {
+                        this.saveSNode(msg.getPayload());
+                        this.atonPublishChannel.send(msg);
+                    });
         }
         // For feature deletions,
         else if (featureEvent.getType() == FeatureEvent.Type.REMOVED) {
@@ -173,7 +173,9 @@ public class S125GDSListener {
                     .orElseGet(Collections::emptyList)
                     .stream()
                     .map(S125Node::getAtonUID)
-                    .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
+                    .forEach(uid -> {
+                        log.info("Received Delete for AtoN: " + uid);
+                    });
         }
     }
 
@@ -184,7 +186,7 @@ public class S125GDSListener {
      * @param s125Node  the S125Node to be saved
      */
     @Transactional
-    private S125Node saveSNode(S125Node s125Node){
+    private void saveSNode(S125Node s125Node){
         // Create a new SNode entry
         SNode sNode =Optional.ofNullable(this.sNodeService.findOneByUid(s125Node.getAtonUID())).orElseGet(() -> new SNode(s125Node));
         sNode.setMessage(s125Node.getContent());
@@ -196,9 +198,6 @@ public class S125GDSListener {
         Station station = this.stationService.findOne(this.station.getId());
         station.getNodes().add(sNode);
         this.stationService.save(station);
-
-        // And return to continue a possible stream?
-        return s125Node;
     }
 
 }
