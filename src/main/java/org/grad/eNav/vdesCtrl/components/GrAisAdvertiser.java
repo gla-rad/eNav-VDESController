@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.utils;
+package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -95,7 +96,7 @@ public class GrAisAdvertiser {
      * for the previous task completion. Since the GNURadio transmission are
      * quite primitive we should control the periodic transmissions manually.
      */
-    @Scheduled(fixedDelay = 10000, initialDelay = 1000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 1000)
     public void advertiseAtons() throws InterruptedException {
         // Get all the nodes applicable for the station
         List<S125Node> nodes = this.sNodeService.findAllForStationDto(station.getId());
@@ -119,11 +120,10 @@ public class GrAisAdvertiser {
      * @param address       The address to send the datagram to
      * @param port          The port to send the datagram to
      * @param s125Node       The S125 message to be transmitted
-     * @return The S125 message to be transmitted
      */
     private void sendDatagram(String address, int port, S125Node s125Node) {
         // Construct the UDP message for the VDES station
-        byte[] buffer = null;
+        byte[] buffer;
         try {
             buffer = GrAisUtils.encodeMsg21(new GrAisMsg21Params(s125Node)).getBytes();
         } catch (JAXBException ex) {

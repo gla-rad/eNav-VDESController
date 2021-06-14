@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.utils;
+package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ import java.util.Queue;
 public class PubSubErrorHandler implements ErrorHandler {
 
     // Class Variables
-    private Queue<Throwable> handledErrors = new LinkedList<Throwable>();
+    private Queue<Throwable> handledErrors = new LinkedList<>();
 
     /**
      * Handing the errors by just logging them and adding them into the

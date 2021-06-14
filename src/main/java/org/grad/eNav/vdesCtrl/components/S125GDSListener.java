@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.utils;
+package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
@@ -83,7 +83,7 @@ public class S125GDSListener {
     // Component Variables
     private DataStore consumer;
     private FeatureListener listener;
-    private GeomesaData geomesaData;
+    private GeomesaData<S125Node> geomesaData;
     private Station station;
     private List<Double> listenerArea;
     private SimpleFeatureSource featureSource;
@@ -96,7 +96,7 @@ public class S125GDSListener {
      * @param consumer      The data store to consume the messages from
      */
     public void init(DataStore consumer,
-                     GeomesaData geomesaData,
+                     GeomesaData<S125Node> geomesaData,
                      Station station) throws IOException {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
@@ -173,9 +173,7 @@ public class S125GDSListener {
                     .orElseGet(Collections::emptyList)
                     .stream()
                     .map(S125Node::getAtonUID)
-                    .forEach(uid -> {
-                        log.info("Received Delete for AtoN: " + uid);
-                    });
+                    .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
         }
     }
 

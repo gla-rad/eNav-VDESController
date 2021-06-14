@@ -17,37 +17,18 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
-import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.utils.GrAisAdvertiser;
-import org.grad.eNav.vdesCtrl.utils.S125GDSListener;
-import org.grad.eNav.vdesCtrl.utils.VDES1000Utils;
+import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.channel.PublishSubscribeChannel;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.MessagingException;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -89,13 +70,13 @@ public class GrAisService {
      * monitor the channel for all inputs coming through the REST API.
      */
     @PostConstruct
-    public void init() throws SocketException {
+    public void init() {
         log.info("GrAis Service is booting up...");
 
         // Initialise the GNURadio AIS Advertisers, one per each station
         this.grAisAdvertisers = Optional.of(StationType.GNU_RADIO)
                 .map(this.stationService::findAllByType)
-                .orElseGet(() -> Collections.emptyList())
+                .orElseGet(Collections::emptyList)
                 .stream()
                 .map(station -> {
                     GrAisAdvertiser grAisAdvertiser = this.applicationContext.getBean(GrAisAdvertiser.class);

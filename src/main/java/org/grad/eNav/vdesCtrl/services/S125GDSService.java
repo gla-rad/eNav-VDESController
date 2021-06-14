@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.services;
 import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
-import org.grad.eNav.vdesCtrl.utils.S125GDSListener;
+import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -83,7 +83,7 @@ public class S125GDSService {
         }
 
         // Get and initialise a the listener workers
-        this.stationService.findAll()
+        this.dsListeners = this.stationService.findAll()
                 .stream()
                 .map(station -> {
                     S125GDSListener dsListener = this.applicationContext.getBean(S125GDSListener.class);

@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.config;
 
-import org.grad.eNav.vdesCtrl.utils.PubSubErrorHandler;
+import org.grad.eNav.vdesCtrl.components.PubSubErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.PublishSubscribeChannel;
