@@ -97,7 +97,7 @@ public class GrAisAdvertiser {
     @Scheduled(fixedDelay = 10000, initialDelay = 1000)
     public void advertiseAtons() throws InterruptedException {
         // Get all the nodes applicable for the station
-        List<S125Node> nodes = this.sNodeService.findAllForStation(station.getId());
+        List<S125Node> nodes = this.sNodeService.findAllForStationDto(station.getId());
 
         // Now create the AIS advertisements - wait in between
         for(S125Node node: nodes) {
@@ -124,7 +124,7 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         byte[] buffer = null;
         try {
-            buffer = GrAisUtils.s125ToAisMsg21(s125Node).getBytes();
+            buffer = GrAisUtils.encodeMsg21(s125Node).getBytes();
         } catch (JAXBException ex) {
             log.error(ex.getMessage());
             return;

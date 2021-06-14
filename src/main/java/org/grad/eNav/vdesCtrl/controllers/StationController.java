@@ -17,7 +17,6 @@
 package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -174,7 +173,7 @@ public class StationController {
     @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<S125Node>> getStationSNodes(@PathVariable BigInteger id) {
         log.debug("REST request to get page of Station Nodes");
-        List<S125Node > nodeList = sNodeService.findAllForStation(id);
+        List<S125Node > nodeList = sNodeService.findAllForStationDto(id);
         return new ResponseEntity<>(nodeList, HttpStatus.OK);
     }
 }

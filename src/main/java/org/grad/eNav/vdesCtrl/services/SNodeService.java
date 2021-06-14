@@ -64,6 +64,22 @@ public class SNodeService {
     StationService stationService;
 
     /**
+     * Get all the nodes of a specific station in a pageable search.
+     *
+     * @param stationId the station ID to retrieve the nodes for
+     * @return the list of nodes
+     */
+    @Transactional(readOnly = true)
+    public List<S125Node> findAllForStationDto(BigInteger stationId) {
+        log.debug("Request to get all Nodes for Station: {}", stationId);
+        return Optional.ofNullable(stationId)
+                .map(this.stationService::findOne)
+                .map(this.sNodeRepo::findByStations)
+                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+    }
+
+    /**
      * Save a node.
      *
      * @param SNode the entity to save
@@ -95,22 +111,6 @@ public class SNodeService {
     public Page<SNode> findAll(Pageable pageable) {
         log.debug("Request to get all Nodes in a pageable search");
         return this.sNodeRepo.findAll(pageable);
-    }
-
-    /**
-     * Get all the nodes of a specific station in a pageable search.
-     *
-     * @param stationId the station ID to retrieve the nodes for
-     * @return the list of nodes
-     */
-    @Transactional(readOnly = true)
-    public List<S125Node> findAllForStation(BigInteger stationId) {
-        log.debug("Request to get all Nodes for Station: {}", stationId);
-        return Optional.ofNullable(stationId)
-                .map(this.stationService::findOne)
-                .map(this.sNodeRepo::findByStations)
-                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
     }
 
     /**
