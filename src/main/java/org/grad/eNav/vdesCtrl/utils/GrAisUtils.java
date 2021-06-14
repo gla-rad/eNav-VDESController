@@ -16,22 +16,11 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s100gml._1.AbstractFeatureType;
-import _int.iho.s125.gml._0.DatasetType;
-import _int.iho.s125.gml._0.MemberType;
-import _int.iho.s125.gml._0.S125NavAidStructureType;
-import net.opengis.gml._3.AbstractMemberType;
-import net.opengis.gml._3.EnvelopeType;
-import org.grad.eNav.vdesCtrl.models.domain.AtonType;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.locationtech.jts.geom.Envelope;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import java.util.List;
-import java.util.Optional;
-
-import static com.google.common.base.Predicates.not;
 
 /**
  * The GNURadio AIS Utility Class.
@@ -44,78 +33,109 @@ import static com.google.common.base.Predicates.not;
 public class GrAisUtils {
 
     /**
+     * Encodes the provided message string into an 8bit binary string and
+     * generates the AIS binary message 6 to be send as a broadcast from the
+     * defined MMSI source to the specified destination MMSI.
+     *
+     * @param msgParams the GR-AIS Message 6 parameters to construct the AIS binary message from
+     * @return the encoded AIS message 6
+     */
+    public static String encodeMsg6(GrAisMsg6Params msgParams) {
+        // Create a string builder to start with
+        StringBuilder aisBuilder = new StringBuilder();
+
+        // Build the AIS message string
+        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
+                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 2)) // Sequence
+                .append(StringBinUtils.convertIntToBinary(msgParams.getDestMmsi(), 30)) // Destination MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 1)) // Re-Transmit
+                .append(StringBinUtils.convertIntToBinary(0, 1)) // Spare
+                .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
+                .append(StringBinUtils.convertIntToBinary(1, 6)) // Functional ID
+                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, false)); // Message Content
+
+        // Finally pad to the multiple of 6 requirement
+        String aisSentence = aisBuilder.toString();
+        return StringBinUtils.padRight(aisSentence, aisSentence.length() + (6 - (aisSentence.length()%6))%6);
+    }
+
+    /**
+     * Encodes the provided message string into an 8bit binary string and
+     * generates the AIS binary message 8 to be send as a broadcast from the
+     * defined MMSI source.
+     *
+     * @param msgParams the GR-AIS Message 8 parameters to construct the AIS binary message from
+     * @return the encoded AIS message 8
+     */
+    public static String encodeMsg8(GrAisMsg8Params msgParams) {
+        // Create a string builder to start with
+        StringBuilder aisBuilder = new StringBuilder();
+
+        // Build the AIS message string
+        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
+                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 2)) // Spare
+                .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
+                .append(StringBinUtils.convertIntToBinary(1, 6)) // Functional ID
+                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, false)); // Message Content
+
+        // Finally pad to the multiple of 6 requirement
+        String aisSentence = aisBuilder.toString();
+        return StringBinUtils.padRight(aisSentence, aisSentence.length() + (6 - (aisSentence.length()%6))%6);
+    }
+
+    /**
      * The GNURadio AIS BlackToolkit requires the AIS message sentence in a
      * binary sentence as an input. This utility function is able to generate
-     * this binary message as a string, so that is can by passed on tho the
+     * the AIS binary message 21 as a string, so that is can by passed on to the
      * UDP socket GNURadio is listening to.
      *
-     * @param s125Node the S125Node to construct the AIS binary message from
+     * @param msgParams the GR-AIS Message 21 parameters to construct the AIS binary message from
      * @return The AIS binary message to be transmitted through GNURadio
      * @throws JAXBException
      */
-    public static String encodeMsg21(S125Node s125Node) throws JAXBException {
-        // Create a string builder to start ith
+    public static String encodeMsg21(GrAisMsg21Params msgParams) throws JAXBException {
+        // Create a string builder to start with
         StringBuilder aisBuilder = new StringBuilder();
 
-        // Unmarshall the dataset content
-        DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
-        EnvelopeType datasetEnvelope = dataset.getBoundedBy().getEnvelope();
+        // Quickly calculate the extra specific message 21 information required
+        String name = msgParams.getName();
+        String nameExt = "";
+        if(msgParams.getName().length() > 20) {
+            name = msgParams.getName().substring(0, 20);
+            nameExt = msgParams.getName().substring(20);
+        }
+        Integer halfLength = msgParams.getVaton() ? 0 : Math.round(msgParams.getLength()/2);
+        Integer halfWidth = msgParams.getVaton() ? 0 : Math.round(msgParams.getWidth()/2);
 
-        // For now only build one message per node - member position 0
-        Optional.of(dataset)
-                .map(DatasetType::getMemberOrImember)
-                .filter(not(List::isEmpty))
-                .map(l -> l.get(0))
-                .filter(MemberType.class::isInstance)
-                .map(MemberType.class::cast)
-                .map(MemberType::getAbstractFeature)
-                .map(JAXBElement::getValue)
-                .filter(S125NavAidStructureType.class::isInstance)
-                .map(S125NavAidStructureType.class::cast)
-                .ifPresent(navAid -> {
-                    // Extract the S125 Member NavAid Information
-                    Integer mmsi = navAid.getMmsi();
-                    AtonType atonType = AtonType.fromString(navAid.getAtonType().value());
-                    String name = navAid.getFeatureName().getName();
-                    String nameExt = "";
-                    if(name.length() > 20) {
-                        name = navAid.getFeatureName().getName().substring(0, 20);
-                        nameExt = navAid.getFeatureName().getName().substring(20);
-                    }
-                    Double lat = navAid.getGeometry().getPointProperty().getPoint().getPos().getValue().get(0);
-                    Double lon = navAid.getGeometry().getPointProperty().getPoint().getPos().getValue().get(1);
-                    Integer halfLength = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getLength()).orElse(0)/2);
-                    Integer halfWidth = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getWidth()).orElse(0)/2);
-                    Boolean raim = navAid.isRaimFlag();
-                    Boolean virtual = navAid.isVatonFlag();
-
-                    // Build the string
-                    aisBuilder
-                            .append(StringBinUtils.convertIntToBinary(21,6)) // AIS Message 21
-                            .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                            .append(StringBinUtils.convertIntToBinary(mmsi, 30)) // MMSI
-                            .append(StringBinUtils.convertIntToBinary(atonType.getCode(),5)) // The AtoN Type
-                            .append(StringBinUtils.convertStringToBinary(name,120, true)) // The AtoN Name
-                            .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
-                            // Longitude/Latitude
-                            .append(StringBinUtils.convertIntToBinary(new Long(Math.round(lon*600000)).intValue(),28)) // The Longitude
-                            .append(StringBinUtils.convertIntToBinary(new Long(Math.round(lat*600000)).intValue(),27)) // The Latitude
-                            // Dimension/Reference of position
-                            .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
-                            .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
-                            .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
-                            .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
-                            // Additional info/flags
-                            .append(StringBinUtils.convertIntToBinary(0,4)) // The Fix Field
-                            .append(StringBinUtils.convertIntToBinary(60,6)) // The Time Field
-                            .append(StringBinUtils.convertIntToBinary(0,1)) // Off Position Indicator
-                            .append(StringBinUtils.convertIntToBinary(0,8)) // AtoN Status
-                            .append(StringBinUtils.convertIntToBinary(raim?1:0,1)) // RAIM Flag
-                            .append(StringBinUtils.convertIntToBinary(virtual?1:0,1)) // The Virtual Flag
-                            .append(StringBinUtils.convertIntToBinary(0,2)) // ?
-                            // Add the name extension is required
-                            .append(StringBinUtils.convertStringToBinary(nameExt, nameExt.length() % 8, true));
-                });
+        // Build the string
+        aisBuilder.append(StringBinUtils.convertIntToBinary(21,6)) // AIS Message 21
+                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(msgParams.getAtonType().getCode(),5)) // The AtoN Type
+                .append(StringBinUtils.convertStringToBinary(name,120, true)) // The AtoN Name
+                .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
+                // Longitude/Latitude
+                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
+                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLatitude()*600000)).intValue(),27)) // The Latitude
+                // Dimension/Reference of position
+                .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
+                .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
+                .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
+                .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
+                // Additional info/flags
+                .append(StringBinUtils.convertIntToBinary(0,4)) // The Fix Field
+                .append(StringBinUtils.convertIntToBinary(60,6)) // The Time Field
+                .append(StringBinUtils.convertIntToBinary(0,1)) // Off Position Indicator
+                .append(StringBinUtils.convertIntToBinary(0,8)) // AtoN Status
+                .append(StringBinUtils.convertIntToBinary(msgParams.getRaim()?1:0,1)) // RAIM Flag
+                .append(StringBinUtils.convertIntToBinary(msgParams.getVaton()?1:0,1)) // The Virtual Flag
+                .append(StringBinUtils.convertIntToBinary(0,2)) // ?
+                // Add the name extension is required
+                .append(StringBinUtils.convertStringToBinary(nameExt, nameExt.length() % 8, true));
 
         // Finally pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();

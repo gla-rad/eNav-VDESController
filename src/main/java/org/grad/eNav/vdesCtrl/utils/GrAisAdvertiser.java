@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -124,7 +125,7 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         byte[] buffer = null;
         try {
-            buffer = GrAisUtils.encodeMsg21(s125Node).getBytes();
+            buffer = GrAisUtils.encodeMsg21(new GrAisMsg21Params(s125Node)).getBytes();
         } catch (JAXBException ex) {
             log.error(ex.getMessage());
             return;

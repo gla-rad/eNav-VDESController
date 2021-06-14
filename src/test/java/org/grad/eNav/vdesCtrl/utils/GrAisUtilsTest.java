@@ -16,20 +16,16 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.domain.AtonType;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class GrAisUtilsTest {
-
-    // Define the test S125 Messages Content
-    public static final String S125_NO_1_CONTENT = "<S125:DataSet xmlns:S125=\"http://www.iho.int/S125/gml/0.1\" xmlns:S100=\"http://www.iho.int/s100gml/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" gml:id=\"aton.uk.test_aton_no_1\" xsi:schemaLocation=\"http://www.iho.int/S125/gml/1.0 S125.xsd\"><gml:boundedBy><gml:Envelope srsName=\"EPSG:4326\"><gml:lowerCorner>53.61 1.594</gml:lowerCorner><gml:upperCorner>53.61 1.594</gml:upperCorner></gml:Envelope></gml:boundedBy><member><S125:S125_NavAidStructure><featureName><displayName>true</displayName><language>eng</language><name>Test AtoN No 1</name></featureName><geometry><S100:pointProperty><S100:Point gml:id=\"G.aton.uk.test_aton_no_1.1\" srsName=\"EPSG:4326\"><gml:pos>53.61 1.594</gml:pos></S100:Point></S100:pointProperty></geometry><mmsi>123456789</mmsi><atonType>Special Mark</atonType><deploymentType>Mobile</deploymentType><raimFlag>false</raimFlag><vatonFlag>true</vatonFlag></S125:S125_NavAidStructure></member></S125:DataSet>";
-    public static final String S125_NO_2_CONTENT = "<S125:DataSet xmlns:S125=\"http://www.iho.int/S125/gml/0.1\" xmlns:S100=\"http://www.iho.int/s100gml/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" gml:id=\"aton.uk.test_aton_no_2\" xsi:schemaLocation=\"http://www.iho.int/S125/gml/1.0 S125.xsd\"><gml:boundedBy><gml:Envelope srsName=\"EPSG:4326\"><gml:lowerCorner>1.594 53.61</gml:lowerCorner><gml:upperCorner>1.594 53.61</gml:upperCorner></gml:Envelope></gml:boundedBy><member><S125:S125_NavAidStructure><featureName><displayName>true</displayName><language>eng</language><name>Test AtoN No 2</name></featureName><geometry><S100:pointProperty><S100:Point gml:id=\"G.aton.uk.test_aton_no_2.1\" srsName=\"EPSG:4326\"><gml:pos>1.594 53.61</gml:pos></S100:Point></S100:pointProperty></geometry><mmsi>111111111</mmsi><atonType>Cardinal Mark N</atonType><deploymentType>Mobile</deploymentType><raimFlag>false</raimFlag><vatonFlag>true</vatonFlag></S125:S125_NavAidStructure></member></S125:DataSet>";
-    public static final String S125_NO_3_CONTENT = "<S125:DataSet xmlns:S125=\"http://www.iho.int/S125/gml/0.1\" xmlns:S100=\"http://www.iho.int/s100gml/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" gml:id=\"aton.uk.test_aton_no_3\" xsi:schemaLocation=\"http://www.iho.int/S125/gml/1.0 S125.xsd\"><gml:boundedBy><gml:Envelope srsName=\"EPSG:4326\"><gml:lowerCorner>53.61 1.594</gml:lowerCorner><gml:upperCorner>53.61 1.594</gml:upperCorner></gml:Envelope></gml:boundedBy><member><S125:S125_NavAidStructure><featureName><displayName>true</displayName><language>eng</language><name>Test AtoN No 3</name></featureName><geometry><S100:pointProperty><S100:Point gml:id=\"G.aton.uk.test_aton_no_3.1\" srsName=\"EPSG:4326\"><gml:pos>53.61 1.594</gml:pos></S100:Point></S100:pointProperty></geometry><mmsi>123456789</mmsi><length>4</length><width>4</width><atonType>Port hand Mark</atonType><deploymentType>Mobile</deploymentType><raimFlag>false</raimFlag><vatonFlag>false</vatonFlag></S125:S125_NavAidStructure></member></S125:DataSet>";
-
 
     // Define the test S125 Messages Expected Encoding
     public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011000100000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
@@ -47,11 +43,17 @@ public class GrAisUtilsTest {
      */
     @Test
     public void testS125ToAisMsg21VAtoN() throws JAXBException {
-        // Create an S125Node message
-        S125Node node = new S125Node("aton.uk.test_aton_no_1", null, S125_NO_1_CONTENT);
+        // Create an GrAisMsg21Params parameters
+        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        msgParams.setMmsi(123456789);
+        msgParams.setName("Test AtoN No 1");
+        msgParams.setAtonType(AtonType.SPECIAL_MARK);
+        msgParams.setLatitude(53.61);
+        msgParams.setLongitude(1.594);
+        msgParams.setVaton(Boolean.TRUE);
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(node);
+        String msg21 = GrAisUtils.encodeMsg21(msgParams);
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
@@ -69,11 +71,17 @@ public class GrAisUtilsTest {
      */
     @Test
     public void testS125ToAisMsg21RVAtoNNo2() throws JAXBException {
-        // Create an S125Node message
-        S125Node node = new S125Node("aton.uk.test_aton_no_2", null, S125_NO_2_CONTENT);
+        // Create an GrAisMsg21Params parameters
+        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        msgParams.setMmsi(111111111);
+        msgParams.setName("Test AtoN No 2");
+        msgParams.setAtonType(AtonType.NORTH_CARDINAL);
+        msgParams.setLatitude(1.594);
+        msgParams.setLongitude(53.61);
+        msgParams.setVaton(Boolean.TRUE);
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(node);
+        String msg21 = GrAisUtils.encodeMsg21(msgParams);
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
@@ -91,11 +99,18 @@ public class GrAisUtilsTest {
      */
     @Test
     public void testS125ToAisMsg21RealAtoN() throws JAXBException {
-        // Create an S125Node message
-        S125Node node = new S125Node("aton.uk.test_aton_no_3", null, S125_NO_3_CONTENT);
+        // Create an GrAisMsg21Params parameters
+        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        msgParams.setMmsi(123456789);
+        msgParams.setName("Test AtoN No 3");
+        msgParams.setAtonType(AtonType.PORT_HAND_MARK);
+        msgParams.setLatitude(53.61);
+        msgParams.setLongitude(1.594);
+        msgParams.setLength(4);
+        msgParams.setWidth(4);
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(node);
+        String msg21 = GrAisUtils.encodeMsg21(msgParams);
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
