@@ -19,6 +19,8 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import com.google.common.base.Strings;
 
+import java.util.Objects;
+
 /**
  * The StringBin Utility Class.
  *
@@ -58,21 +60,51 @@ public class StringBinUtils {
 
     /**
      * Converts and integer (or a character as well) into its binary
-     * representation and returns that in a string format.
+     * representation and returns that in a string format. Note that this
+     * operation supports both 6bit and 8bit representations.
      *
-     * @param c The integer or character to be converted
+     * @param i The integer or character to be converted
      * @param padding the right padding with zeros required
      * @return the binary representation as a string
      */
-    public static String convertIntToBinary(int c, int padding) {
-        return padLeft(Integer.toBinaryString(c), padding);
+    public static String convertIntToBinary(int i, int padding, boolean ascii_6bit) {
+        // Choose between 6 and 8 bit ASCII
+        if(ascii_6bit) {
+            char c = String.valueOf((char)i).toUpperCase().charAt(0); // 6bit only allows uppercase chars
+            return padLeft(Integer.toBinaryString(ASCII_VOCABULARY_6bit.indexOf(c)), padding);
+        } else {
+            return padLeft(Integer.toBinaryString(i), padding);
+        }
     }
 
     /**
-     * Converts a string to it's binary representation.
+     * Converts a binary string into the matching ASCII character.
+     *
+     * @param binaryString the binary string to be translated
+     * @return the matching ASCII character
+     */
+    public static int convertBinaryToInt(String binaryString, boolean ascii_6bit) {
+        // Sanity check
+        if(Objects.isNull(binaryString) || binaryString.isEmpty() || !binaryString.matches("[01]*")) {
+            return ' ';
+        }
+
+        // If OK, try to find the ASCII value of the binary string
+        int asciiValue = Integer.parseInt(binaryString, 2);
+        // For 6bit ASCII we need to additional value manipulation (only uppercase chars)
+        if(ascii_6bit) {
+            asciiValue = (asciiValue > 39 ? asciiValue + 8 : asciiValue) + 48;
+        }
+        return asciiValue;
+    }
+
+    /**
+     * Converts a string to it's binary representation. This function supports
+     * both 6bit and 8bit character representations. The padding only affects
+     * additional left hand side 0s if required.
      *
      * @param input The input to be converted
-     * @param padding the right padding with zeros required
+     * @param padding the left padding with zeros required
      * @return the binary representation of the string
      */
     public static String convertStringToBinary(String input, int padding, Boolean ascii_6bit) {
@@ -80,13 +112,7 @@ public class StringBinUtils {
         StringBuilder result = new StringBuilder();
         char[] chars = Strings.nullToEmpty(input).toCharArray();
         for (char c : chars) {
-            // Choose between 6 and 8 bit ASCII
-            if(ascii_6bit) {
-                c = String.valueOf(c).toUpperCase().charAt(0); // 6bit only allows uppercase chars
-                result.append(convertIntToBinary(ASCII_VOCABULARY_6bit.indexOf(c), 6));
-            } else {
-                result.append(convertIntToBinary(c, 8));
-            }
+            result.append(convertIntToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
         }
         return padLeft(result.toString(), padding);
     }

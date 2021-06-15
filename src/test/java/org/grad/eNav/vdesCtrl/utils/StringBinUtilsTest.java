@@ -50,24 +50,91 @@ public class StringBinUtilsTest {
 
     /**
      * Test that we can convert integers (and chars) correctly to their binary
-     * string representation.
+     * string representation with 6 bit encoding.
      */
     @Test
-    public void testIntToBinary() {
+    public void testConvertIntToBinary6bit() {
         // Test Integers
-        assertEquals("00000000", StringBinUtils.convertIntToBinary(0, 8));
-        assertEquals("00001000", StringBinUtils.convertIntToBinary(8, 8));
-        assertEquals("00001010", StringBinUtils.convertIntToBinary(10, 8));
+        assertEquals("110000", StringBinUtils.convertIntToBinary('0', 6, true));
+        assertEquals("111000", StringBinUtils.convertIntToBinary('8', 6, true));
+        assertEquals("111001", StringBinUtils.convertIntToBinary('9', 6, true));
 
         // Test Chars -  Lowercase
-        assertEquals("01100001", StringBinUtils.convertIntToBinary('a', 8));
-        assertEquals("01100010", StringBinUtils.convertIntToBinary('b', 8));
-        assertEquals("01111010", StringBinUtils.convertIntToBinary('z', 8));
+        assertEquals("000001", StringBinUtils.convertIntToBinary('a', 6, true));
+        assertEquals("000010", StringBinUtils.convertIntToBinary('b', 6, true));
+        assertEquals("011010", StringBinUtils.convertIntToBinary('z', 6, true));
 
         // Test Chars -  Uppercase
-        assertEquals("01000001", StringBinUtils.convertIntToBinary('A', 8));
-        assertEquals("01000010", StringBinUtils.convertIntToBinary('B', 8));
-        assertEquals("01011010", StringBinUtils.convertIntToBinary('Z', 8));
+        assertEquals("000001", StringBinUtils.convertIntToBinary('A', 6, true));
+        assertEquals("000010", StringBinUtils.convertIntToBinary('B', 6, true));
+        assertEquals("011010", StringBinUtils.convertIntToBinary('Z', 6, true));
+    }
+
+    /**
+     * Test that we can convert integers (and chars) correctly to their binary
+     * string representation with 8 bit encoding.
+     */
+    @Test
+    public void testConvertIntToBinary8bit() {
+        // Test Integers
+        assertEquals("00110000", StringBinUtils.convertIntToBinary('0', 8, false));
+        assertEquals("00111000", StringBinUtils.convertIntToBinary('8', 8, false));
+        assertEquals("00111001", StringBinUtils.convertIntToBinary('9', 8, false));
+
+        // Test Chars -  Lowercase
+        assertEquals("01100001", StringBinUtils.convertIntToBinary('a', 8, false));
+        assertEquals("01100010", StringBinUtils.convertIntToBinary('b', 8, false));
+        assertEquals("01111010", StringBinUtils.convertIntToBinary('z', 8, false));
+
+        // Test Chars -  Uppercase
+        assertEquals("01000001", StringBinUtils.convertIntToBinary('A', 8, false));
+        assertEquals("01000010", StringBinUtils.convertIntToBinary('B', 8, false));
+        assertEquals("01011010", StringBinUtils.convertIntToBinary('Z', 8, false));
+    }
+
+    /**
+     * Test that we can correctly retrieve the ASCII character from its binary
+     * value. Note that we are using 6bit ASCII so only uppercase characters
+     * will be shown. Also the resulting char is not the same as the one used
+     * for encoding the 6bit binary since the char representation is not based
+     * on the custom 6bit vocabulary:
+     *
+     *    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^- !\"#$%&'()*+,-./0123456789:;<=>?
+     *
+     */
+    @Test
+    public void testConvertBinaryToInt6bit() {
+        assertEquals('h', StringBinUtils.convertBinaryToInt("110000", true));
+        assertEquals('p', StringBinUtils.convertBinaryToInt("111000", true));
+        assertEquals('q', StringBinUtils.convertBinaryToInt("111001", true));
+
+        assertEquals('1', StringBinUtils.convertBinaryToInt("000001", true));
+        assertEquals('2', StringBinUtils.convertBinaryToInt("000010", true));
+        assertEquals('J', StringBinUtils.convertBinaryToInt("011010", true));
+
+        assertEquals('A', StringBinUtils.convertBinaryToInt("010001", true));
+        assertEquals('B', StringBinUtils.convertBinaryToInt("010010", true));
+        assertEquals('W', StringBinUtils.convertBinaryToInt("100111", true));
+    }
+
+    /**
+     * Test that we can correctly retrieve the ASCII character from its binary
+     * value. Note that we are using 8bit ASCII so lowercase characters will
+     * also shown.
+     */
+    @Test
+    public void testConvertBinaryToInt8bit() {
+        assertEquals('0', StringBinUtils.convertBinaryToInt("00110000", false));
+        assertEquals('8', StringBinUtils.convertBinaryToInt("00111000", false));
+        assertEquals('9', StringBinUtils.convertBinaryToInt("00111001", false));
+
+        assertEquals('a', StringBinUtils.convertBinaryToInt("01100001", false));
+        assertEquals('b', StringBinUtils.convertBinaryToInt("01100010", false));
+        assertEquals('z', StringBinUtils.convertBinaryToInt("01111010", false));
+
+        assertEquals('A', StringBinUtils.convertBinaryToInt("01000001", false));
+        assertEquals('B', StringBinUtils.convertBinaryToInt("01000010", false));
+        assertEquals('Z', StringBinUtils.convertBinaryToInt("01011010", false));
     }
 
     /**

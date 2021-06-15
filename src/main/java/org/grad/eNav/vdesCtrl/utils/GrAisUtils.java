@@ -16,11 +16,15 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
+import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
 import javax.xml.bind.JAXBException;
+import java.util.Objects;
 
 /**
  * The GNURadio AIS Utility Class.
@@ -45,16 +49,16 @@ public class GrAisUtils {
         StringBuilder aisBuilder = new StringBuilder();
 
         // Build the AIS message string
-        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
-                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
-                .append(StringBinUtils.convertIntToBinary(0, 2)) // Sequence
-                .append(StringBinUtils.convertIntToBinary(msgParams.getDestMmsi(), 30)) // Destination MMSI
-                .append(StringBinUtils.convertIntToBinary(0, 1)) // Re-Transmit
-                .append(StringBinUtils.convertIntToBinary(0, 1)) // Spare
-                .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
-                .append(StringBinUtils.convertIntToBinary(1, 6)) // Functional ID
-                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, false)); // Message Content
+        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6, false)) // AIS Message 8
+                .append(StringBinUtils.convertIntToBinary(0,2, false)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30, false)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 2, false)) // Sequence
+                .append(StringBinUtils.convertIntToBinary(msgParams.getDestMmsi(), 30, false)) // Destination MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 1, false)) // Re-Transmit
+                .append(StringBinUtils.convertIntToBinary(0, 1, false)) // Spare
+                .append(StringBinUtils.convertIntToBinary(1, 10, false)) // Designated area code
+                .append(StringBinUtils.convertIntToBinary(1, 6, false)) // Functional ID
+                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, true)); // Message Content
 
         // Finally pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();
@@ -74,13 +78,13 @@ public class GrAisUtils {
         StringBuilder aisBuilder = new StringBuilder();
 
         // Build the AIS message string
-        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
-                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
-                .append(StringBinUtils.convertIntToBinary(0, 2)) // Spare
-                .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
-                .append(StringBinUtils.convertIntToBinary(1, 6)) // Functional ID
-                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, false)); // Message Content
+        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6, false)) // AIS Message 8
+                .append(StringBinUtils.convertIntToBinary(0,2, false)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30, false)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(0, 2, false)) // Spare
+                .append(StringBinUtils.convertIntToBinary(1, 10, false)) // Designated area code
+                .append(StringBinUtils.convertIntToBinary(1, 6, false)) // Functional ID
+                .append(StringBinUtils.convertStringToBinary(msgParams.getMessage(), 0, true)); // Message Content
 
         // Finally pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();
@@ -112,34 +116,92 @@ public class GrAisUtils {
         Integer halfWidth = msgParams.getVaton() ? 0 : Math.round(msgParams.getWidth()/2);
 
         // Build the string
-        aisBuilder.append(StringBinUtils.convertIntToBinary(21,6)) // AIS Message 21
-                .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
-                .append(StringBinUtils.convertIntToBinary(msgParams.getAtonType().getCode(),5)) // The AtoN Type
+        aisBuilder.append(StringBinUtils.convertIntToBinary(21,6, false)) // AIS Message 21
+                .append(StringBinUtils.convertIntToBinary(0,2, false)) // Repeat Indicator
+                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30, false)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(msgParams.getAtonType().getCode(),5, false)) // The AtoN Type
                 .append(StringBinUtils.convertStringToBinary(name,120, true)) // The AtoN Name
-                .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
+                .append(StringBinUtils.convertIntToBinary(0,1, false)) // The Accuracy
                 // Longitude/Latitude
-                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
-                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLatitude()*600000)).intValue(),27)) // The Latitude
+                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLongitude()*600000)).intValue(),28, false)) // The Longitude
+                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLatitude()*600000)).intValue(),27, false)) // The Latitude
                 // Dimension/Reference of position
-                .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
-                .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
-                .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
-                .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
+                .append(StringBinUtils.convertIntToBinary(halfLength,9, false)) // The Half Length
+                .append(StringBinUtils.convertIntToBinary(halfLength,9, false)) // The Half Length
+                .append(StringBinUtils.convertIntToBinary(halfWidth,6, false)) // The Half Width
+                .append(StringBinUtils.convertIntToBinary(halfWidth,6, false)) // The Half Width
                 // Additional info/flags
-                .append(StringBinUtils.convertIntToBinary(0,4)) // The Fix Field
-                .append(StringBinUtils.convertIntToBinary(60,6)) // The Time Field
-                .append(StringBinUtils.convertIntToBinary(0,1)) // Off Position Indicator
-                .append(StringBinUtils.convertIntToBinary(0,8)) // AtoN Status
-                .append(StringBinUtils.convertIntToBinary(msgParams.getRaim()?1:0,1)) // RAIM Flag
-                .append(StringBinUtils.convertIntToBinary(msgParams.getVaton()?1:0,1)) // The Virtual Flag
-                .append(StringBinUtils.convertIntToBinary(0,2)) // ?
+                .append(StringBinUtils.convertIntToBinary(0,4, false)) // The Fix Field
+                .append(StringBinUtils.convertIntToBinary(60,6, false)) // The Time Field
+                .append(StringBinUtils.convertIntToBinary(0,1, false)) // Off Position Indicator
+                .append(StringBinUtils.convertIntToBinary(0,8, false)) // AtoN Status
+                .append(StringBinUtils.convertIntToBinary(msgParams.getRaim()?1:0,1, false)) // RAIM Flag
+                .append(StringBinUtils.convertIntToBinary(msgParams.getVaton()?1:0,1, false)) // The Virtual AtoN Flag
+                .append(StringBinUtils.convertIntToBinary(0,2, false)) // ?
                 // Add the name extension is required
                 .append(StringBinUtils.convertStringToBinary(nameExt, nameExt.length() % 8, true));
 
         // Finally pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();
         return StringBinUtils.padRight(aisSentence, aisSentence.length() + (6 - (aisSentence.length()%6))%6);
+    }
+
+    /**
+     * Based on the provided binary message it will generate the NMEA sentence
+     * for it by splitting it every 6 bits and translating it to the respective
+     * ASCII character.
+     *
+     * @param binaryMsg the binary message to be translated
+     * @param enableNMEA whether to enable the NMEA
+     * @param nmeaChannel the NMEA channel to be used
+     * @return the generated NMEA sentence for the binary message
+     */
+    public static String generateNMEASentence(String binaryMsg, boolean enableNMEA, NMEAChannel nmeaChannel) {
+        //Sanity Check
+        if(Objects.isNull(binaryMsg) || binaryMsg.isEmpty()) {
+            return "";
+        }
+
+        // Create a string builder to start with
+        StringBuilder aisBuilder = new StringBuilder()
+                .append("!AIVDM,1,1,,")
+                .append(nmeaChannel.getChannel())
+                .append(",");
+
+        // Split the input binary message every 6 bits
+        Splitter.fixedLength(6).split(binaryMsg).iterator().forEachRemaining(piece ->
+            aisBuilder.append((char)StringBinUtils.convertBinaryToInt(piece, true))
+        );
+
+        // Append the checksum and close the sentence
+        if(enableNMEA) {
+            aisBuilder.append(",0");
+            String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
+            aisBuilder.append("*").append(calculateNMEAChecksum(tempSentence));
+        }
+
+        // Return the generated NMEA sentence
+        return aisBuilder.toString();
+    }
+
+    /**
+     * This utility function generate the NMEA sentence checksum as a string.
+     * The NMEA checksum is computed on the entire sentence including the
+     * AIVDM/AIVDO tag but excluding the leading "!".
+     * The checksum is merely a bybe-by-byte XOR of the sentence.
+     *
+     * @param nmeaSentence the NMEA sentence to generate the checksum for
+     * @return the generated NMEA sentence checksum
+     */
+    public static String calculateNMEAChecksum(String nmeaSentence) {
+        // Remove the initial "!" character if found
+        String sentence =  Strings.nullToEmpty(nmeaSentence).replaceAll("^!", "");
+        int sum = 0;
+        char[] chars = sentence.toCharArray();
+        for(char c : chars) {
+            sum ^= c;
+        }
+        return String.format("%02X", sum & 0xFFFFF);
     }
 
 }

@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import org.grad.eNav.vdesCtrl.models.domain.AtonType;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
+import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
@@ -115,5 +116,23 @@ public class GrAisUtilsTest {
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
         assertEquals(S125_NO_3_ENCODED, msg21);
+    }
+
+    /**
+     * Test that we can generate correct NMEA sentences.
+     */
+    @Test
+    public void testGenerateNMEASentence() {
+        assertEquals("", GrAisUtils.generateNMEASentence(null, true, NMEAChannel.A));
+        assertEquals("", GrAisUtils.generateNMEASentence("", true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,0*78", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,0*7B", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*16", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*15", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*09", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*0A", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
     }
 }
