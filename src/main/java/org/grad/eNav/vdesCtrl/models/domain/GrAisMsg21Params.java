@@ -20,6 +20,7 @@ import _int.iho.s125.gml._0.DatasetType;
 import _int.iho.s125.gml._0.MemberType;
 import _int.iho.s125.gml._0.S125NavAidStructureType;
 import lombok.extern.slf4j.Slf4j;
+import net.opengis.gml._3.AbstractFeatureMemberType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 
@@ -27,8 +28,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.util.List;
 import java.util.Optional;
-
-import static com.google.common.base.Predicates.not;
+import java.util.function.Predicate;
 
 /**
  * The GR-AIS Message 21 Parameters Class.
@@ -71,25 +71,19 @@ public class GrAisMsg21Params {
      * Constructors from an S125Node object.
      *
      * @param s125Node the S125Node object
+     * @throws JAXBException when the S125Node XML content cannot be parsed
      */
-    public GrAisMsg21Params(S125Node s125Node) {
+    public GrAisMsg21Params(S125Node s125Node) throws JAXBException {
         // Default at first
         this();
 
         // Try to unmarshall the S125Node object
-        DatasetType dataset = null;
-        try {
-            // Unmarshall the dataset content
-            dataset = S100Utils.unmarshallS125(s125Node.getContent());
-        } catch(JAXBException ex) {
-            log.error(ex.getMessage());
-            return;
-        }
+        DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
 
         // Extract the S125 Member NavAid Information
         Optional.ofNullable(dataset)
                 .map(DatasetType::getMemberOrImember)
-                .filter(not(List::isEmpty))
+                .filter(((Predicate<List<AbstractFeatureMemberType>>) List::isEmpty).negate())
                 .map(l -> l.get(0))
                 .filter(MemberType.class::isInstance)
                 .map(MemberType.class::cast)

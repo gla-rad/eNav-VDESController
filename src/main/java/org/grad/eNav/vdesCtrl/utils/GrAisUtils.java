@@ -231,7 +231,7 @@ public class GrAisUtils {
      * This utility function generate the NMEA sentence checksum as a string.
      * The NMEA checksum is computed on the entire sentence including the
      * AIVDM/AIVDO tag but excluding the leading "!".
-     * The checksum is merely a bybe-by-byte XOR of the sentence.
+     * The checksum is merely a byte-by-byte XOR of the sentence.
      *
      * @param nmeaSentence the NMEA sentence to generate the checksum for
      * @return the generated NMEA sentence checksum

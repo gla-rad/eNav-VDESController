@@ -19,6 +19,8 @@ package org.grad.eNav.vdesCtrl.models.domain;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.bind.JAXBException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GrAisMsg21ParamsTest {
@@ -51,7 +53,7 @@ public class GrAisMsg21ParamsTest {
      * correctly picked up, for a test Virtual AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo1() {
+    public void testS125NodeConstructorNo1() throws JAXBException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, S125_NO_1_CONTENT);
 
@@ -75,7 +77,7 @@ public class GrAisMsg21ParamsTest {
      * correctly picked up, for a different Virtual AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo2() {
+    public void testS125NodeConstructorNo2() throws JAXBException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_2", null, S125_NO_2_CONTENT);
 
@@ -99,7 +101,7 @@ public class GrAisMsg21ParamsTest {
      * correctly picked up, for a real AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo3() {
+    public void testS125NodeConstructorNo3() throws JAXBException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_3", null, S125_NO_3_CONTENT);
 
@@ -119,27 +121,16 @@ public class GrAisMsg21ParamsTest {
     }
 
     /**
-     * Test that by using the S125Node constructor, if it fails, the parameter
-     * objects will be initialised as empty
+     * Test that by using the S125Node constructor, if it fails, a JAXBException
+     * will be thrown.
      */
     @Test
     public void testS125NodeConstructorFails() {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, "Erroneous Content");
 
-        // Create the GR-AIS Message 21 Parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params(node);
-
-        // Assert that all variables have been initialised correctly
-        assertNull(msgParams.getMmsi());
-        assertEquals(AtonType.DEFAULT, msgParams.getAtonType());
-        assertEquals("", msgParams.getName());
-        assertEquals(0.0, msgParams.getLatitude());
-        assertEquals(0.0, msgParams.getLongitude());
-        assertEquals(0, msgParams.getLength());
-        assertEquals(0, msgParams.getWidth());
-        assertEquals(Boolean.FALSE, msgParams.getRaim());
-        assertEquals(Boolean.FALSE, msgParams.getVaton());
+        // Create the GR-AIS Message 21 Parameters and see it fail
+        assertThrows(JAXBException.class, () -> new GrAisMsg21Params(node));
     }
 
 }
