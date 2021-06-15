@@ -30,7 +30,7 @@ public class GrAisMsg8ParamsTest {
     public void testEmptyConstructor() {
         GrAisMsg8Params msgParams = new GrAisMsg8Params();
         assertNull(msgParams.getMmsi());
-        assertEquals("", msgParams.getMessage());
+        assertEquals(0, msgParams.getMessage().length);
     }
 
 }

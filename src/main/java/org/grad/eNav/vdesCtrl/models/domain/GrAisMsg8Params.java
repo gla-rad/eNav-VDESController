@@ -28,14 +28,14 @@ public class GrAisMsg8Params {
 
     // Class Variables
     private Integer mmsi;
-    private String message;
+    private byte[] message;
 
     /**
      * Empty Constructor.
      */
     public GrAisMsg8Params() {
         this.mmsi = null;
-        this.message = "";
+        this.message = new byte[0];
     }
 
     /**
@@ -61,7 +61,7 @@ public class GrAisMsg8Params {
      *
      * @return the message
      */
-    public String getMessage() {
+    public byte[] getMessage() {
         return message;
     }
 
@@ -70,7 +70,7 @@ public class GrAisMsg8Params {
      *
      * @param message the message
      */
-    public void setMessage(String message) {
+    public void setMessage(byte[] message) {
         this.message = message;
     }
 }

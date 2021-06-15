@@ -59,21 +59,47 @@ public class StringBinUtils {
     }
 
     /**
-     * Converts and integer (or a character as well) into its binary
+     * Converts an integer into its binary
      * representation and returns that in a string format. Note that this
      * operation supports both 6bit and 8bit representations.
      *
-     * @param i The integer or character to be converted
+     * @param i The integer to be converted
      * @param padding the right padding with zeros required
      * @return the binary representation as a string
      */
-    public static String convertIntToBinary(int i, int padding, boolean ascii_6bit) {
+    public static String convertIntToBinary(int i, int padding) {
+        return padLeft(Integer.toBinaryString(i), padding);
+    }
+
+    /**
+     * Converts a byte into its binary representation and returns that in a
+     * string format. Note that this operation supports both 6bit and 8bit
+     * representations.
+     *
+     * @param b The byte or character to be converted
+     * @param padding the right padding with zeros required
+     * @return the binary representation as a string
+     */
+    public static String convertByteToBinary(byte b, int padding) {
+        return padLeft(Integer.toBinaryString(b & 0xFF), padding);
+    }
+
+    /**
+     * Converts a char into its binary representation and returns that in a
+     * string format. Note that this operation supports both 6bit and 8bit
+     * representations.
+     *
+     * @param c The character to be converted
+     * @param padding the right padding with zeros required
+     * @return the binary representation as a string
+     */
+    public static String convertCharToBinary(char c, int padding, boolean ascii_6bit) {
         // Choose between 6 and 8 bit ASCII
         if(ascii_6bit) {
-            char c = String.valueOf((char)i).toUpperCase().charAt(0); // 6bit only allows uppercase chars
-            return padLeft(Integer.toBinaryString(ASCII_VOCABULARY_6bit.indexOf(c)), padding);
+            char uc = String.valueOf(c).toUpperCase().charAt(0); // 6bit only allows uppercase chars
+            return padLeft(Integer.toBinaryString(ASCII_VOCABULARY_6bit.indexOf(uc)), padding);
         } else {
-            return padLeft(Integer.toBinaryString(i), padding);
+            return padLeft(Integer.toBinaryString(c), padding);
         }
     }
 
@@ -83,7 +109,7 @@ public class StringBinUtils {
      * @param binaryString the binary string to be translated
      * @return the matching ASCII character
      */
-    public static int convertBinaryToInt(String binaryString, boolean ascii_6bit) {
+    public static char convertBinaryToChar(String binaryString, boolean ascii_6bit) {
         // Sanity check
         if(Objects.isNull(binaryString) || binaryString.isEmpty() || !binaryString.matches("[01]*")) {
             return ' ';
@@ -95,7 +121,7 @@ public class StringBinUtils {
         if(ascii_6bit) {
             asciiValue = (asciiValue > 39 ? asciiValue + 8 : asciiValue) + 48;
         }
-        return asciiValue;
+        return (char) asciiValue;
     }
 
     /**
@@ -112,7 +138,7 @@ public class StringBinUtils {
         StringBuilder result = new StringBuilder();
         char[] chars = Strings.nullToEmpty(input).toCharArray();
         for (char c : chars) {
-            result.append(convertIntToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
+            result.append(convertCharToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
         }
         return padLeft(result.toString(), padding);
     }

@@ -29,7 +29,7 @@ public class GrAisMsg6Params {
     // Class Variables
     private Integer mmsi;
     private Integer destMmsi;
-    private String message;
+    private byte[] message;
 
     /**
      * Empty Constructor.
@@ -37,7 +37,7 @@ public class GrAisMsg6Params {
     public GrAisMsg6Params() {
         this.mmsi = null;
         this.destMmsi = null;
-        this.message = "";
+        this.message = new byte[0];
     }
 
     /**
@@ -81,7 +81,7 @@ public class GrAisMsg6Params {
      *
      * @return the message
      */
-    public String getMessage() {
+    public byte[] getMessage() {
         return message;
     }
 
@@ -90,7 +90,7 @@ public class GrAisMsg6Params {
      *
      * @param message the message
      */
-    public void setMessage(String message) {
+    public void setMessage(byte[] message) {
         this.message = message;
     }
 }

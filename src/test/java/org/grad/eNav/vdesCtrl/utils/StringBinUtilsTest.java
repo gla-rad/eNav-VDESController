@@ -49,25 +49,65 @@ public class StringBinUtilsTest {
     }
 
     /**
-     * Test that we can convert integers (and chars) correctly to their binary
-     * string representation with 6 bit encoding.
+     * Test that we can convert integers correctly to their binary string
+     * representation with 6 bit encoding.
      */
     @Test
-    public void testConvertIntToBinary6bit() {
+    public void testConvertIntToBinary() {
         // Test Integers
-        assertEquals("110000", StringBinUtils.convertIntToBinary('0', 6, true));
-        assertEquals("111000", StringBinUtils.convertIntToBinary('8', 6, true));
-        assertEquals("111001", StringBinUtils.convertIntToBinary('9', 6, true));
+        assertEquals("00000000", StringBinUtils.convertIntToBinary(0, 8));
+        assertEquals("00000001", StringBinUtils.convertIntToBinary(1, 8));
+        assertEquals("00000010", StringBinUtils.convertIntToBinary(2, 8));
+        assertEquals("00000011", StringBinUtils.convertIntToBinary(3, 8));
+        assertEquals("00000100", StringBinUtils.convertIntToBinary(4, 8));
+        assertEquals("00000101", StringBinUtils.convertIntToBinary(5, 8));
+        assertEquals("00000110", StringBinUtils.convertIntToBinary(6, 8));
+        assertEquals("00000111", StringBinUtils.convertIntToBinary(7, 8));
+        assertEquals("00001000", StringBinUtils.convertIntToBinary(8, 8));
+        assertEquals("00001001", StringBinUtils.convertIntToBinary(9, 8));
+    }
+
+    /**
+     * Test that we can convert bytes correctly to their binary string
+     * representation with 6 bit encoding.
+     */
+    @Test
+    public void testConvertByteToBinary() {
+        // Test Integers
+        assertEquals("00000000", StringBinUtils.convertByteToBinary((byte)0x0, 8));
+        assertEquals("00000001", StringBinUtils.convertByteToBinary((byte)0x1, 8));
+        assertEquals("00000010", StringBinUtils.convertByteToBinary((byte)0x2, 8));
+        assertEquals("00000011", StringBinUtils.convertByteToBinary((byte)0x3, 8));
+        assertEquals("00000100", StringBinUtils.convertByteToBinary((byte)0x4, 8));
+        assertEquals("00000101", StringBinUtils.convertByteToBinary((byte)0x5, 8));
+        assertEquals("00000110", StringBinUtils.convertByteToBinary((byte)0x6, 8));
+        assertEquals("00000111", StringBinUtils.convertByteToBinary((byte)0x7, 8));
+        assertEquals("00001000", StringBinUtils.convertByteToBinary((byte)0x8, 8));
+        assertEquals("00001001", StringBinUtils.convertByteToBinary((byte)0x9, 8));
+        assertEquals("00001111", StringBinUtils.convertByteToBinary((byte)0xF, 8));
+        assertEquals("11111111", StringBinUtils.convertByteToBinary((byte)0xFF, 8));
+    }
+
+    /**
+     * Test that we can convert chars correctly to their binary string
+     * representation with 6 bit encoding.
+     */
+    @Test
+    public void testConvertCharToBinary6bit() {
+        // Test Integers
+        assertEquals("110000", StringBinUtils.convertCharToBinary('0', 6, true));
+        assertEquals("111000", StringBinUtils.convertCharToBinary('8', 6, true));
+        assertEquals("111001", StringBinUtils.convertCharToBinary('9', 6, true));
 
         // Test Chars -  Lowercase
-        assertEquals("000001", StringBinUtils.convertIntToBinary('a', 6, true));
-        assertEquals("000010", StringBinUtils.convertIntToBinary('b', 6, true));
-        assertEquals("011010", StringBinUtils.convertIntToBinary('z', 6, true));
+        assertEquals("000001", StringBinUtils.convertCharToBinary('a', 6, true));
+        assertEquals("000010", StringBinUtils.convertCharToBinary('b', 6, true));
+        assertEquals("011010", StringBinUtils.convertCharToBinary('z', 6, true));
 
         // Test Chars -  Uppercase
-        assertEquals("000001", StringBinUtils.convertIntToBinary('A', 6, true));
-        assertEquals("000010", StringBinUtils.convertIntToBinary('B', 6, true));
-        assertEquals("011010", StringBinUtils.convertIntToBinary('Z', 6, true));
+        assertEquals("000001", StringBinUtils.convertCharToBinary('A', 6, true));
+        assertEquals("000010", StringBinUtils.convertCharToBinary('B', 6, true));
+        assertEquals("011010", StringBinUtils.convertCharToBinary('Z', 6, true));
     }
 
     /**
@@ -75,21 +115,21 @@ public class StringBinUtilsTest {
      * string representation with 8 bit encoding.
      */
     @Test
-    public void testConvertIntToBinary8bit() {
+    public void testConvertCharToBinary8bit() {
         // Test Integers
-        assertEquals("00110000", StringBinUtils.convertIntToBinary('0', 8, false));
-        assertEquals("00111000", StringBinUtils.convertIntToBinary('8', 8, false));
-        assertEquals("00111001", StringBinUtils.convertIntToBinary('9', 8, false));
+        assertEquals("00110000", StringBinUtils.convertCharToBinary('0', 8, false));
+        assertEquals("00111000", StringBinUtils.convertCharToBinary('8', 8, false));
+        assertEquals("00111001", StringBinUtils.convertCharToBinary('9', 8, false));
 
         // Test Chars -  Lowercase
-        assertEquals("01100001", StringBinUtils.convertIntToBinary('a', 8, false));
-        assertEquals("01100010", StringBinUtils.convertIntToBinary('b', 8, false));
-        assertEquals("01111010", StringBinUtils.convertIntToBinary('z', 8, false));
+        assertEquals("01100001", StringBinUtils.convertCharToBinary('a', 8, false));
+        assertEquals("01100010", StringBinUtils.convertCharToBinary('b', 8, false));
+        assertEquals("01111010", StringBinUtils.convertCharToBinary('z', 8, false));
 
         // Test Chars -  Uppercase
-        assertEquals("01000001", StringBinUtils.convertIntToBinary('A', 8, false));
-        assertEquals("01000010", StringBinUtils.convertIntToBinary('B', 8, false));
-        assertEquals("01011010", StringBinUtils.convertIntToBinary('Z', 8, false));
+        assertEquals("01000001", StringBinUtils.convertCharToBinary('A', 8, false));
+        assertEquals("01000010", StringBinUtils.convertCharToBinary('B', 8, false));
+        assertEquals("01011010", StringBinUtils.convertCharToBinary('Z', 8, false));
     }
 
     /**
@@ -99,22 +139,22 @@ public class StringBinUtilsTest {
      * for encoding the 6bit binary since the char representation is not based
      * on the custom 6bit vocabulary:
      *
-     *    @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^- !\"#$%&'()*+,-./0123456789:;<=>?
+     * "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^- !\"#$%&'()*+,-./0123456789:;<=>?"
      *
      */
     @Test
-    public void testConvertBinaryToInt6bit() {
-        assertEquals('h', StringBinUtils.convertBinaryToInt("110000", true));
-        assertEquals('p', StringBinUtils.convertBinaryToInt("111000", true));
-        assertEquals('q', StringBinUtils.convertBinaryToInt("111001", true));
+    public void testConvertBinaryToChar6bit() {
+        assertEquals('h', StringBinUtils.convertBinaryToChar("110000", true));
+        assertEquals('p', StringBinUtils.convertBinaryToChar("111000", true));
+        assertEquals('q', StringBinUtils.convertBinaryToChar("111001", true));
 
-        assertEquals('1', StringBinUtils.convertBinaryToInt("000001", true));
-        assertEquals('2', StringBinUtils.convertBinaryToInt("000010", true));
-        assertEquals('J', StringBinUtils.convertBinaryToInt("011010", true));
+        assertEquals('1', StringBinUtils.convertBinaryToChar("000001", true));
+        assertEquals('2', StringBinUtils.convertBinaryToChar("000010", true));
+        assertEquals('J', StringBinUtils.convertBinaryToChar("011010", true));
 
-        assertEquals('A', StringBinUtils.convertBinaryToInt("010001", true));
-        assertEquals('B', StringBinUtils.convertBinaryToInt("010010", true));
-        assertEquals('W', StringBinUtils.convertBinaryToInt("100111", true));
+        assertEquals('A', StringBinUtils.convertBinaryToChar("010001", true));
+        assertEquals('B', StringBinUtils.convertBinaryToChar("010010", true));
+        assertEquals('W', StringBinUtils.convertBinaryToChar("100111", true));
     }
 
     /**
@@ -123,18 +163,18 @@ public class StringBinUtilsTest {
      * also shown.
      */
     @Test
-    public void testConvertBinaryToInt8bit() {
-        assertEquals('0', StringBinUtils.convertBinaryToInt("00110000", false));
-        assertEquals('8', StringBinUtils.convertBinaryToInt("00111000", false));
-        assertEquals('9', StringBinUtils.convertBinaryToInt("00111001", false));
+    public void testConvertBinaryToChar8bit() {
+        assertEquals('0', StringBinUtils.convertBinaryToChar("00110000", false));
+        assertEquals('8', StringBinUtils.convertBinaryToChar("00111000", false));
+        assertEquals('9', StringBinUtils.convertBinaryToChar("00111001", false));
 
-        assertEquals('a', StringBinUtils.convertBinaryToInt("01100001", false));
-        assertEquals('b', StringBinUtils.convertBinaryToInt("01100010", false));
-        assertEquals('z', StringBinUtils.convertBinaryToInt("01111010", false));
+        assertEquals('a', StringBinUtils.convertBinaryToChar("01100001", false));
+        assertEquals('b', StringBinUtils.convertBinaryToChar("01100010", false));
+        assertEquals('z', StringBinUtils.convertBinaryToChar("01111010", false));
 
-        assertEquals('A', StringBinUtils.convertBinaryToInt("01000001", false));
-        assertEquals('B', StringBinUtils.convertBinaryToInt("01000010", false));
-        assertEquals('Z', StringBinUtils.convertBinaryToInt("01011010", false));
+        assertEquals('A', StringBinUtils.convertBinaryToChar("01000001", false));
+        assertEquals('B', StringBinUtils.convertBinaryToChar("01000010", false));
+        assertEquals('Z', StringBinUtils.convertBinaryToChar("01011010", false));
     }
 
     /**

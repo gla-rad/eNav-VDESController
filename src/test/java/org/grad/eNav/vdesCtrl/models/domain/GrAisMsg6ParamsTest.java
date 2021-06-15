@@ -31,7 +31,7 @@ public class GrAisMsg6ParamsTest {
         GrAisMsg6Params msgParams = new GrAisMsg6Params();
         assertNull(msgParams.getMmsi());
         assertNull(msgParams.getDestMmsi());
-        assertEquals("", msgParams.getMessage());
+        assertEquals(0, msgParams.getMessage().length);
     }
 
 }
