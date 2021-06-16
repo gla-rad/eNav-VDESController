@@ -217,7 +217,7 @@ public class GrAisAdvertiser {
         }
 
         // Construct the NMEA sentence of message 21 to be signed
-        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(txInfo.message21, true, NMEAChannel.A);
+        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(txInfo.message21, true, NMEAChannel.B);
         log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", msg21NmeaSentence));
 
         // Construct the UDP message for the VDES station
