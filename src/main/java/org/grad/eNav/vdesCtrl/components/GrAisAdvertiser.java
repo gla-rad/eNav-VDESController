@@ -186,7 +186,7 @@ public class GrAisAdvertiser {
         }
 
         // Create and send the UDP datagram packet
-        byte[] buffer = (txinfo.message21+'\n').getBytes();
+        byte[] buffer = (txinfo.message21).getBytes();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
@@ -234,7 +234,7 @@ public class GrAisAdvertiser {
         }
 
         // Create and send the UDP datagram packet
-        byte[] buffer = (signatureMessage+'\n').getBytes();
+        byte[] buffer = (signatureMessage).getBytes();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
