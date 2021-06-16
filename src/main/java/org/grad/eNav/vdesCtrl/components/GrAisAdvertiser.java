@@ -59,7 +59,7 @@ import java.util.Optional;
 public class GrAisAdvertiser {
 
     // Component Constants
-    public static final Long AIS_INTERVAL = 1000L;
+    public static final Long AIS_INTERVAL = 27L;
 
     // Component Variables
     private Station station;
@@ -127,9 +127,6 @@ public class GrAisAdvertiser {
             // Send the UDP packet
             log.info("Station {} Sending an advertisement AtoN {}", station.getName(), node.getAtonUID());
 
-            // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(AIS_INTERVAL);
-
             // Keep a reference to when the message was send to create a signature for it
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
@@ -138,6 +135,9 @@ public class GrAisAdvertiser {
 
             // Send the signature message
             this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
+
+            // Wait to give enough time for the AIS TDMA slot
+            Thread.sleep(AIS_INTERVAL);
         }
     }
 
