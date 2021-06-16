@@ -59,7 +59,7 @@ import java.util.Optional;
 public class GrAisAdvertiser {
 
     // Component Constants
-    public static final Long AIS_INTERVAL = 27L;
+    public static final Long AIS_INTERVAL = 266L;
 
     // Component Variables
     private Station station;
