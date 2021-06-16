@@ -41,6 +41,19 @@ public class GrAisMsg6Params {
     }
 
     /**
+     * Instantiates a new GGR-AIS Message 6 Parameters class with arguments.
+     *
+     * @param mmsi     the mmsi
+     * @param destMmsi the dest mmsi
+     * @param message  the message
+     */
+    public GrAisMsg6Params(Integer mmsi, Integer destMmsi, byte[] message) {
+        this.mmsi = mmsi;
+        this.destMmsi = destMmsi;
+        this.message = message;
+    }
+
+    /**
      * Gets mmsi.
      *
      * @return the mmsi

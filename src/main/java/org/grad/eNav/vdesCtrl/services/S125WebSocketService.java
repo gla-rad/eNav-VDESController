@@ -49,7 +49,7 @@ public class S125WebSocketService implements MessageHandler {
     /**
      * The General Destination Prefix
      */
-    @Value("${gla.rad.radar-service.web-socket.prefix:topic}")
+    @Value("${gla.rad.vdes-ctrl.web-socket.prefix:topic}")
     private String prefix;
 
     /**

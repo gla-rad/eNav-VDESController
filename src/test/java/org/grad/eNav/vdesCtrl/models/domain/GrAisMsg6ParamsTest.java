@@ -34,4 +34,16 @@ public class GrAisMsg6ParamsTest {
         assertEquals(0, msgParams.getMessage().length);
     }
 
+    /**
+     * Test that the GR-AIS Message 6 can be constructed with initialised
+     * parameters.
+     */
+    @Test
+    public void testConstructor() {
+        GrAisMsg6Params msgParams = new GrAisMsg6Params(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
+        assertEquals(123456789, msgParams.getMmsi());
+        assertEquals(987654321, msgParams.getDestMmsi());
+        assertEquals(4, msgParams.getMessage().length);
+    }
+
 }

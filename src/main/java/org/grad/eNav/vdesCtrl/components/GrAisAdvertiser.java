@@ -17,12 +17,12 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
-import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +35,13 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The GNURadio AIS Advertiser Component
@@ -60,11 +66,26 @@ public class GrAisAdvertiser {
     private DatagramSocket vdesSocket;
 
     /**
+     * The General Destination Prefix
+     */
+    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.destMmsi:}")
+    private Integer signatureDestMmmsi;
+
+    /**
+     * A helper class definition to keep info on the Msg21 transmission
+     * information.
+     */
+    private class Msg21TxInfo {
+        GrAisMsg21Params params;
+        String message21;
+        long txTimestamp;
+    }
+
+    /**
      * The SNode Service.
      */
     @Autowired
     private SNodeService sNodeService;
-
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -105,10 +126,18 @@ public class GrAisAdvertiser {
         for(S125Node node: nodes) {
             // Send the UDP packet
             log.info("Station {} Sending an advertisement AtoN {}", station.getName(), node.getAtonUID());
-            this.sendDatagram(station.getIpAddress(), station.getPort(), node);
 
             // Wait to give enough time for the AIS TDMA slot
             Thread.sleep(AIS_INTERVAL);
+
+            // Keep a reference to when the message was send to create a signature for it
+            Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
+
+            // Wait to give enough time for the AIS TDMA slot
+            Thread.sleep(AIS_INTERVAL);
+
+            // Send the signature message
+            this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
         }
     }
 
@@ -117,21 +146,76 @@ public class GrAisAdvertiser {
      * make the streaming operation easier, we are actually returning the
      * provided message for each successful transmission.
      *
-     * @param address       The address to send the datagram to
-     * @param port          The port to send the datagram to
-     * @param s125Node       The S125 message to be transmitted
+     * @param address the address to send the datagram to
+     * @param port the port to send the datagram to
+     * @param s125Node the S125 message to be transmitted
      */
-    private void sendDatagram(String address, int port, S125Node s125Node) {
+    private Msg21TxInfo sendMsg21Datagram(String address, int port, S125Node s125Node) {
+        // Sanity check
+        if(Objects.isNull(s125Node)) {
+            return null;
+        }
+
         // Construct the UDP message for the VDES station
-        byte[] buffer;
+        Msg21TxInfo txinfo = new Msg21TxInfo();
         try {
-            buffer = GrAisUtils.encodeMsg21(new GrAisMsg21Params(s125Node)).getBytes();
+            txinfo.params = new GrAisMsg21Params(s125Node);
+            txinfo.message21 = GrAisUtils.encodeMsg21(txinfo.params);
         } catch (JAXBException ex) {
+            log.error(ex.getMessage());
+            return null;
+        }
+
+        // Create and send the UDP datagram packet
+        byte[] buffer = txinfo.message21.getBytes();
+        try {
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+                    InetAddress.getByName(address), port);
+            this.vdesSocket.send(packet);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return null;
+        }
+
+        // Note the time of the transmission and return the transmission info
+        txinfo.txTimestamp = System.currentTimeMillis()/1000L;
+        return txinfo;
+    }
+
+    /**
+     * This function will generate a signature message for the S125Node combined
+     * with the transmission UNIX timestamp and send this as an AIS message 6/8
+     * to the GNURadio UDP port as well.
+     *
+     * @param address the address to send the datagram to
+     * @param port the port to send the datagram to
+     * @param txInfo the AIS message 21 transmission information
+     */
+    private void sendSignatureDatagram(String address, int port, Msg21TxInfo txInfo) {
+        // Sanity check
+        if(Objects.isNull(txInfo)) {
+            return;
+        }
+
+        // Construct the NMEA sentence of message 21 to be signed
+        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(txInfo.message21, true, NMEAChannel.A);
+        log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", msg21NmeaSentence));
+
+        // Construct the UDP message for the VDES station
+        String signatureMessage;
+        try {
+            byte[] signature = GrAisUtils.getNMEASentenceSignature(msg21NmeaSentence, txInfo.txTimestamp);
+            signatureMessage = Optional.ofNullable(this.signatureDestMmmsi)
+                    .map(destMmsi -> new GrAisMsg6Params(txInfo.params.getMmsi(), destMmsi, signature))
+                    .map(GrAisUtils::encodeMsg6)
+                    .orElseGet(() -> GrAisUtils.encodeMsg8(new GrAisMsg8Params(txInfo.params.getMmsi(), signature)));
+        } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException | InvalidKeyException | SignatureException ex) {
             log.error(ex.getMessage());
             return;
         }
 
         // Create and send the UDP datagram packet
+        byte[] buffer = signatureMessage.getBytes();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
@@ -139,6 +223,10 @@ public class GrAisAdvertiser {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+
+        // Generate some debug information
+        String signatureNmeaSentence = GrAisUtils.generateNMEASentence(signatureMessage, true, NMEAChannel.A);
+        log.debug(String.format("Signature NMEA sentence sent: %s", signatureNmeaSentence));
     }
 
 }

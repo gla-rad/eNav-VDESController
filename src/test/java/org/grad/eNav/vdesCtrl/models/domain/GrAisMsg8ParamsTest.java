@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GrAisMsg8ParamsTest {
 
     /**
-     * Test that the GR-AIS Message 21 will be constructed by default with
+     * Test that the GR-AIS Message 8 will be constructed by default with
      * empty parameters.
      */
     @Test
@@ -31,6 +31,17 @@ public class GrAisMsg8ParamsTest {
         GrAisMsg8Params msgParams = new GrAisMsg8Params();
         assertNull(msgParams.getMmsi());
         assertEquals(0, msgParams.getMessage().length);
+    }
+
+    /**
+     * Test that the GR-AIS Message 8 can be constructed with initialised
+     * parameters.
+     */
+    @Test
+    public void testConstructor() {
+        GrAisMsg8Params msgParams = new GrAisMsg8Params(123456789, new byte[]{0b0, 0b1, 0b0, 0b1});
+        assertEquals(123456789, msgParams.getMmsi());
+        assertEquals(4, msgParams.getMessage().length);
     }
 
 }

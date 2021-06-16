@@ -53,7 +53,7 @@ public class GrAisUtils {
         StringBuilder aisBuilder = new StringBuilder();
 
         // Build the AIS message string
-        aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
+        aisBuilder.append(StringBinUtils.convertIntToBinary(6,6)) // AIS Message 6
                 .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
                 .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
                 .append(StringBinUtils.convertIntToBinary(0, 2)) // Sequence

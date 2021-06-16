@@ -39,6 +39,17 @@ public class GrAisMsg8Params {
     }
 
     /**
+     * Instantiates a  new GR-AIS Message 8 Parameters with arguments.
+     *
+     * @param mmsi    the mmsi
+     * @param message the message
+     */
+    public GrAisMsg8Params(Integer mmsi, byte[] message) {
+        this.mmsi = mmsi;
+        this.message = message;
+    }
+
+    /**
      * Gets mmsi.
      *
      * @return the mmsi
