@@ -131,10 +131,10 @@ public class GrAisAdvertiser {
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
             // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(AIS_INTERVAL);
-
-            // Send the signature message
-            this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
+//            Thread.sleep(AIS_INTERVAL);
+//
+//            // Send the signature message
+//            this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
 
             // Wait to give enough time for the AIS TDMA slot
             Thread.sleep(AIS_INTERVAL);
