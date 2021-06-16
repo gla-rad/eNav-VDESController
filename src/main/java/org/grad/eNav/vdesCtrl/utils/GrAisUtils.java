@@ -216,7 +216,7 @@ public class GrAisUtils {
                 .digest(stampedNmeaSentence.getBytes());
 
         // Load the private key to sign with
-        ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("classpath:CorkHoleTest-PrivateKeyPair.pem");
+        ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
 
         // Create the signature
         Signature sign = Signature.getInstance("SHA256withECDSA");

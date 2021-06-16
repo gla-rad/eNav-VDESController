@@ -139,7 +139,7 @@ public class GrAisUtilsTest {
     @Test
     public void testSignNMEASentence() throws Exception {
         // Retrieve the public key to initialise a signature with
-        ECPublicKey publicKey = CryptoUtils.readECPublicKey("classpath:CorkHoleTest-Public.pem");
+        ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
         Signature sign = Signature.getInstance("SHA256withECDSA");
         sign.initVerify(publicKey);
 

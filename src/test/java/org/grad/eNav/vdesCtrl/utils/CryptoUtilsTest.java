@@ -30,7 +30,7 @@ public class CryptoUtilsTest {
      */
     @Test
     public void testReadPublicECKey() throws Exception {
-        ECPublicKey publicKey = CryptoUtils.readECPublicKey("classpath:CorkHoleTest-Public.pem");
+        ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
         assertNotNull(publicKey);
     }
 
@@ -39,7 +39,7 @@ public class CryptoUtilsTest {
      */
     @Test
     public void testReadPrivateECKey() throws Exception {
-        ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("classpath:CorkHoleTest-PrivateKeyPair.pem");
+        ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
         assertNotNull(privateKey);
     }
 

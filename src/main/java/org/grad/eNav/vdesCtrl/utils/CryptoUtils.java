@@ -16,14 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.util.Base64;
-import org.springframework.util.ResourceUtils;
+import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
@@ -51,8 +50,8 @@ public class CryptoUtils {
      * @throws InvalidKeySpecException when the specified key is invalid
      */
     public static ECPublicKey readECPublicKey(String resource) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        File file = ResourceUtils.getFile(resource);
-        String key = new String(Files.readAllBytes(file.toPath()), Charset.defaultCharset());
+        InputStream in = new ClassPathResource(resource).getInputStream();
+        String key = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         String publicKeyPEM = key
                 .replace("-----BEGIN PUBLIC KEY-----", "")
@@ -77,8 +76,8 @@ public class CryptoUtils {
      * @throws InvalidKeySpecException when the specified key is invalid
      */
     public static ECPrivateKey readECPrivateKey(String resource) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        File file = ResourceUtils.getFile(resource);
-        String key =new String(Files.readAllBytes(file.toPath()), Charset.defaultCharset());
+        InputStream in = new ClassPathResource(resource).getInputStream();
+        String key = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         String privateKeyPEM = key
                 .replace("-----BEGIN PRIVATE KEY-----", "")
