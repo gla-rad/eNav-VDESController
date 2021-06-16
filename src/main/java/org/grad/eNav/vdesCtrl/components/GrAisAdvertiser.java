@@ -66,7 +66,13 @@ public class GrAisAdvertiser {
     private DatagramSocket vdesSocket;
 
     /**
-     * The General Destination Prefix
+     * Whether to enable signature messages
+     */
+    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.enableSignatures:false}")
+    private Boolean enableSignatures;
+
+    /**
+     * The sSignature Message Destination MMSI
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.destMmsi:}")
     private Integer signatureDestMmmsi;
@@ -130,11 +136,14 @@ public class GrAisAdvertiser {
             // Keep a reference to when the message was send to create a signature for it
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
-            // Wait to give enough time for the AIS TDMA slot
-//            Thread.sleep(AIS_INTERVAL);
-//
-//            // Send the signature message
-//            this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
+            // If signature messages are enabled, send one
+            if(this.enableSignatures) {
+                // Wait to give enough time for the AIS TDMA slot
+                Thread.sleep(AIS_INTERVAL);
+
+                // Send the signature message
+                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
+            }
 
             // Wait to give enough time for the AIS TDMA slot
             Thread.sleep(AIS_INTERVAL);
