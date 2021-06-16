@@ -130,9 +130,6 @@ public class GrAisAdvertiser {
             // Keep a reference to when the message was send to create a signature for it
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
-            // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(AIS_INTERVAL);
-
             // Send the signature message
             this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
 
@@ -218,7 +215,7 @@ public class GrAisAdvertiser {
         byte[] buffer = (signatureMessage+'\n').getBytes();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
+                    InetAddress.getByName(address), port+1);
             this.vdesSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
