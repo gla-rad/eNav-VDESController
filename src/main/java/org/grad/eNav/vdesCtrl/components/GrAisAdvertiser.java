@@ -58,12 +58,21 @@ import java.util.Optional;
 @Component
 public class GrAisAdvertiser {
 
-    // Component Constants
-    public static final Long AIS_INTERVAL = 500L;
-
     // Component Variables
     private Station station;
     private DatagramSocket vdesSocket;
+
+    /**
+     * Whether to enable signature messages
+     */
+    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.ais-interval:500L}")
+    private Long aisInterval;
+
+    /**
+     * Whether to enable signature messages
+     */
+    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.retries:10}")
+    private Integer retries;
 
     /**
      * Whether to enable signature messages
@@ -137,26 +146,22 @@ public class GrAisAdvertiser {
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
             //Multiple Tries
-            for(int i=0; i<10; i++) {
-                Thread.sleep(AIS_INTERVAL);
+            for(int i=0; i<this.retries; i++) {
+                Thread.sleep(this.aisInterval);
                 this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
             }
 
             // If signature messages are enabled, send one
             if(this.enableSignatures) {
                 // Wait to give enough time for the AIS TDMA slot
-                Thread.sleep(AIS_INTERVAL);
+                Thread.sleep(this.aisInterval);
 
                 // Send the signature message
-                // Multiple Tries
-                for(int i=0; i<10; i++) {
-                    Thread.sleep(AIS_INTERVAL);
-                    this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
-                }
+                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
             }
 
             // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(AIS_INTERVAL);
+            Thread.sleep(this.aisInterval);
         }
     }
 
