@@ -222,7 +222,7 @@ public class GrAisAdvertiser {
         }
 
         // Generate some debug information
-        String signatureNmeaSentence = GrAisUtils.generateNMEASentence(signatureMessage, true, NMEAChannel.A);
+        String signatureNmeaSentence = GrAisUtils.generateNMEASentence(signatureMessage, true, NMEAChannel.B);
         log.debug(String.format("Signature NMEA sentence sent: %s", signatureNmeaSentence));
     }
 
