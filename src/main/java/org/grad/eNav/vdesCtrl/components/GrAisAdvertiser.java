@@ -196,9 +196,6 @@ public class GrAisAdvertiser {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
             this.vdesSocket.send(packet);
-            DatagramPacket nullPacket = new DatagramPacket(new byte[0], 0,
-                    InetAddress.getByName(address), port);
-            this.vdesSocket.send(nullPacket);
         } catch (IOException e) {
             log.error(e.getMessage());
             return null;
@@ -247,9 +244,6 @@ public class GrAisAdvertiser {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
             this.vdesSocket.send(packet);
-            DatagramPacket nullPacket = new DatagramPacket(new byte[0], 0,
-                    InetAddress.getByName(address), port);
-            this.vdesSocket.send(nullPacket);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
