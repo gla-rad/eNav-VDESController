@@ -65,7 +65,7 @@ public class GrAisAdvertiser {
     /**
      * Whether to enable signature messages
      */
-    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.ais-interval:500L}")
+    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.ais-interval:500}")
     private Long aisInterval;
 
     /**
