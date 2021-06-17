@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -105,14 +106,16 @@ public class S125WebSocketService implements MessageHandler {
         }
 
         // Get the header and payload of the incoming message
-        String endpoint = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        String contentType = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        String address = Objects.toString(message.getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
+        Integer port = (Integer) (message.getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
         S125Node s125Node = (S125Node) message.getPayload();
 
         // A simple debug message;
         log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
 
         // Now push the aton node down the web-socket stream
-        this.pushAton(this.webSocket, String.format("/%s/%s", prefix, endpoint), s125Node);
+        this.pushAton(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
     }
 
     /**

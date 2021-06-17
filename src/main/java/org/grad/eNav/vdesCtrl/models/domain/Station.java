@@ -71,6 +71,11 @@ public class Station implements Serializable {
     @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
     private StationType type;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "channel", columnDefinition = "varchar(1) default 'A'")
+    private NMEAChannel channel;
+
     @JsonSerialize(using = GeometryJSONSerializer.class)
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
     @Column(name = "geometry")
@@ -171,6 +176,24 @@ public class Station implements Serializable {
      */
     public void setType(StationType type) {
         this.type = type;
+    }
+
+    /**
+     * Gets channel.
+     *
+     * @return the channel
+     */
+    public NMEAChannel getChannel() {
+        return channel;
+    }
+
+    /**
+     * Sets channel.
+     *
+     * @param channel the channel
+     */
+    public void setChannel(NMEAChannel channel) {
+        this.channel = channel;
     }
 
     /**
