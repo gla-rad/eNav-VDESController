@@ -63,16 +63,10 @@ public class GrAisAdvertiser {
     private DatagramSocket vdesSocket;
 
     /**
-     * Whether to enable signature messages
+     * The interval between the node advertisements
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.ais-interval:500}")
     private Long aisInterval;
-
-    /**
-     * Whether to enable signature messages
-     */
-    @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.retries:10}")
-    private Integer retries;
 
     /**
      * Whether to enable signature messages
@@ -145,18 +139,8 @@ public class GrAisAdvertiser {
             // Keep a reference to when the message was send to create a signature for it
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
-            //Multiple Tries
-            for(int i=0; i<this.retries; i++) {
-                Thread.sleep(this.aisInterval);
-                this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
-            }
-
             // If signature messages are enabled, send one
             if(this.enableSignatures) {
-                // Wait to give enough time for the AIS TDMA slot
-                Thread.sleep(this.aisInterval);
-
-                // Send the signature message
                 this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
             }
 
