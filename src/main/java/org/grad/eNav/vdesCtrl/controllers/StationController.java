@@ -77,7 +77,7 @@ public class StationController {
     }
 
     /**
-     * GET  /api/instances/:id : get the "id" instance.
+     * GET /api/instances/:id : get the "id" instance.
      *
      * @param id the id of the instance to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the station, or with status 404 (Not Found)
@@ -91,7 +91,7 @@ public class StationController {
     }
 
     /**
-     * POST  /api/stations : Create a new station.
+     * POST /api/stations : Create a new station.
      *
      * @param station the instance to create
      * @return the ResponseEntity with status 201 (Created) and with body the new instance, or with status 400 (Bad Request) if the instance has already an ID
@@ -120,13 +120,14 @@ public class StationController {
     }
 
     /**
-     * PUT  /api/stations : Update an existing station.
+     * PUT /api/stations : Update an existing station.
      *
      * @param station the instance to create
      * @return the ResponseEntity with status 201 (Created) and with body the new instance, or with status 400 (Bad Request) if the instance has already an ID
      */
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Station> updateStation(@PathVariable BigInteger id,  @RequestBody Station station) {
+    public ResponseEntity<Station> updateStation(@PathVariable BigInteger id,
+                                                 @RequestBody Station station) {
         log.debug("REST request to update Station : {}", station);
         if (id == null) {
             return ResponseEntity.badRequest()
@@ -150,7 +151,7 @@ public class StationController {
     }
 
     /**
-     * DELETE  /api/stations/:id : Delete the "id" station.
+     * DELETE /api/stations/:id : Delete the "id" station.
      *
      * @param id the id of the station to delete
      * @return the ResponseEntity with status 200 (OK)

@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.controllers;
 import org.grad.eNav.vdesCtrl.feign.NiordClient;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,43 @@ import java.util.stream.Collectors;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Controller
-public class HomeViewerController {
+public class HTMLViewerController {
+
+    /**
+     * The Application Name Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.name.name:VDES Controller}")
+    private String appName;
+
+    /**
+     * The Application Version Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.version:0.0.0}")
+    private String appVersion;
+
+    /**
+     * The Application Operator Name Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.operatorName:Unknown}")
+    private String appOperatorName;
+
+    /**
+     * The Application Operator Contact Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.operatorContact:Unknown}")
+    private String appOperatorContact;
+
+    /**
+     * The Application Operator URL Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.operatorUrl:}")
+    private String appOperatorUrl;
+
+    /**
+     * The Application Copyright Information.
+     */
+    @Value("${gla.rad.vdes-ctrl.info.copyright:}")
+    private String appCopyright;
 
     /**
      * The Radar Listener Properties.
@@ -63,8 +100,40 @@ public class HomeViewerController {
                 .stream()
                 .map(station -> String.format("%s:%d", station.getIpAddress(), station.getPort()))
                 .collect(Collectors.toList()));
+        model.addAttribute("appOperatorUrl", this.appOperatorUrl);
+        model.addAttribute("appCopyright", this.appCopyright);
         // Return the rendered index
         return "index";
+    }
+
+    /**
+     * The stations page of the VDES Controller Application.
+     *
+     * @param model The application UI model
+     * @return The index page
+     */
+    @GetMapping("/stations")
+    public String stations(Model model) {
+        model.addAttribute("appOperatorUrl", this.appOperatorUrl);
+        model.addAttribute("appCopyright", this.appCopyright);
+        return "stations";
+    }
+
+    /**
+     * The about page of the VDES Controller Application.
+     *
+     * @param model The application UI model
+     * @return The index page
+     */
+    @GetMapping("/about")
+    public String about(Model model) {
+        model.addAttribute("appName", this.appName);
+        model.addAttribute("appVersion", this.appVersion);
+        model.addAttribute("appOperatorName", this.appOperatorName);
+        model.addAttribute("appOperatorContact", this.appOperatorContact);
+        model.addAttribute("appOperatorUrl", this.appOperatorUrl);
+        model.addAttribute("appCopyright", this.appCopyright);
+        return "about";
     }
 
     /**

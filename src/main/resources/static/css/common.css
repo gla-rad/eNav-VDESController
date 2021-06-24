@@ -1,0 +1,35 @@
+/** Footer Panel **/
+
+.footer {
+    padding: 10px 30px;
+    border-radius: 0;
+}
+
+.footer a {
+    color: #888;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.footer-left {
+    padding-top: 7px;
+    text-align: center;
+}
+
+.footer-center {
+    text-align: center;
+}
+
+.footer-right {
+    padding-top: 7px;
+    text-align: center;
+}
+
+@media (min-width: 800px) {
+    .footer-left {
+        text-align: left;
+    }
+    .footer-right {
+        text-align: right;
+    }
+}
