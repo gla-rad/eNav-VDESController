@@ -18,6 +18,8 @@
 		<java.version>1.8</java.version>
 		<spring-boot-admin.version>2.3.0</spring-boot-admin.version>
 		<spring-cloud.version>Hoxton.SR8</spring-cloud.version>
+		<keycloak.version>12.0.1</keycloak.version>
+		<swagger.version>3.0.0</swagger.version>
 		<geomesa.version>3.1.0</geomesa.version>
 		<scala.abi.version>2.11</scala.abi.version>
 		<scala.version>2.11.7</scala.version>
@@ -179,6 +181,18 @@
 			<version>${zookeeper.version}</version>
 		</dependency>
 
+		<!-- Swagger -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-boot-starter</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
 		<!-- The Webjars -->
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -257,7 +271,7 @@
 			<dependency>
 				<groupId>org.keycloak.bom</groupId>
 				<artifactId>keycloak-adapter-bom</artifactId>
-				<version>11.0.2</version>
+				<version>${keycloak.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
