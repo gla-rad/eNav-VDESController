@@ -17,7 +17,7 @@
 package org.grad.eNav.vdesCtrl.exceptions;
 
 import org.apache.logging.log4j.util.Strings;
-import org.grad.eNav.vdesCtrl.utils.Pair;
+import org.grad.eNav.vdesCtrl.models.domain.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.utils;
+package org.grad.eNav.vdesCtrl.models.domain;
 
 import java.util.Objects;
 

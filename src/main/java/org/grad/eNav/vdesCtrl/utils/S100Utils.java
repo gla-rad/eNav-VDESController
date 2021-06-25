@@ -1,13 +1,10 @@
 package org.grad.eNav.vdesCtrl.utils;
 
 import _int.iho.s125.gml._0.DatasetType;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.JAXBIntrospector;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 /**
  * The S-100 Utility Class.
@@ -18,6 +15,27 @@ import java.io.ByteArrayInputStream;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class S100Utils {
+
+    /**
+     * Using the S125 utilities we can marshall back an S125 DatasetType
+     * object it's XML view.
+     *
+     * @param datasetType the Service Instance object
+     * @return the marshalled S125 message XML representation
+     */
+    public String marshalS125(DatasetType datasetType) throws JAXBException {
+        // Create the JAXB objects
+        JAXBContext jaxbContext = JAXBContext.newInstance(DatasetType.class);
+        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+        // Transform the G1128 object to an output stream
+        ByteArrayOutputStream xmlStream = new ByteArrayOutputStream();
+        jaxbMarshaller.marshal(datasetType, xmlStream);
+
+        // Return the XML string
+        return xmlStream.toString();
+    }
 
     /**
      * The S125Node object contains the S125 XML content of the message. We

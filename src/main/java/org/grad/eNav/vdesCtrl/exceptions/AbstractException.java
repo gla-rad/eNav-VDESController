@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.exceptions;
 
-import org.grad.eNav.vdesCtrl.utils.Pair;
+import org.grad.eNav.vdesCtrl.models.domain.Pair;
 import java.util.List;
 
 /**
