@@ -97,8 +97,7 @@ public class StationService {
     @Transactional(readOnly = true)
     public Station findOne(BigInteger id) {
         log.debug("Request to get Station : {}", id);
-        Station station = this.stationRepo.findOneWithEagerRelationships(id);
-        return station;
+        return this.stationRepo.findOneWithEagerRelationships(id);
     }
 
     /**

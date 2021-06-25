@@ -343,16 +343,16 @@
 
                 // Complete new row data
                 var rowDataArray = {};
-                
+
                 var adata = dt.rows({
                     selected: true
                 });
 
                 // Original row data
                 var orginalRowDataArray = adata.data()[0];
-                
+
                 // Getting the inputs from the edit-modal
-                $('form[name="altEditor-edit-form-' + this.random_id + '"] *').filter(':input[type!="file"]').filter(':enabled').each(function (i) { //Do not include disabled fields. 
+                $('form[name="altEditor-edit-form-' + this.random_id + '"] *').filter(':input[type!="file"]').filter(':enabled').each(function (i) { //Do not include disabled fields.
                     rowDataArray[$(this).attr('id')] = $(this).val();
                 });
 

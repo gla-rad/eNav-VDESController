@@ -21,6 +21,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -67,7 +68,7 @@ public class SNode {
 
     @ManyToMany(mappedBy = "nodes")
     @JsonIgnore
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Station> stations = new HashSet<>();
 
     /**

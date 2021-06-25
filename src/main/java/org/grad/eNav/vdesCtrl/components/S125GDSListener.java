@@ -21,6 +21,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
@@ -186,7 +187,16 @@ public class S125GDSListener {
     @Transactional
     private void saveSNode(S125Node s125Node){
         // Create a new SNode entry
-        SNode sNode =Optional.ofNullable(this.sNodeService.findOneByUid(s125Node.getAtonUID())).orElseGet(() -> new SNode(s125Node));
+        SNode sNode = Optional.of(s125Node)
+                .map(S125Node::getAtonUID)
+                .map(uid -> {
+                    try {
+                        return this.sNodeService.findOneByUid(uid);
+                    } catch(DataNotFoundException ex) {
+                        return null;
+                    }
+                })
+                .orElseGet(() -> new SNode(s125Node));
         sNode.setMessage(s125Node.getContent());
 
         // Save the SNode

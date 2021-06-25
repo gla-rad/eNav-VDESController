@@ -49,7 +49,7 @@ public interface StationRepo  extends JpaRepository<Station, BigInteger> {
     @Query("select distinct station " +
             " from Station station " +
             " left join fetch station.nodes " +
-            " where station.id =:id")
+            " where station.id = :id")
     Station findOneWithEagerRelationships(@Param("id") BigInteger id);
 
 }

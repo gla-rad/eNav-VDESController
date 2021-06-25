@@ -40,13 +40,6 @@ public interface SNodeRepo extends JpaRepository<SNode, BigInteger> {
     SNode findByUid(String uid);
 
     /**
-     * Find all related to a specific station
-     *
-     * @return The pages list for that station
-     */
-    List<SNode> findByStations(Station station);
-
-    /**
      * Find one with eager relationships design.
      *
      * @param id The id

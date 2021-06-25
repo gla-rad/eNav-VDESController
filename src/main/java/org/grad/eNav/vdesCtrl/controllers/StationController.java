@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * REST controller for managing Station.
+ * REST controller for managing Stations.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -157,7 +157,7 @@ public class StationController {
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> deleteInstance(@PathVariable BigInteger id) {
+    public ResponseEntity<Void> deleteStation(@PathVariable BigInteger id) {
         log.debug("REST request to delete Instance : {}", id);
         this.stationService.delete(id);
         return ResponseEntity.ok()

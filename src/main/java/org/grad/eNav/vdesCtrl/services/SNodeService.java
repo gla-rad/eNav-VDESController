@@ -19,7 +19,9 @@ package org.grad.eNav.vdesCtrl.services;
 import _int.iho.s125.gml._0.DatasetType;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
@@ -34,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.xml.bind.JAXBException;
 import java.math.BigInteger;
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -62,22 +63,6 @@ public class SNodeService {
      */
     @Autowired
     StationService stationService;
-
-    /**
-     * Get all the nodes of a specific station in a pageable search.
-     *
-     * @param stationId the station ID to retrieve the nodes for
-     * @return the list of nodes
-     */
-    @Transactional(readOnly = true)
-    public List<S125Node> findAllForStationDto(BigInteger stationId) {
-        log.debug("Request to get all Nodes for Station: {}", stationId);
-        return Optional.ofNullable(stationId)
-                .map(this.stationService::findOne)
-                .map(this.sNodeRepo::findByStations)
-                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
-    }
 
     /**
      * Save a node.
@@ -120,9 +105,11 @@ public class SNodeService {
      * @return the node
      */
     @Transactional(readOnly = true)
-    public SNode findOne(BigInteger id) {
+    public SNode findOne(BigInteger id) throws DataNotFoundException {
         log.debug("Request to get Node : {}", id);
-        return this.sNodeRepo.findOneWithEagerRelationships(id);
+        return Optional.ofNullable(id)
+                .map(this.sNodeRepo::findOneWithEagerRelationships)
+                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID", null));
     }
 
     /**
@@ -132,11 +119,11 @@ public class SNodeService {
      * @return the node
      */
     @Transactional(readOnly = true)
-    public SNode findOneByUid(String uid) {
+    public SNode findOneByUid(String uid) throws DataNotFoundException {
         log.debug("Request to get Node with UID : {}", uid);
         return Optional.ofNullable(uid)
                 .map(this.sNodeRepo::findByUid)
-                .orElse(null);
+                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID", null));
     }
 
     /**
@@ -144,9 +131,21 @@ public class SNodeService {
      *
      * @param id the ID of the node
      */
-    public void delete(BigInteger id) {
-        log.debug("Request to delete Node : {}", id);
-        this.sNodeRepo.deleteById(id);
+    public void delete(BigInteger id) throws DataNotFoundException {
+        log.debug("Request to delete Station Node : {}", id);
+        if(this.sNodeRepo.existsById(id)) {
+            // Get the station node with all relationships
+            SNode sNode = this.sNodeRepo.findOneWithEagerRelationships(id);
+            // Remove the station node from all stations
+            for(Station s: sNode.getStations()) {
+                s.getNodes().remove(sNode);
+                this.stationService.save(s);
+            }
+            // Finally delete the station node
+            this.sNodeRepo.deleteById(id);
+        } else {
+            throw new DataNotFoundException("No station node found for the provided ID", null);
+        }
     }
 
     /**
@@ -154,12 +153,29 @@ public class SNodeService {
      *
      * @param uid the UID the node
      */
-    public void deleteByUid(String uid) {
+    public void deleteByUid(String uid) throws DataNotFoundException {
         log.debug("Request to delete Node with UID : {}", uid);
-        Optional.ofNullable(uid)
+        BigInteger id = Optional.ofNullable(uid)
                 .map(this.sNodeRepo::findByUid)
                 .map(SNode::getId)
-                .ifPresent(this.sNodeRepo::deleteById);
+                .orElse(null);
+        this.delete(id);
+    }
+
+    /**
+     * Get all the nodes of a specific station in a pageable search.
+     *
+     * @param stationId the station ID to retrieve the nodes for
+     * @return the list of nodes
+     */
+    @Transactional(readOnly = true)
+    public List<S125Node> findAllForStationDto(BigInteger stationId) {
+        log.debug("Request to get all Nodes for Station: {}", stationId);
+        return Optional.ofNullable(stationId)
+                .map(this.stationService::findOne)
+                .map(Station::getNodes)
+                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     /**

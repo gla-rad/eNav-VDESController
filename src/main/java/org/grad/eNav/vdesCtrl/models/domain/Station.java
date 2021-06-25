@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Cache;
 import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.*;
@@ -82,10 +83,10 @@ public class Station implements Serializable {
     private Geometry geometry;
 
     @ManyToMany(cascade = CascadeType.PERSIST)
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @JoinTable(name = "station_nodes",
-            joinColumns = @JoinColumn(name="station_id", referencedColumnName="ID"),
-            inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="ID"))
+            joinColumns = @JoinColumn(name="station_id", referencedColumnName="id"),
+            inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="id"))
     private Set<SNode> nodes = new HashSet<>();
 
     /**
