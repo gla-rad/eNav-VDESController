@@ -16,9 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s125.gml._0.DatasetType;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import _int.iho.s125.gml._0.DataSet;
 import org.grad.eNav.vdesCtrl.models.VDESentences;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 
 import javax.xml.bind.JAXBException;
 import java.util.zip.CRC32;
@@ -45,7 +45,7 @@ public class VDES1000Utils {
      * @return The constructor VDE sentence
      */
     public static String s125ToVDE(S125Node s125Node, long piSeqNo, String mmsi)  throws JAXBException {
-        DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
+        DataSet dataset = S100Utils.unmarshallS125(s125Node.getContent());
 
         // Create a string builder to start ith
         StringBuilder vdeBuilder = new StringBuilder();

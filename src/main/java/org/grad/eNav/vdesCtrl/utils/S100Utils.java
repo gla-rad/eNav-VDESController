@@ -1,6 +1,6 @@
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s125.gml._0.DatasetType;
+import _int.iho.s125.gml._0.DataSet;
 
 import javax.xml.bind.*;
 import java.io.ByteArrayInputStream;
@@ -23,9 +23,9 @@ public class S100Utils {
      * @param datasetType the Service Instance object
      * @return the marshalled S125 message XML representation
      */
-    public String marshalS125(DatasetType datasetType) throws JAXBException {
+    public static String marshalS125(DataSet datasetType) throws JAXBException {
         // Create the JAXB objects
-        JAXBContext jaxbContext = JAXBContext.newInstance(DatasetType.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(DataSet.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
@@ -46,16 +46,16 @@ public class S100Utils {
      * @return The unmarshalled S125 DatasetType object
      * @throws JAXBException
      */
-    public static DatasetType unmarshallS125(String s125) throws JAXBException {
+    public static DataSet unmarshallS125(String s125) throws JAXBException {
         // Create the JAXB objects
-        JAXBContext jaxbContext = JAXBContext.newInstance(DatasetType.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(DataSet.class);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
         // Transform the S125 context into an input stream
         ByteArrayInputStream is = new ByteArrayInputStream(s125.getBytes());
 
         // And translate
-        return (DatasetType) JAXBIntrospector.getValue(jaxbUnmarshaller.unmarshal(is));
+        return (DataSet) JAXBIntrospector.getValue(jaxbUnmarshaller.unmarshal(is));
     }
 
 }

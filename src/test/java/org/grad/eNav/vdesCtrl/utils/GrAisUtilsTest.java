@@ -16,12 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import org.grad.eNav.vdesCtrl.models.domain.AtonType;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBException;
 import java.security.MessageDigest;
 import java.security.Signature;
 import java.security.interfaces.ECPublicKey;
@@ -31,9 +28,58 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GrAisUtilsTest {
 
     // Define the test S125 Messages Expected Encoding
+    public static final String AIS_MSG_6_ENCODED = "000110000001110101101111001101000101010011101011011110011010001011000100000000000100000101011000010110000101100000";
+    public static final String AIS_MSG_8_ENCODED = "001000000001110101101111001101000101010000000000010000010101100001011000010110000000";
     public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011000100000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
     public static final String S125_NO_2_ENCODED = "010101000001101001111101101011110001111010000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
     public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011100000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001100000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
+
+    /**
+     * Test that we can encode an AIS Message 6 correctly based on the provided
+     * GNURadio AIS Message 6 parameters. The encoded output will be checked
+     * against the result produced by the AIS Blacktoolkit AIVDM_Encoder.py
+     * utility for the following definition:
+     * <p>
+     * ./AIVDM_Encoder.py --type=6 --mmsi=123456789 --d_mmsi=987654321 --msg=XXX
+     */
+    @Test
+    public void testEncodeMsg6() {
+        // First construct the parameters
+        GrAisMsg6Params msgParams = new GrAisMsg6Params();
+        msgParams.setMmsi(123456789);
+        msgParams.setDestMmsi(987654321);
+        msgParams.setMessage("XXX".getBytes());
+
+        // Encode the message
+        String msg6 = GrAisUtils.encodeMsg6(msgParams);
+
+        // Assert that everything seems correct
+        assertFalse(msg6.isEmpty());
+        assertEquals(AIS_MSG_6_ENCODED, msg6);
+    }
+
+    /**
+     * Test that we can encode an AIS Message 8 correctly based on the provided
+     * GNURadio AIS Message 8 parameters. The encoded output will be checked
+     * against the result produced by the AIS Blacktoolkit AIVDM_Encoder.py
+     * utility for the following definition:
+     * <p>
+     * ./AIVDM_Encoder.py --type=8 --mmsi=123456789 --d_mmsi=987654321 --msg=XXX
+     */
+    @Test
+    public void testEncodeMsg8() {
+        // First construct the parameters
+        GrAisMsg8Params msgParams = new GrAisMsg8Params();
+        msgParams.setMmsi(123456789);
+        msgParams.setMessage("XXX".getBytes());
+
+        // Encode the message
+        String msg8 = GrAisUtils.encodeMsg8(msgParams);
+
+        // Assert that everything seems correct
+        assertFalse(msg8.isEmpty());
+        assertEquals(AIS_MSG_8_ENCODED, msg8);
+    }
 
     /**
      * Test that a basic Virtual AtoN can be encoded correctly. The encoded
@@ -43,7 +89,7 @@ public class GrAisUtilsTest {
      * ./AIVDM_Encoder.py --type=21 --mmsi=123456789 --lat=53.61 --long=1.594 --aid_type=30 --aid_name='Test AtoN No 1' --v_AtoN
      */
     @Test
-    public void testS125ToAisMsg21VAtoN() {
+    public void testEncodeMsg21VAtoN() {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
@@ -69,7 +115,7 @@ public class GrAisUtilsTest {
      * ./AIVDM_Encoder.py --type=21 --mmsi=123456789 --lat=53.61 --long=1.594 --aid_type=24 --aid_name='Test AtoN No 3' --vsize=4x4
      */
     @Test
-    public void testS125ToAisMsg21RVAtoNNo2()  {
+    public void testEncodeMsg21VAtoNNo2()  {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(111111111);
@@ -95,7 +141,7 @@ public class GrAisUtilsTest {
      * ./AIVDM_Encoder.py --type=21 --mmsi=123456789 --lat=53.61 --long=1.594 --aid_type=30 --aid_name='Test AtoN No 3' --vsize=4x4
      */
     @Test
-    public void testS125ToAisMsg21RealAtoN() {
+    public void testEncodeMsg21RealAtoN() {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
@@ -229,4 +275,5 @@ public class GrAisUtilsTest {
         assertTrue(sign.verify(signature9));
         assertTrue(signature9.length < 120);
     }
+
 }

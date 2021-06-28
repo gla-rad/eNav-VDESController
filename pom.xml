@@ -233,7 +233,7 @@
 		<dependency>
 			<groupId>org.grad.eNav</groupId>
 			<artifactId>S125</artifactId>
-			<version>0.1.1</version>
+			<version>0.1.2</version>
 			<classifier>jdk8</classifier>
 		</dependency>
 

@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.models.domain;
 
-import _int.iho.s125.gml._0.DatasetType;
+import _int.iho.s125.gml._0.DataSet;
 import _int.iho.s125.gml._0.MemberType;
 import _int.iho.s125.gml._0.S125NavAidStructureType;
 import lombok.extern.slf4j.Slf4j;
@@ -78,11 +78,11 @@ public class GrAisMsg21Params {
         this();
 
         // Try to unmarshall the S125Node object
-        DatasetType dataset = S100Utils.unmarshallS125(s125Node.getContent());
+        DataSet dataset = S100Utils.unmarshallS125(s125Node.getContent());
 
         // Extract the S125 Member NavAid Information
         Optional.ofNullable(dataset)
-                .map(DatasetType::getMemberOrImember)
+                .map(DataSet::getMembersAndImembers)
                 .filter(((Predicate<List<AbstractFeatureMemberType>>) List::isEmpty).negate())
                 .map(l -> l.get(0))
                 .filter(MemberType.class::isInstance)
@@ -95,8 +95,8 @@ public class GrAisMsg21Params {
                     this.mmsi = navAid.getMmsi();
                     this.atonType = AtonType.fromString(navAid.getAtonType().value());
                     this.name = navAid.getFeatureName().getName();
-                    this.latitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValue().get(0);
-                    this.longitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValue().get(1);
+                    this.latitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValues().get(0);
+                    this.longitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValues().get(1);
                     this.length = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getLength()).orElse(0));
                     this.width = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getWidth()).orElse(0));
                     this.raim = navAid.isRaimFlag();

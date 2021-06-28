@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import _int.iho.s125.gml._0.DatasetType;
+import _int.iho.s125.gml._0.DataSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
@@ -195,8 +195,8 @@ public class SNodeService {
         // We first need to extract the bounding box of the snode message
         JsonNode bbox = null;
         try {
-            DatasetType s125Dataset = S100Utils.unmarshallS125(snode.getMessage());
-            List<Double> point = s125Dataset.getBoundedBy().getEnvelope().getLowerCorner().getValue();
+            DataSet s125Dataset = S100Utils.unmarshallS125(snode.getMessage());
+            List<Double> point = s125Dataset.getBoundedBy().getEnvelope().getLowerCorner().getValues();
             String crsName = s125Dataset.getBoundedBy().getEnvelope().getSrsName();
             Integer srid = Optional.ofNullable(crsName).map(crs -> crs.split(":")[1]).map(Integer::valueOf).orElse(null);
             bbox = GeoJSONUtils.createGeoJSONPoint(point.get(0), point.get(1), srid);

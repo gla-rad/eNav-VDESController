@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import _int.iho.s125.gml._0.DatasetType;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
@@ -39,7 +38,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Objects;
 
 /**
  * The VDES1000Service Class

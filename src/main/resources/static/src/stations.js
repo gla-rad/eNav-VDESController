@@ -89,6 +89,8 @@ var nodesColumnDefs = [{
 // Run when the document is ready
 $(document).ready( function () {
     stationsTable = $('#stations_table').DataTable({
+        "processing": true,
+        "serverSide": true,
         ajax: {
             "type": "GET",
             "url": "/api/stations",
