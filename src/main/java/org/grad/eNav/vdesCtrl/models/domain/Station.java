@@ -18,10 +18,12 @@ package org.grad.eNav.vdesCtrl.models.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.search.annotations.*;
 import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.*;
@@ -38,24 +40,36 @@ import java.util.Set;
 @Entity
 @Table(name = "station")
 @Cacheable
+@Indexed
+@NormalizerDef(name = "lowercase", filters = @TokenFilterDef(factory = LowerCaseFilterFactory.class))
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Station implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
+    @Field(name = "id_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "id_sort")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private BigInteger id;
 
     @NotNull
+    @Field()
+    @Field(name = "name_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "name_sort")
     @Column(name = "name")
     private String name;
 
     @NotNull
+    @Field()
+    @Field(name = "ipAddress_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "ipAddress_sort")
     @Column(name = "ipAddress", nullable = false)
     private String ipAddress;
 
     @NotNull
+    @Field(name = "port_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "port_sort")
     @Column(name = "port", nullable = false)
     private Integer port;
 
@@ -64,16 +78,23 @@ public class Station implements Serializable {
     private Long piSeqNo;
 
     @NotNull
+    @Field()
+    @Field(name = "mmsi_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "mmsi_sort")
     @Column(name = "mmsi", nullable = false)
     private String mmsi;
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @Field(name = "type_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "type_sort")
     @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
     private StationType type;
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @Field(name = "channel_sort", analyze = Analyze.NO, normalizer = @Normalizer(definition = "lowercase"))
+    @SortableField(forField = "channel_sort")
     @Column(name = "channel", columnDefinition = "varchar(1) default 'A'")
     private NMEAChannel channel;
 

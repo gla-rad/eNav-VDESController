@@ -18,6 +18,8 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -74,6 +76,19 @@ public class StationController {
         int pageSize = size.orElse(10);
         Page<Station> stationPage = stationService.findAll(PageRequest.of(currentPage - 1, pageSize));
         return new ResponseEntity<>(stationPage.getContent(), HttpStatus.OK);
+    }
+
+    /**
+     * POST /api/stations/dt : Returns a paged list of all current stations.
+     *
+     * @param dtPagingRequest the datatables paging request
+     * @return the ResponseEntity with status 200 (OK) and the list of stations in body
+     */
+    @PostMapping(value = "/dt", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DtPage<Station>> getStationsForDatatables(@RequestBody DtPagingRequest dtPagingRequest) {
+        log.debug("REST request to get page of Stations for datatables");
+        DtPage<Station> stationsForDt = stationService.getStationsForDatatables(dtPagingRequest);
+        return new ResponseEntity<>(stationsForDt, HttpStatus.OK);
     }
 
     /**

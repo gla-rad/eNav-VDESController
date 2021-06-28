@@ -17,17 +17,29 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.Query;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service Implementation for managing Stations.
@@ -39,8 +51,20 @@ import java.util.List;
 @Transactional
 public class StationService {
 
+    /**
+     * The Entity Manager.
+     */
+    @Autowired
+    EntityManager entityManager;
+
+    /**
+     * The Station Repository.
+     */
     @Autowired
     StationRepo stationRepo;
+
+    // Service Variables
+    private static final Comparator<Station> EMPTY_COMPARATOR = (e1, e2) -> 0;
 
     /**
      * Save a station.
@@ -109,4 +133,59 @@ public class StationService {
         log.debug("Request to delete Station : {}", id);
         this.stationRepo.deleteById(id);
     }
+
+    /**
+     * Handles a datatables pagination request and returns the results list in
+     * an appropriate format to be viewed by a datatables jQuery table.
+     *
+     * @param pagingRequest the Datatables pagination request
+     * @return the Datatables paged response
+     */
+    public DtPage<Station> getStationsForDatatables(DtPagingRequest pagingRequest) {
+        // Create the search query
+        FullTextQuery searchQuery = this.searchStationsQuery(pagingRequest.getSearch().getValue());
+        searchQuery.setFirstResult(pagingRequest.getStart());
+        searchQuery.setMaxResults(pagingRequest.getLength());
+
+        // Add sorting if requested
+        Optional.of(pagingRequest)
+                .map(DtPagingRequest::getLucenceSort)
+                .filter(ls -> ls.getSort().length > 0)
+                .ifPresent(searchQuery::setSort);
+
+        return (DtPage<Station>) Optional.of(searchQuery)
+                .map(FullTextQuery::getResultList)
+                .map(stations -> new PageImpl<>(stations, pagingRequest.toPageRequest(), searchQuery.getResultSize()))
+                .map(page -> new DtPage((Page<Station>) page, pagingRequest))
+                .orElseGet(DtPage::new);
+    }
+
+    /**
+     * Constructs a hibernate search query using Lucene based on the provided
+     * search test. This query will be based solely on the stations table and
+     * will include the following fields:
+     * - Name
+     * - IP Address
+     * - MMSI
+     *
+     * @param searchText the text to be searched
+     * @return the full text query
+     */
+    private FullTextQuery searchStationsQuery(String searchText) {
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
+                .buildQueryBuilder()
+                .forEntity(Station.class)
+                .get();
+
+        Query luceneQuery = queryBuilder
+                .keyword()
+                .wildcard()
+                .onFields("name", "ipAddress", "mmsi")
+                .matching(searchText + "*")
+                .createQuery();
+
+        return fullTextEntityManager.createFullTextQuery(luceneQuery, Station.class);
+    }
+
 }

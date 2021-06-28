@@ -89,15 +89,17 @@ var nodesColumnDefs = [{
 // Run when the document is ready
 $(document).ready( function () {
     stationsTable = $('#stations_table').DataTable({
-        "processing": true,
+        //"processing": true,
+        //"language": {
+        //    processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+        //},
         "serverSide": true,
         ajax: {
-            "type": "GET",
-            "url": "/api/stations",
-            "dataType": "json",
-            "cache": false,
-            "dataSrc": function (json) {
-                return json;
+            "type": "POST",
+            "url": "/api/stations/dt",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
             },
             error: function (jqXHR, ajaxOptions, thrownError) {
                 console.error(thrownError);
@@ -106,7 +108,7 @@ $(document).ready( function () {
         columns: stationsColumnDefs,
         dom: 'Bfrltip',
         select: 'single',
-        lengthMenu: [10, 25, 50, 75, 100],
+        lengthMenu: [2, 10, 25, 50, 75, 100],
         responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
