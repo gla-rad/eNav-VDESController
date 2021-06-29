@@ -105,11 +105,11 @@ public class SNodeService {
      * @return the node
      */
     @Transactional(readOnly = true)
-    public SNode findOne(BigInteger id) throws DataNotFoundException {
+    public SNode findOne(BigInteger id) {
         log.debug("Request to get Node : {}", id);
         return Optional.ofNullable(id)
                 .map(this.sNodeRepo::findOneWithEagerRelationships)
-                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID", null));
+                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID"));
     }
 
     /**
@@ -119,11 +119,11 @@ public class SNodeService {
      * @return the node
      */
     @Transactional(readOnly = true)
-    public SNode findOneByUid(String uid) throws DataNotFoundException {
+    public SNode findOneByUid(String uid) {
         log.debug("Request to get Node with UID : {}", uid);
         return Optional.ofNullable(uid)
                 .map(this.sNodeRepo::findByUid)
-                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID", null));
+                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID"));
     }
 
     /**
@@ -131,7 +131,7 @@ public class SNodeService {
      *
      * @param id the ID of the node
      */
-    public void delete(BigInteger id) throws DataNotFoundException {
+    public void delete(BigInteger id) {
         log.debug("Request to delete Station Node : {}", id);
         if(this.sNodeRepo.existsById(id)) {
             // Get the station node with all relationships
@@ -144,7 +144,7 @@ public class SNodeService {
             // Finally delete the station node
             this.sNodeRepo.deleteById(id);
         } else {
-            throw new DataNotFoundException("No station node found for the provided ID", null);
+            throw new DataNotFoundException("No station node found for the provided ID");
         }
     }
 

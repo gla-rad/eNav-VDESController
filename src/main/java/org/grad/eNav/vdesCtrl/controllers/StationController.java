@@ -18,8 +18,8 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.dtos.DtPage;
-import org.grad.eNav.vdesCtrl.models.dtos.DtPagingRequest;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -75,7 +75,8 @@ public class StationController {
         int currentPage = page.orElse(1);
         int pageSize = size.orElse(10);
         Page<Station> stationPage = stationService.findAll(PageRequest.of(currentPage - 1, pageSize));
-        return new ResponseEntity<>(stationPage.getContent(), HttpStatus.OK);
+        return ResponseEntity.ok()
+                .body(stationPage.getContent());
     }
 
     /**
@@ -87,8 +88,8 @@ public class StationController {
     @PostMapping(value = "/dt", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DtPage<Station>> getStationsForDatatables(@RequestBody DtPagingRequest dtPagingRequest) {
         log.debug("REST request to get page of Stations for datatables");
-        DtPage<Station> stationsForDt = stationService.getStationsForDatatables(dtPagingRequest);
-        return new ResponseEntity<>(stationsForDt, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .body(stationService.getStationsForDatatables(dtPagingRequest));
     }
 
     /**
@@ -100,9 +101,8 @@ public class StationController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Station> getStation(@PathVariable BigInteger id) {
         log.debug("REST request to get Station : {}", id);
-        return Optional.ofNullable(this.stationService.findOne(id))
-                .map(result -> ResponseEntity.ok().body(result))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok()
+                .body(this.stationService.findOne(id));
     }
 
     /**
@@ -189,7 +189,8 @@ public class StationController {
     @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<S125Node>> getStationSNodes(@PathVariable BigInteger id) {
         log.debug("REST request to get page of Station Nodes");
-        List<S125Node > nodeList = sNodeService.findAllForStationDto(id);
-        return new ResponseEntity<>(nodeList, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .body(sNodeService.findAllForStationDto(id));
     }
+
 }

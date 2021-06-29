@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.dtos;
+package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
 import org.springframework.data.domain.Page;
 

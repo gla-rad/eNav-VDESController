@@ -18,13 +18,14 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.Query;
+import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
-import org.grad.eNav.vdesCtrl.models.dtos.DtPage;
-import org.grad.eNav.vdesCtrl.models.dtos.DtPagingRequest;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
-import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +63,11 @@ public class StationService {
     StationRepo stationRepo;
 
     // Service Variables
-    private static final Comparator<Station> EMPTY_COMPARATOR = (e1, e2) -> 0;
+    private final String[] searchFields = new String[] {
+            "name",
+            "ipAddress",
+            "mmsi"
+    };
 
     /**
      * Save a station.
@@ -97,8 +100,7 @@ public class StationService {
     @Transactional(readOnly = true)
     public Page<Station> findAll(Pageable pageable) {
         log.debug("Request to get all Stations in a pageable search");
-        Page<Station> result = this.stationRepo.findAll(pageable);
-        return result;
+        return this.stationRepo.findAll(pageable);
     }
 
     /**
@@ -121,7 +123,9 @@ public class StationService {
     @Transactional(readOnly = true)
     public Station findOne(BigInteger id) {
         log.debug("Request to get Station : {}", id);
-        return this.stationRepo.findOneWithEagerRelationships(id);
+        return Optional.of(id)
+                .map(this.stationRepo::findOneWithEagerRelationships)
+                .orElseThrow(() -> new DataNotFoundException(String.format("No station found for the provided ID: %d", id)));
     }
 
     /**
@@ -131,32 +135,37 @@ public class StationService {
      */
     public void delete(BigInteger id) {
         log.debug("Request to delete Station : {}", id);
-        this.stationRepo.deleteById(id);
+        if(this.stationRepo.existsById(id)) {
+            this.stationRepo.deleteById(id);
+        } else {
+            throw new DataNotFoundException(String.format("No station found for the provided ID: %d", id));
+        }
     }
 
     /**
      * Handles a datatables pagination request and returns the results list in
      * an appropriate format to be viewed by a datatables jQuery table.
      *
-     * @param pagingRequest the Datatables pagination request
+     * @param dtPagingRequest the Datatables pagination request
      * @return the Datatables paged response
      */
-    public DtPage<Station> getStationsForDatatables(DtPagingRequest pagingRequest) {
+    @Transactional(readOnly = true)
+    public DtPage<Station> getStationsForDatatables(DtPagingRequest dtPagingRequest) {
         // Create the search query
-        FullTextQuery searchQuery = this.searchStationsQuery(pagingRequest.getSearch().getValue());
-        searchQuery.setFirstResult(pagingRequest.getStart());
-        searchQuery.setMaxResults(pagingRequest.getLength());
+        FullTextQuery searchQuery = this.searchStationsQuery(dtPagingRequest.getSearch().getValue());
+        searchQuery.setFirstResult(dtPagingRequest.getStart());
+        searchQuery.setMaxResults(dtPagingRequest.getLength());
 
         // Add sorting if requested
-        Optional.of(pagingRequest)
+        Optional.of(dtPagingRequest)
                 .map(DtPagingRequest::getLucenceSort)
                 .filter(ls -> ls.getSort().length > 0)
                 .ifPresent(searchQuery::setSort);
 
         return (DtPage<Station>) Optional.of(searchQuery)
                 .map(FullTextQuery::getResultList)
-                .map(stations -> new PageImpl<>(stations, pagingRequest.toPageRequest(), searchQuery.getResultSize()))
-                .map(page -> new DtPage((Page<Station>) page, pagingRequest))
+                .map(stations -> new PageImpl<>(stations, dtPagingRequest.toPageRequest(), searchQuery.getResultSize()))
+                .map(page -> new DtPage((Page<Station>) page, dtPagingRequest))
                 .orElseGet(DtPage::new);
     }
 
@@ -181,8 +190,8 @@ public class StationService {
         Query luceneQuery = queryBuilder
                 .keyword()
                 .wildcard()
-                .onFields("name", "ipAddress", "mmsi")
-                .matching(searchText + "*")
+                .onFields(this.searchFields)
+                .matching(searchText.toLowerCase() + "*")
                 .createQuery();
 
         return fullTextEntityManager.createFullTextQuery(luceneQuery, Station.class);

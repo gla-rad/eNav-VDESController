@@ -55,12 +55,7 @@ public class SNodeController {
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteNode(@PathVariable BigInteger id) {
         log.debug("REST request to delete Station Node : {}", id);
-        try {
-            this.sNodeService.delete(id);
-        } catch(DataNotFoundException ex) {
-            return ResponseEntity.notFound()
-                    .build();
-        }
+        this.sNodeService.delete(id);
         return ResponseEntity.ok()
                 .headers(HeaderUtil.createEntityDeletionAlert("node", id.toString()))
                 .build();
@@ -76,12 +71,7 @@ public class SNodeController {
     public ResponseEntity<Void> deleteNode(@PathVariable String uid) {
         log.debug("REST request to delete Station Node by UID : {}", uid);
         // First translate the UID into a station node ID
-        try {
-            this.sNodeService.deleteByUid(uid);
-        } catch(DataNotFoundException ex) {
-            return ResponseEntity.notFound()
-                    .build();
-        }
+        this.sNodeService.deleteByUid(uid);
         return ResponseEntity.ok()
                 .headers(HeaderUtil.createEntityDeletionAlert("node", uid))
                 .build();

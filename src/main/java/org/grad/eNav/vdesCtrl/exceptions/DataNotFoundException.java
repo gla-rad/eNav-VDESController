@@ -1,17 +1,14 @@
 package org.grad.eNav.vdesCtrl.exceptions;
 
-public class DataNotFoundException extends Exception {
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-    private static final long serialVersionUID = -2171229941490315105L;
-
-    /**
-     * Instantiates a new Data Not Found exception.
-     *
-     * @param message the message
-     * @param t       the t
-     */
-    public DataNotFoundException(String message, Throwable t) {
-        super(message, t);
+/**
+ * Exception for informing that the needed resource is not found.
+ */
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class DataNotFoundException extends RuntimeException {
+    public DataNotFoundException(String msg){
+        super(msg);
     }
-
 }

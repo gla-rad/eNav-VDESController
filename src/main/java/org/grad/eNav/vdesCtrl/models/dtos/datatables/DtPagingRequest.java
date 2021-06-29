@@ -14,15 +14,11 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.dtos;
+package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,9 +35,9 @@ public class DtPagingRequest {
     private int start;
     private int length;
     private int draw;
-    private List<Order> order;
-    private List<Column> columns;
-    private Search search;
+    private List<DtOrder> order;
+    private List<DtColumn> columns;
+    private DtSearch search;
 
     /**
      * Instantiates a new Paging request.
@@ -109,7 +105,7 @@ public class DtPagingRequest {
      *
      * @return the order
      */
-    public List<Order> getOrder() {
+    public List<DtOrder> getOrder() {
         return order;
     }
 
@@ -118,7 +114,7 @@ public class DtPagingRequest {
      *
      * @param order the order
      */
-    public void setOrder(List<Order> order) {
+    public void setOrder(List<DtOrder> order) {
         this.order = order;
     }
 
@@ -127,7 +123,7 @@ public class DtPagingRequest {
      *
      * @return the columns
      */
-    public List<Column> getColumns() {
+    public List<DtColumn> getColumns() {
         return columns;
     }
 
@@ -136,7 +132,7 @@ public class DtPagingRequest {
      *
      * @param columns the columns
      */
-    public void setColumns(List<Column> columns) {
+    public void setColumns(List<DtColumn> columns) {
         this.columns = columns;
     }
 
@@ -145,32 +141,31 @@ public class DtPagingRequest {
      *
      * @return the search
      */
-    public Search getSearch() {
+    public DtSearch getSearch() {
         return search;
     }
 
     /**
      * Sets search.
      *
-     * @param search the search
+     * @param dtSearch the search
      */
-    public void setSearch(Search search) {
-        this.search = search;
+    public void setSearch(DtSearch dtSearch) {
+        this.search = dtSearch;
     }
 
     /**
      * Constructs a Springboot Data Sort object based on the information of the
      * datatables page request.
      *
-     * @return the Springboot JPA page request
+     * @return the Springboot sort definition
      */
     public org.springframework.data.domain.Sort getSpringbootSort() {
         // Create the Springboot sorting and direction
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.unsorted();
-        List<Column> columns = this.getColumns();
-        for(Order order : this.getOrder()) {
-            String columnName = columns.get(order.getColumn()).getData();
-            sort = sort.and(order.getDir() == Direction.asc ?
+        for(DtOrder dtOrder : this.getOrder()) {
+            String columnName = this.getColumns().get(dtOrder.getColumn()).getData();
+            sort = sort.and(dtOrder.getDir() == DtDirection.asc ?
                     org.springframework.data.domain.Sort.by(columnName).ascending() :
                     org.springframework.data.domain.Sort.by(columnName).descending());
         }
@@ -178,18 +173,18 @@ public class DtPagingRequest {
     }
 
     /**
-     * Constructs a Springboot Data Sort object based on the information of the
+     * Constructs a Lucence Data Sort object based on the information of the
      * datatables page request.
      *
-     * @return the Springboot JPA page request
+     * @return the Springboot sort definition
      */
     public org.apache.lucene.search.Sort getLucenceSort() {
         // Create the Lucene sorting and direction
         List<org.apache.lucene.search.SortField> sortFields = this.getOrder().stream()
-                .map(order -> new org.apache.lucene.search.SortField(
-                        columns.get(order.getColumn()).getData() + "_sort",
-                        SortField.Type.STRING,
-                        order.getDir() == Direction.asc))
+                .map(dtOrder -> new org.apache.lucene.search.SortField(
+                        this.getColumns().get(dtOrder.getColumn()).getData() + "_sort",
+                        this.getColumns().get(dtOrder.getColumn()).getData().equalsIgnoreCase("port") ? SortField.Type.INT : SortField.Type.STRING,
+                        dtOrder.getDir() == DtDirection.desc))
                 .collect(Collectors.toList());
         return new org.apache.lucene.search.Sort(sortFields.toArray(new org.apache.lucene.search.SortField[]{}));
     }

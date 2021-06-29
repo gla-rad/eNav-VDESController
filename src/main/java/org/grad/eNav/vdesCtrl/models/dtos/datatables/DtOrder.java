@@ -14,61 +14,62 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.dtos;
+package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
 /**
- * The type Search.
+ * The type Order.
  *
- * The Datatables Search Class definition.
+ * The Datatables Order Class definition.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class Search {
+public class DtOrder {
 
     // Class Variables
-    private String value;
-    private String regexp;
+    private Integer column;
+    private DtDirection dir;
 
     /**
-     * Instantiates a new Search.
+     * Instantiates a new Order.
      */
-    public Search() {
+    public DtOrder() {
+
     }
 
     /**
-     * Gets value.
+     * Gets column.
      *
-     * @return the value
+     * @return the column
      */
-    public String getValue() {
-        return value;
+    public Integer getColumn() {
+        return column;
     }
 
     /**
-     * Sets value.
+     * Sets column.
      *
-     * @param value the value
+     * @param column the column
      */
-    public void setValue(String value) {
-        this.value = value;
+    public void setColumn(Integer column) {
+        this.column = column;
     }
 
     /**
-     * Gets regexp.
+     * Gets dir.
      *
-     * @return the regexp
+     * @return the dir
      */
-    public String getRegexp() {
-        return regexp;
+    public DtDirection getDir() {
+        return dir;
     }
 
     /**
-     * Sets regexp.
+     * Sets dir.
      *
-     * @param regexp the regexp
+     * @param dir the dir
      */
-    public void setRegexp(String regexp) {
-        this.regexp = regexp;
+    public void setDir(DtDirection dir) {
+        this.dir = dir;
     }
-
 }
+

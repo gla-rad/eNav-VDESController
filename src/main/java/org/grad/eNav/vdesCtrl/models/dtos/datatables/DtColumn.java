@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.dtos;
+package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
 /**
  * The type Column.
@@ -23,19 +23,19 @@ package org.grad.eNav.vdesCtrl.models.dtos;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class Column {
+public class DtColumn {
 
     // Class Variables
     private String data;
     private String name;
     private Boolean searchable;
     private Boolean orderable;
-    private Search search;
+    private DtSearch search;
 
     /**
      * Instantiates a new Column.
      */
-    public Column() {
+    public DtColumn() {
 
     }
 
@@ -44,7 +44,7 @@ public class Column {
      *
      * @param data the data
      */
-    public Column(String data) {
+    public DtColumn(String data) {
         this.data = data;
     }
 
@@ -125,7 +125,7 @@ public class Column {
      *
      * @return the search
      */
-    public Search getSearch() {
+    public DtSearch getSearch() {
         return search;
     }
 
@@ -134,7 +134,7 @@ public class Column {
      *
      * @param search the search
      */
-    public void setSearch(Search search) {
+    public void setSearch(DtSearch search) {
         this.search = search;
     }
 

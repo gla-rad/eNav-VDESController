@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.grad.eNav.vdesCtrl.models.dtos;
+package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
 import org.springframework.data.domain.Sort;
 
@@ -25,39 +25,7 @@ import org.springframework.data.domain.Sort;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public enum Direction {
-    /**
-     * Asc direction.
-     */
-    asc(Sort.Direction.ASC),
-    /**
-     * Desc direction.
-     */
-    desc(Sort.Direction.DESC);
-
-    // Enum Variables
-    Sort.Direction direction;
-
-    Direction(Sort.Direction direction) {
-        this.direction = direction;
-    }
-
-    /**
-     * Gets direction.
-     *
-     * @return the direction
-     */
-    public Sort.Direction getDirection() {
-        return direction;
-    }
-
-    /**
-     * Sets direction.
-     *
-     * @param direction the direction
-     */
-    public void setDirection(Sort.Direction direction) {
-        this.direction = direction;
-    }
-
+public enum DtDirection {
+    asc,
+    desc;
 }

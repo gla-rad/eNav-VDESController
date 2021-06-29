@@ -108,7 +108,7 @@ $(document).ready( function () {
         columns: stationsColumnDefs,
         dom: 'Bfrltip',
         select: 'single',
-        lengthMenu: [2, 10, 25, 50, 75, 100],
+        lengthMenu: [10, 25, 50, 75, 100],
         responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
