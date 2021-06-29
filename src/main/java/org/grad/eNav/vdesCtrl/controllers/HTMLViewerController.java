@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.controllers;
 
-import org.grad.eNav.vdesCtrl.feign.NiordClient;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,12 +79,6 @@ public class HTMLViewerController {
      */
     @Autowired
     private StationService stationService;
-
-    /**
-     * The Niord Client.
-     */
-    @Autowired
-    private NiordClient niordClient;
 
     /**
      * The home page of the VDES Controller Application.
@@ -159,4 +152,5 @@ public class HTMLViewerController {
         request.logout();
         return new ModelAndView("redirect:" + "/");
     }
+
 }

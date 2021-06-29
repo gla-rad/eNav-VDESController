@@ -27,7 +27,6 @@ import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -123,7 +122,7 @@ public class StationController {
 
         // Save the station
         try {
-            this.stationService.save(station);
+            station = this.stationService.save(station);
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .headers(HeaderUtil.createFailureAlert("station", e.getMessage(), e.toString()))

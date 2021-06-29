@@ -17,7 +17,6 @@
 package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +67,7 @@ public class SNodeController {
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping(value = "/uid/{uid}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> deleteNode(@PathVariable String uid) {
+    public ResponseEntity<Void> deleteNodeByUid(@PathVariable String uid) {
         log.debug("REST request to delete Station Node by UID : {}", uid);
         // First translate the UID into a station node ID
         this.sNodeService.deleteByUid(uid);
