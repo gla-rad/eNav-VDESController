@@ -44,7 +44,10 @@ public class HibernateSearchInit implements ApplicationListener<ContextRefreshed
      * The Entity Manager.
      */
     @PersistenceContext
-    private EntityManager entityManager;
+    EntityManager entityManager;
+
+    // Component Variables
+
 
     /**
      * Override the application event handler to index the database.
@@ -54,13 +57,22 @@ public class HibernateSearchInit implements ApplicationListener<ContextRefreshed
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
-
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        FullTextEntityManager fullTextEntityManager = this.getFullTextEntityManager();
         try {
             fullTextEntityManager.createIndexer().startAndWait();
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }
+    }
+
+    /**
+     * Returns the full text entity manager. This call is mainly used to easily
+     * mock the full text entity manager for testing the search initialisation.
+     *
+     * @return the full text entity manager
+     */
+    protected FullTextEntityManager getFullTextEntityManager() {
+        return Search.getFullTextEntityManager(entityManager);
     }
 
 }

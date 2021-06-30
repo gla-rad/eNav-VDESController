@@ -67,7 +67,7 @@ public class S125GDSListener {
      */
     @Autowired
     @Qualifier("atonPublishChannel")
-    private PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel atonPublishChannel;
 
     /**
      * The Station Service.

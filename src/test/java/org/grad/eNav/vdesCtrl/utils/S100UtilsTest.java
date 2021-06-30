@@ -16,6 +16,8 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import _int.iho.s100gml._1.PointProperty;
+import _int.iho.s100gml._1.PointType;
 import _int.iho.s125.gml._0.*;
 import net.opengis.gml._3.BoundingShapeType;
 import net.opengis.gml._3.EnvelopeType;
@@ -65,8 +67,21 @@ class S100UtilsTest {
         boundingShapeType.setEnvelope(envelopeType);
         this.dataset.setBoundedBy(boundingShapeType);
 
+        PointType pointType = new PointType();
+        pointType.setPos(pos);
+        PointProperty pointProperty = new PointProperty();
+        pointProperty.setPoint(pointType);
+        PointCurveSurface pointCurveSurface = new PointCurveSurface();
+        pointCurveSurface.setPointProperty(pointProperty);
+
+        // Create the Feature Name
+        S125FeatureNameType featureNameType = new S125FeatureNameType();
+        featureNameType.setName("Test AtoN");
+
         // Add the S125 NavAidStructure feature
         S125NavAidStructureType s125NavAidStructureType = new S125NavAidStructureType();
+        s125NavAidStructureType.setFeatureName(featureNameType);
+        s125NavAidStructureType.setGeometry(pointCurveSurface);
         s125NavAidStructureType.setMmsi(123456789);
         s125NavAidStructureType.setAtonType(S125AtonType.SPECIAL_MARK);
         s125NavAidStructureType.setDeploymentType(S125DeploymentType.MOBILE);

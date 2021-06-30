@@ -16,11 +16,12 @@
 
 package org.grad.eNav.vdesCtrl.models.domain;
 
-import _int.iho.s125.gml._0.DataSet;
-import _int.iho.s125.gml._0.MemberType;
-import _int.iho.s125.gml._0.S125NavAidStructureType;
+import _int.iho.s100gml._1.PointProperty;
+import _int.iho.s125.gml._0.*;
 import lombok.extern.slf4j.Slf4j;
 import net.opengis.gml._3.AbstractFeatureMemberType;
+import net.opengis.gml._3.PointType;
+import net.opengis.gml._3.Pos;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 
@@ -92,11 +93,35 @@ public class GrAisMsg21Params {
                 .filter(S125NavAidStructureType.class::isInstance)
                 .map(S125NavAidStructureType.class::cast)
                 .ifPresent(navAid -> {
+                    this.atonType = AtonType.fromString(Optional.of(navAid).
+                            map(S125NavAidStructureType::getAtonType)
+                            .map(S125AtonType::value)
+                            .orElse(null));
+                    this.name = Optional.of(navAid)
+                            .map(S125NavAidStructureType::getFeatureName)
+                            .map(S125FeatureNameType::getName)
+                            .orElse(null);
+                    this.atonType = AtonType.fromString(Optional.of(navAid).
+                            map(S125NavAidStructureType::getAtonType)
+                            .map(S125AtonType::value)
+                            .orElse(null));
+                    this.latitude = Optional.of(navAid)
+                            .map(S125NavAidStructureType::getGeometry)
+                            .map(PointCurveSurface::getPointProperty)
+                            .map(PointProperty::getPoint)
+                            .map(PointType::getPos)
+                            .map(Pos::getValues)
+                            .map(list -> list.get(0))
+                            .orElse(null);
+                    this.longitude = Optional.of(navAid)
+                            .map(S125NavAidStructureType::getGeometry)
+                            .map(PointCurveSurface::getPointProperty)
+                            .map(PointProperty::getPoint)
+                            .map(PointType::getPos)
+                            .map(Pos::getValues)
+                            .map(list -> list.get(1))
+                            .orElse(null);
                     this.mmsi = navAid.getMmsi();
-                    this.atonType = AtonType.fromString(navAid.getAtonType().value());
-                    this.name = navAid.getFeatureName().getName();
-                    this.latitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValues().get(0);
-                    this.longitude = navAid.getGeometry().getPointProperty().getPoint().getPos().getValues().get(1);
                     this.length = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getLength()).orElse(0));
                     this.width = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getWidth()).orElse(0));
                     this.raim = navAid.isRaimFlag();

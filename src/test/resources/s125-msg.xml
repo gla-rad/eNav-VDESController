@@ -9,6 +9,16 @@
     <member>
         <ns5:S125_NavAidStructure>
             <ns1:boundedBy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+            <featureName>
+                <name>Test AtoN</name>
+            </featureName>
+            <geometry>
+                <ns2:pointProperty>
+                    <ns2:Point>
+                        <ns1:pos>53.61 1.594</ns1:pos>
+                    </ns2:Point>
+                </ns2:pointProperty>
+            </geometry>
             <mmsi>123456789</mmsi>
             <atonType>Special Mark</atonType>
             <deploymentType>Mobile</deploymentType>

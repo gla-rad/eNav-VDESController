@@ -58,27 +58,29 @@ import java.util.Optional;
 @Component
 public class GrAisAdvertiser {
 
-    // Component Variables
-    private Station station;
-    private DatagramSocket vdesSocket;
-
     /**
      * The interval between the node advertisements
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.ais-interval:500}")
-    private Long aisInterval;
+    Long aisInterval;
 
     /**
      * Whether to enable signature messages
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.enableSignatures:false}")
-    private Boolean enableSignatures;
+    Boolean enableSignatures;
 
     /**
      * The sSignature Message Destination MMSI
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.destMmsi:}")
-    private Integer signatureDestMmmsi;
+    Integer signatureDestMmmsi;
+
+    /**
+     * The SNode Service.
+     */
+    @Autowired
+    SNodeService sNodeService;
 
     /**
      * A helper class definition to keep info on the Msg21 transmission
@@ -90,11 +92,9 @@ public class GrAisAdvertiser {
         long txTimestamp;
     }
 
-    /**
-     * The SNode Service.
-     */
-    @Autowired
-    private SNodeService sNodeService;
+    // Component Variables
+    protected Station station;
+    protected DatagramSocket gnuRadioSocket;
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -106,8 +106,8 @@ public class GrAisAdvertiser {
     public void init(Station station) throws SocketException {
         this.station = station;
 
-        // Create the UDP Connection to the VDES stations
-        this.vdesSocket = new DatagramSocket();
+        // Create the UDP Connection to the GNURadio stations
+        this.gnuRadioSocket = new DatagramSocket();
     }
 
     /**
@@ -117,7 +117,7 @@ public class GrAisAdvertiser {
     @PreDestroy
     public void destroy() {
         log.info("GNURadio Advertiser is shutting down...");
-        this.vdesSocket.close();
+        this.gnuRadioSocket.close();
     }
 
     /**
@@ -133,9 +133,6 @@ public class GrAisAdvertiser {
 
         // Now create the AIS advertisements - wait in between
         for(S125Node node: nodes) {
-            // Send the UDP packet
-            log.info("Station {} Sending an advertisement AtoN {}", station.getName(), node.getAtonUID());
-
             // Keep a reference to when the message was send to create a signature for it
             Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
 
@@ -164,6 +161,9 @@ public class GrAisAdvertiser {
             return null;
         }
 
+        // Send the UDP packet
+        log.info("Station {} Sending an advertisement AtoN {}", station.getName(), s125Node.getAtonUID());
+
         // Construct the UDP message for the VDES station
         Msg21TxInfo txinfo = new Msg21TxInfo();
         try {
@@ -179,7 +179,7 @@ public class GrAisAdvertiser {
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
-            this.vdesSocket.send(packet);
+            this.gnuRadioSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
             return null;
@@ -227,7 +227,7 @@ public class GrAisAdvertiser {
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
-            this.vdesSocket.send(packet);
+            this.gnuRadioSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
