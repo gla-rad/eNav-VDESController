@@ -57,10 +57,10 @@ public class VDES1000Service implements MessageHandler {
      */
     @Autowired
     @Qualifier("atonPublishChannel")
-    private PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel atonPublishChannel;
 
     // The VDES UDP Connection
-    private DatagramSocket vdesSocket;
+    DatagramSocket vdesSocket;
 
     /**
      * The service post-construct operations where the handler auto-registers

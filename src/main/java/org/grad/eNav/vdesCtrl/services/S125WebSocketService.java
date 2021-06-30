@@ -51,20 +51,20 @@ public class S125WebSocketService implements MessageHandler {
      * The General Destination Prefix
      */
     @Value("${gla.rad.vdes-ctrl.web-socket.prefix:topic}")
-    private String prefix;
+    String prefix;
 
     /**
      * The AtoN Publish Channel to listen the AtoN messages to.
      */
     @Autowired
     @Qualifier("atonPublishChannel")
-    private PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel atonPublishChannel;
 
     /**
      * Attach the web-socket as a simple messaging template
      */
     @Autowired
-    private SimpMessagingTemplate webSocket;
+    SimpMessagingTemplate webSocket;
 
     /**
      * The service post-construct operations where the handler auto-registers
@@ -115,18 +115,17 @@ public class S125WebSocketService implements MessageHandler {
         log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
 
         // Now push the aton node down the web-socket stream
-        this.pushAton(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
+        this.pushAton(String.format("/%s/%s:%d", prefix, address, port), s125Node);
     }
 
     /**
      * Pushes a new/updated AtoN node into the Web-Socket messaging template.
      *
-     * @param messagingTemplate     The web-socket messaging template
      * @param topic                 The topic of the web-socket
      * @param payload               The payload to be pushed
      */
-    private void pushAton(SimpMessagingTemplate messagingTemplate, String topic, Object payload) {
-        messagingTemplate.convertAndSend(topic, payload);
+    private void pushAton(String topic, Object payload) {
+        this.webSocket.convertAndSend(topic, payload);
     }
 
 }
