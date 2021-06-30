@@ -44,6 +44,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,25 +63,25 @@ class StationControllerTest {
      * The Mock MVC.
      */
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     /**
      * The JSON Object Mapper.
      */
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     /**
      * The Station Service mock.
      */
     @MockBean
-    private StationService stationService;
+    StationService stationService;
 
     /**
      * The Station Node Service mock.
      */
     @MockBean
-    private SNodeService sNodeService;
+    SNodeService sNodeService;
 
     // Test Variables
     private List<Station> stations;
@@ -97,6 +98,17 @@ class StationControllerTest {
         // Create a temp geometry factory to get a test geometries
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
+        // Initialise the station nodes list
+        this.nodes = new ArrayList<>();
+        for(long i=0; i<2; i++) {
+            SNode node = new SNode();
+            node.setId(BigInteger.valueOf(i));
+            node.setUid("UID" + i);
+            node.setType(SNodeType.S125);
+            node.setMessage("Node Message");
+            this.nodes.add(node);
+        }
+
         // Initialise the stations list
         this.stations = new ArrayList<>();
         for(long i=0; i<10; i++) {
@@ -110,18 +122,9 @@ class StationControllerTest {
             station.setType(StationType.VDES_1000);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
+            station.setNodes(new HashSet<>());
+            station.getNodes().addAll(this.nodes);
             this.stations.add(station);
-        }
-
-        // Initialise the station nodes list
-        this.nodes = new ArrayList<>();
-        for(long i=0; i<2; i++) {
-            SNode node = new SNode();
-            node.setId(BigInteger.valueOf(i));
-            node.setUid("UID" + i);
-            node.setType(SNodeType.S125);
-            node.setMessage("Node Message");
-            this.nodes.add(node);
         }
 
         // Create a pageable definition

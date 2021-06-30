@@ -52,13 +52,13 @@ public class StationController {
      * The Station Service.
      */
     @Autowired
-    private StationService stationService;
+    StationService stationService;
 
     /**
      * The SNode Service.
      */
     @Autowired
-    private SNodeService sNodeService;
+    SNodeService sNodeService;
 
     /**
      * GET /api/stations : Returns a paged list of all current stations.

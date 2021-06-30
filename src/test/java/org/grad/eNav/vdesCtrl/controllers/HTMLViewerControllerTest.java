@@ -53,13 +53,13 @@ class HTMLViewerControllerTest {
      * The Mock MVC.
      */
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     /**
      * The Station Service mock.
      */
     @MockBean
-    private StationService stationService;
+    StationService stationService;
 
     // Test Variables
     private List<Station> stations;

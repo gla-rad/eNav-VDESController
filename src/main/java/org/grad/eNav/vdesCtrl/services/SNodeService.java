@@ -53,27 +53,16 @@ import java.util.stream.Collectors;
 public class SNodeService {
 
     /**
-     * The SNode Repo.
-     */
-    @Autowired
-    SNodeRepo sNodeRepo;
-
-    /**
      * The Station Service.
      */
     @Autowired
     StationService stationService;
 
     /**
-     * Save a node.
-     *
-     * @param SNode the entity to save
-     * @return the persisted entity
+     * The SNode Repo.
      */
-    public SNode save(SNode SNode) {
-        log.debug("Request to save Node : {}", SNode);
-        return this.sNodeRepo.save(SNode);
-    }
+    @Autowired
+    SNodeRepo sNodeRepo;
 
     /**
      * Get all the nodes.
@@ -109,7 +98,9 @@ public class SNodeService {
         log.debug("Request to get Node : {}", id);
         return Optional.ofNullable(id)
                 .map(this.sNodeRepo::findOneWithEagerRelationships)
-                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID"));
+                .orElseThrow(() ->
+                        new DataNotFoundException(String.format("No station node found for the provided ID: %d", id))
+                );
     }
 
     /**
@@ -123,7 +114,20 @@ public class SNodeService {
         log.debug("Request to get Node with UID : {}", uid);
         return Optional.ofNullable(uid)
                 .map(this.sNodeRepo::findByUid)
-                .orElseThrow(() -> new DataNotFoundException("No station node found for the provided ID"));
+                .orElseThrow(() ->
+                        new DataNotFoundException(String.format("No station node found for the provided UID: %s", uid))
+                );
+    }
+
+    /**
+     * Save a node.
+     *
+     * @param SNode the entity to save
+     * @return the persisted entity
+     */
+    public SNode save(SNode SNode) {
+        log.debug("Request to save Node : {}", SNode);
+        return this.sNodeRepo.save(SNode);
     }
 
     /**
@@ -136,15 +140,19 @@ public class SNodeService {
         if(this.sNodeRepo.existsById(id)) {
             // Get the station node with all relationships
             SNode sNode = this.sNodeRepo.findOneWithEagerRelationships(id);
-            // Remove the station node from all stations
-            for(Station s: sNode.getStations()) {
-                s.getNodes().remove(sNode);
-                this.stationService.save(s);
-            }
+            // Remove it from all linked stations
+            Optional.of(sNode)
+                    .map(SNode::getStations)
+                    .orElse(Collections.emptySet())
+                    .stream()
+                    .forEach(station -> {
+                        station.getNodes().remove(sNode);
+                        this.stationService.save(station);
+                    });
             // Finally delete the station node
             this.sNodeRepo.deleteById(id);
         } else {
-            throw new DataNotFoundException("No station node found for the provided ID");
+            throw new DataNotFoundException(String.format("No station node found for the provided ID: %d", id));
         }
     }
 
@@ -158,7 +166,9 @@ public class SNodeService {
         BigInteger id = Optional.ofNullable(uid)
                 .map(this.sNodeRepo::findByUid)
                 .map(SNode::getId)
-                .orElse(null);
+                .orElseThrow(() ->
+                        new DataNotFoundException(String.format("No station node found for the provided UID: %s", uid))
+                );
         this.delete(id);
     }
 

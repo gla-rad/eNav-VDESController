@@ -78,7 +78,7 @@ public class HTMLViewerController {
      * The Radar Listener Properties.
      */
     @Autowired
-    private StationService stationService;
+    StationService stationService;
 
     /**
      * The home page of the VDES Controller Application.

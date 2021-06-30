@@ -70,17 +70,6 @@ public class StationService {
     };
 
     /**
-     * Save a station.
-     *
-     * @param station the station to save
-     * @return the persisted station
-     */
-    public Station save(Station station) {
-        log.debug("Request to save Station : {}", station);
-        return this.stationRepo.save(station);
-    }
-
-    /**
      * Get all the stations.
      *
      * @return the list of stations
@@ -125,7 +114,20 @@ public class StationService {
         log.debug("Request to get Station : {}", id);
         return Optional.of(id)
                 .map(this.stationRepo::findOneWithEagerRelationships)
-                .orElseThrow(() -> new DataNotFoundException(String.format("No station found for the provided ID: %d", id)));
+                .orElseThrow(() ->
+                        new DataNotFoundException(String.format("No station found for the provided ID: %d", id))
+                );
+    }
+
+    /**
+     * Save a station.
+     *
+     * @param station the station to save
+     * @return the persisted station
+     */
+    public Station save(Station station) {
+        log.debug("Request to save Station : {}", station);
+        return this.stationRepo.save(station);
     }
 
     /**
@@ -162,10 +164,12 @@ public class StationService {
                 .filter(ls -> ls.getSort().length > 0)
                 .ifPresent(searchQuery::setSort);
 
+        // For some reason we need this casting otherwise JDK8 complains
         return (DtPage<Station>) Optional.of(searchQuery)
                 .map(FullTextQuery::getResultList)
                 .map(stations -> new PageImpl<>(stations, dtPagingRequest.toPageRequest(), searchQuery.getResultSize()))
-                .map(page -> new DtPage((Page<Station>) page, dtPagingRequest))
+                .map(Page.class::cast)
+                .map(page -> new DtPage<>((Page<Station>)page, dtPagingRequest))
                 .orElseGet(DtPage::new);
     }
 
@@ -180,7 +184,7 @@ public class StationService {
      * @param searchText the text to be searched
      * @return the full text query
      */
-    private FullTextQuery searchStationsQuery(String searchText) {
+    protected FullTextQuery searchStationsQuery(String searchText) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
                 .buildQueryBuilder()
@@ -191,7 +195,7 @@ public class StationService {
                 .keyword()
                 .wildcard()
                 .onFields(this.searchFields)
-                .matching(searchText.toLowerCase() + "*")
+                .matching(Optional.ofNullable(searchText).orElse("").toLowerCase() + "*")
                 .createQuery();
 
         return fullTextEntityManager.createFullTextQuery(luceneQuery, Station.class);

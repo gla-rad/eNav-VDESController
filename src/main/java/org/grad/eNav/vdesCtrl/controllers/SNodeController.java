@@ -43,7 +43,7 @@ public class SNodeController {
      * The Station Node Service.
      */
     @Autowired
-    private SNodeService sNodeService;
+    SNodeService sNodeService;
 
     /**
      * DELETE /api/snodes/{id} : Delete the "id" station node.

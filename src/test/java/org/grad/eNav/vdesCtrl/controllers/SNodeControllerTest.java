@@ -50,19 +50,19 @@ class SNodeControllerTest {
      * The Mock MVC.
      */
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
 
     /**
      * The JSON Object Mapper.
      */
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     /**
      * The Station Node Service mock.
      */
     @MockBean
-    private SNodeService sNodeService;
+    SNodeService sNodeService;
 
     // Test Variables
     private SNode existingNode;

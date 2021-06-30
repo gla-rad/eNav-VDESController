@@ -20,13 +20,17 @@ import _int.iho.s125.gml._0.*;
 import net.opengis.gml._3.BoundingShapeType;
 import net.opengis.gml._3.EnvelopeType;
 import net.opengis.gml._3.Pos;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,36 +46,19 @@ class S100UtilsTest {
      * Common setup for all the tests.
      */
     @BeforeEach
-    void setup() {
-        this.datasetXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-                "<ns5:DataSet xmlns:ns1=\"http://www.opengis.net/gml/3.2\" xmlns:ns2=\"http://www.iho.int/s100gml/1.0\" xmlns:ns4=\"http://www.w3.org/1999/xlink\" xmlns:ns5=\"http://www.iho.int/S125/gml/0.1\" ns1:id=\"aton.uk.demo_aton\">\n"+
-                "    <ns1:boundedBy>\n" +
-                "        <ns1:Envelope srsName=\"EPSG:4326\">\n" +
-                "            <ns1:lowerCorner>53.61 1.594</ns1:lowerCorner>\n" +
-                "            <ns1:upperCorner>53.61 1.594</ns1:upperCorner>\n" +
-                "        </ns1:Envelope>\n" +
-                "    </ns1:boundedBy>\n" +
-                "    <member>\n" +
-                "        <ns5:S125_NavAidStructure>\n" +
-                "            <ns1:boundedBy xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>\n" +
-                "            <mmsi>123457890</mmsi>\n" +
-                "            <atonType>Special Mark</atonType>\n" +
-                "            <deploymentType>Mobile</deploymentType>\n" +
-                "            <raimFlag>false</raimFlag>\n" +
-                "            <vatonFlag>true</vatonFlag>\n" +
-                "        </ns5:S125_NavAidStructure>\n" +
-                "    </member>\n" +
-                "</ns5:DataSet>\n";
+    void setup() throws IOException {
+        InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
+        this.datasetXml = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         // Create an S125 dataset type similar to the static XML defined here
         this.dataset = new DataSet();
-        this.dataset.setId("aton.uk.demo_aton");
+        this.dataset.setId("aton.uk.test_aton");
 
         // Create the bounding envelope
         EnvelopeType envelopeType = new EnvelopeType();
         envelopeType.setSrsName("EPSG:4326");
         Pos pos = new Pos();
-        pos.getValues().addAll(Arrays.asList(new Double[]{53.61,1.594}));
+        pos.getValues().addAll(Arrays.asList(new Double[]{53.61, 1.594}));
         envelopeType.setLowerCorner(pos);
         envelopeType.setUpperCorner(pos);
         BoundingShapeType boundingShapeType = new BoundingShapeType();
@@ -80,7 +67,7 @@ class S100UtilsTest {
 
         // Add the S125 NavAidStructure feature
         S125NavAidStructureType s125NavAidStructureType = new S125NavAidStructureType();
-        s125NavAidStructureType.setMmsi(123457890);
+        s125NavAidStructureType.setMmsi(123456789);
         s125NavAidStructureType.setAtonType(S125AtonType.SPECIAL_MARK);
         s125NavAidStructureType.setDeploymentType(S125DeploymentType.MOBILE);
         s125NavAidStructureType.setRaimFlag(Boolean.FALSE);
