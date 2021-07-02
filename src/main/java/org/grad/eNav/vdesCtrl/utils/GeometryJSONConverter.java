@@ -31,6 +31,7 @@ import java.io.IOException;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class GeometryJSONConverter {
+
     /**
      * Convert from geometry to a JSON node.
      *

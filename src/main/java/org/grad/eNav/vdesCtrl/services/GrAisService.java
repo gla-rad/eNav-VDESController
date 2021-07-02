@@ -51,18 +51,16 @@ public class GrAisService {
      * The Application Context
      */
     @Autowired
-    private ApplicationContext applicationContext;
+    ApplicationContext applicationContext;
 
     /**
      * The Station Service.
      */
     @Autowired
-    private StationService stationService;
+    StationService stationService;
 
-    /**
-     * The GNURadio UDP Connection.
-     */
-    private List<GrAisAdvertiser> grAisAdvertisers;
+    // Service Variables
+    protected List<GrAisAdvertiser> grAisAdvertisers;
 
     /**
      * The service post-construct operations where the handler auto-registers

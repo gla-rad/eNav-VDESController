@@ -33,7 +33,7 @@ import java.util.Queue;
 public class PubSubErrorHandler implements ErrorHandler {
 
     // Class Variables
-    private Queue<Throwable> handledErrors = new LinkedList<>();
+    protected Queue<Throwable> handledErrors = new LinkedList<>();
 
     /**
      * Handing the errors by just logging them and adding them into the

@@ -16,6 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -25,9 +26,8 @@ import org.springframework.http.HttpHeaders;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
+@Slf4j
 public class HeaderUtil {
-
-    private static final Logger log = LoggerFactory.getLogger(HeaderUtil.class);
 
     /**
      * Create alert http headers.

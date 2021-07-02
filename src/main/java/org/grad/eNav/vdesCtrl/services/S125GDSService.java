@@ -48,13 +48,13 @@ public class S125GDSService {
      * The Application Context
      */
     @Autowired
-    private ApplicationContext applicationContext;
+    ApplicationContext applicationContext;
 
     /**
      * The Stations Service
      */
     @Autowired
-    private StationService stationService;
+    StationService stationService;
 
     /**
      * The Geomesa Data Store.
@@ -64,7 +64,7 @@ public class S125GDSService {
     DataStore consumer;
 
     // Service Variables
-    private List<S125GDSListener> dsListeners;
+    protected List<S125GDSListener> dsListeners;
 
     /**
      * Once the service has been initialised, we can that start the execution

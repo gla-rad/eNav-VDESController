@@ -25,11 +25,12 @@ import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.locationtech.geomesa.kafka.utils.KafkaFeatureEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,9 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The AtoN Geomesa Data Store Listener Class
@@ -76,18 +75,17 @@ public class S125GDSListener {
     StationService stationService;
 
     /**
-     * The SNode Service.
+     * The Station Node Service.
      */
     @Autowired
     SNodeService sNodeService;
 
     // Component Variables
-    private DataStore consumer;
-    private FeatureListener listener;
-    private GeomesaData<S125Node> geomesaData;
-    private Station station;
-    private List<Double> listenerArea;
-    private SimpleFeatureSource featureSource;
+    protected DataStore consumer;
+    protected FeatureListener listener;
+    protected GeomesaData<S125Node> geomesaData;
+    protected Station station;
+    protected SimpleFeatureSource featureSource;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -102,7 +100,6 @@ public class S125GDSListener {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
         this.station = station;
-        this.listenerArea = Optional.ofNullable(listenerArea).orElse(Collections.emptyList());
         this.listener = (this::listenToEvents);
 
         // And add the feature listener to start reading
@@ -113,7 +110,7 @@ public class S125GDSListener {
         log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
                 station.getIpAddress(),
                 station.getPort(),
-                this.listenerArea.stream().map(String::valueOf).collect(Collectors.joining(","))));
+                GeometryJSONConverter.convertFromGeometry(this.station.getGeometry())));
     }
 
     /**
@@ -131,7 +128,7 @@ public class S125GDSListener {
      *
      * @param featureEvent      The feature event that took place
      */
-    private void listenToEvents(FeatureEvent featureEvent) {
+    protected void listenToEvents(FeatureEvent featureEvent) {
         // We are only interested in Kafka Feature Messages, otherwise don't bother
         if(!(featureEvent instanceof  KafkaFeatureEvent)) {
             return;
@@ -165,9 +162,9 @@ public class S125GDSListener {
         else if (featureEvent.getType() == FeatureEvent.Type.REMOVED) {
             // Extract the S-125 message and just log it
             Optional.of(featureEvent)
-                    .filter(KafkaFeatureEvent.KafkaFeatureChanged.class::isInstance)
-                    .map(KafkaFeatureEvent.KafkaFeatureChanged.class::cast)
-                    .map(KafkaFeatureEvent.KafkaFeatureChanged::feature)
+                    .filter(KafkaFeatureEvent.KafkaFeatureRemoved.class::isInstance)
+                    .map(KafkaFeatureEvent.KafkaFeatureRemoved.class::cast)
+                    .map(KafkaFeatureEvent.KafkaFeatureRemoved::feature)
                     .filter(this.geomesaData.getSubsetFilter()::evaluate)
                     .map(Collections::singletonList)
                     .map(sl -> new GeomesaS125().retrieveData(sl))
@@ -185,7 +182,7 @@ public class S125GDSListener {
      * @param s125Node  the S125Node to be saved
      */
     @Transactional
-    private void saveSNode(S125Node s125Node){
+    protected void saveSNode(S125Node s125Node){
         // Create a new SNode entry
         SNode sNode = Optional.of(s125Node)
                 .map(S125Node::getAtonUID)
