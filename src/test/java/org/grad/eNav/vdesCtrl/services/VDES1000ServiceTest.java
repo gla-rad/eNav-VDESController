@@ -79,7 +79,7 @@ class VDES1000ServiceTest {
      */
     @BeforeEach
     void setup() throws IOException {
-        // First read a valid S125 content to generate the publish-suscbribe
+        // First read a valid S125 content to generate the publish-subscribe
         // message for.
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
         String xml = IOUtils.toString(in, StandardCharsets.UTF_8.name());

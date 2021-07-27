@@ -223,7 +223,7 @@ public class GeomesaS125 implements GeomesaData<S125Node>{
             String cqlGeometry = "WITHIN(geom, Polygon(("
                     + String.join(", ",
                     Arrays.asList(this.geometry.getCoordinates())
-                            .stream().map(c -> c.getX() + " " + c.getY())
+                            .stream().map(c -> c.getY() + " " + c.getX())
                             .collect(Collectors.toList())
             )
                     + ")) )";

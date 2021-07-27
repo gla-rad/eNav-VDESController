@@ -115,17 +115,18 @@ public class S125WebSocketService implements MessageHandler {
         log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
 
         // Now push the aton node down the web-socket stream
-        this.pushAton(String.format("/%s/%s:%d", prefix, address, port), s125Node);
+        this.pushAton(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
     }
 
     /**
-     * Pushes a new/updated AtoN node into the Web-Socket messaging template.
+     * Pushes a new/updated AtoN node into the web-socket messaging template.
      *
+     * @param messagingTemplate     The web-socket messaging template
      * @param topic                 The topic of the web-socket
      * @param payload               The payload to be pushed
      */
-    private void pushAton(String topic, Object payload) {
-        this.webSocket.convertAndSend(topic, payload);
+    private void pushAton(SimpMessagingTemplate messagingTemplate, String topic, Object payload) {
+        messagingTemplate.convertAndSend(topic, payload);
     }
 
 }
