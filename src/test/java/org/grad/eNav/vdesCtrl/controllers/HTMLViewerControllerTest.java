@@ -97,7 +97,7 @@ class HTMLViewerControllerTest {
         doReturn(this.stations).when(stationService).findAll();
 
         // Perform the MVC request
-        this.mockMvc.perform(get("/")
+        this.mockMvc.perform(get("/index.html")
                 .contentType(MediaType.TEXT_HTML))
                 .andExpect(status().isOk());
     }

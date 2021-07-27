@@ -30,9 +30,9 @@
         <div th:replace="fragments/general.html :: navbar"></div>
         <div class="flex-fill flex-grow-1 flex-shrink-0">
             <div id="main-content" class="container mt-3">
-                <div class="card" sec:authorize="!isAuthenticated()">
+                <div class="card shadow" sec:authorize="!isAuthenticated()">
                     <div class="card-header">
-                        <h2>Welcome</h2>
+                        <h2>Welcome to the VDES Controller</h2>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -45,7 +45,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card" sec:authorize="isAuthenticated()">
+                <div class="card shadow" sec:authorize="isAuthenticated()">
                     <div class="card-header">
                         <h2>AtoN Message Board</h2>
                     </div>

@@ -324,7 +324,7 @@ class StationServiceTest {
         dtOrder.setDir(DtDirection.asc);
         dtPagingRequest.setOrder(Collections.singletonList(dtOrder));
 
-        // Set the pagination searchg
+        // Set the pagination search
         DtSearch dtSearch = new DtSearch();
         dtSearch.setValue("search-term");
         dtPagingRequest.setSearch(dtSearch);
@@ -335,7 +335,7 @@ class StationServiceTest {
         doReturn(mockedQuery).when(this.stationService).searchStationsQuery(any());
 
         // Perform the service call
-        DtPage<Station> result = this.stationService.getStationsForDatatables(dtPagingRequest);
+        DtPage<Station> result = this.stationService.handleDatatablesPagingRequest(dtPagingRequest);
 
         // Validate the result
         assertNotNull(result);
@@ -343,7 +343,7 @@ class StationServiceTest {
 
         // Test each of the result entries
         for(int i=0; i < result.getRecordsFiltered(); i++){
-            assertEquals(result.getData().get(i), this.stations.get(i));
+            assertEquals(this.stations.get(i), result.getData().get(i));
         }
     }
 

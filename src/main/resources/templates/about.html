@@ -23,22 +23,26 @@
             <div th:replace="fragments/general.html :: navbar"></div>
             <div class="flex-fill flex-grow-1 flex-shrink-0">
                 <div id="main-content" class="container mt-3">
-                    <div class="card" sec:authorize="isAuthenticated()">
+                    <div class="card shadow" sec:authorize="isAuthenticated()">
                         <div class="card-header">
-                            <h2>Application Info</h2>
+                            <h2>VDES Controller Information</h2>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <h6>Name:</h6>&nbsp;<p>[[${appName}]]</p>
+                            <div class="row p-1">
+                                <h5>Name:</h5>&nbsp
+                                <span>[[${appName}]]</span>
                             </div>
-                            <div class="row">
-                                <h6>Version:</h6>&nbsp;<p>[[${appVersion}]]</p>
+                            <div class="row p-1">
+                                <h5>Version:</h5>&nbsp
+                                <span>[[${appVersion}]]</span>
                             </div>
-                            <div class="row">
-                                <h6>Operator Name:</h6>&nbsp;<p>[[${appOperatorName}]]</p>
+                            <div class="row p-1">
+                                <h5>Operator Name:</h5>&nbsp
+                                <span>[[${appOperatorName}]]</span>
                             </div>
-                            <div class="row">
-                                <h6>Contact:</h6>&nbsp;<p>[[${appOperatorContact}]]</p>
+                            <div class="row p-1">
+                                <h5>Contact:</h5>&nbsp
+                                <span>[[${appOperatorContact}]]</span>
                             </div>
                         </div>
                     </div>

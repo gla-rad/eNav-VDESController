@@ -152,7 +152,7 @@ public class StationService {
      * @return the Datatables paged response
      */
     @Transactional(readOnly = true)
-    public DtPage<Station> getStationsForDatatables(DtPagingRequest dtPagingRequest) {
+    public DtPage<Station> handleDatatablesPagingRequest(DtPagingRequest dtPagingRequest) {
         // Create the search query
         FullTextQuery searchQuery = this.searchStationsQuery(dtPagingRequest.getSearch().getValue());
         searchQuery.setFirstResult(dtPagingRequest.getStart());

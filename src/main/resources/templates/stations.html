@@ -27,9 +27,9 @@
         <div th:replace="fragments/general.html :: navbar"></div>
         <div class="flex-fill flex-grow-1 flex-shrink-0" >
             <div id="main-content" class="container mt-3">
-                <div class="card" sec:authorize="isAuthenticated()">
+                <div class="card shadow" sec:authorize="isAuthenticated()">
                     <div class="card-header">
-                        <h2>Stations</h2>
+                        <h2>Stations Dashboard</h2>
                     </div>
                     <div class="card-body p-0">
                         <div class="col-12 m-1">

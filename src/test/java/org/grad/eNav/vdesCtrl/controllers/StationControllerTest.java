@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,10 +43,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -173,6 +171,49 @@ class StationControllerTest {
         // Parse and validate the response
         Station[] result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Station[].class);
         assertEquals(5, Arrays.asList(result).size());
+    }
+
+    /**
+     * Test that the API supports the jQuery Datatables server-side paging
+     * and search requests.
+     */
+    @Test
+    void testGetStationsForDatatables() throws Exception {
+        // Create a test datatables paging request
+        DtColumn dtColumn = new DtColumn("id");
+        dtColumn.setName("ID");
+        dtColumn.setOrderable(true);
+        DtOrder dtOrder = new DtOrder();
+        dtOrder.setColumn(0);
+        dtOrder.setDir(DtDirection.asc);
+        DtPagingRequest dtPagingRequest = new DtPagingRequest();
+        dtPagingRequest.setStart(0);
+        dtPagingRequest.setLength(this.stations.size());
+        dtPagingRequest.setDraw(1);
+        dtPagingRequest.setSearch(new DtSearch());
+        dtPagingRequest.setOrder(Collections.singletonList(dtOrder));
+        dtPagingRequest.setColumns(Collections.singletonList(dtColumn));
+
+        // Create a mocked datatables paging response
+        DtPage<Station> dtPage = new DtPage<>();
+        dtPage.setData(this.stations);
+        dtPage.setDraw(1);
+        dtPage.setRecordsFiltered(this.stations.size());
+        dtPage.setRecordsTotal(this.stations.size());
+
+        // Mock the service call for creating a new instance
+        doReturn(dtPage).when(this.stationService).handleDatatablesPagingRequest(any());
+
+        // Perform the MVC request
+        MvcResult mvcResult = this.mockMvc.perform(post("/api/stations/dt")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(this.objectMapper.writeValueAsString(dtPagingRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Parse and validate the response
+        DtPage<Station> result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), DtPage.class);
+        assertEquals(this.stations.size(), result.getData().size());
     }
 
     /**

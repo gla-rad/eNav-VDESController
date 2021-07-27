@@ -88,7 +88,7 @@ public class StationController {
     public ResponseEntity<DtPage<Station>> getStationsForDatatables(@RequestBody DtPagingRequest dtPagingRequest) {
         log.debug("REST request to get page of Stations for datatables");
         return ResponseEntity.ok()
-                .body(stationService.getStationsForDatatables(dtPagingRequest));
+                .body(stationService.handleDatatablesPagingRequest(dtPagingRequest));
     }
 
     /**

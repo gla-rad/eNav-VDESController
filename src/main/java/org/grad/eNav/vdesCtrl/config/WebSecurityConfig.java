@@ -151,9 +151,10 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .ignoring()
                 .antMatchers(
                     "/webjars/**",  //bootstrap
-                    "/css/**",                  //css files
-                    "/js/**",                   //js files
-                    "/favicon.ico"              //the favicon
+                    "/css/**",          //css files
+                    "/lib/**",          //js files
+                    "/images/**",       //the images
+                    "/src/**"           //the javascript sources
                 );
     }
 
@@ -174,9 +175,10 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(
                         "/webjars/**",   //bootstrap
-                        "/js/**", 				    //js files
-                        "/css/**", 				    //css files
-                        "/favicon.ico"              //the favicon
+                        "/css/**",          //css files
+                        "/lib/**",          //js files
+                        "/images/**",       //the images
+                        "/src/**"           //the javascript sources
                 ).permitAll()
                 .requestMatchers(EndpointRequest.to( //
                         InfoEndpoint.class,         //info endpoints
