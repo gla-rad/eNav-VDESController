@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
+import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -51,10 +52,10 @@ public class S125GDSService {
     ApplicationContext applicationContext;
 
     /**
-     * The Stations Service
+     * The Station Repository.
      */
     @Autowired
-    StationService stationService;
+    StationRepo stationRepo;
 
     /**
      * The Geomesa Data Store.
@@ -83,7 +84,7 @@ public class S125GDSService {
         }
 
         // Get and initialise a the listener workers
-        this.dsListeners = this.stationService.findAll()
+        this.dsListeners = this.stationRepo.findAll()
                 .stream()
                 .map(station -> {
                     S125GDSListener dsListener = this.applicationContext.getBean(S125GDSListener.class);
@@ -110,6 +111,19 @@ public class S125GDSService {
         log.info("Geomesa Data Store is shutting down...");
         this.dsListeners.forEach(S125GDSListener::destroy);
         this.consumer.dispose();
+    }
+
+    /**
+     * Whenever we get changes in the stations configuration, we will need
+     * to reload the S125GDSListeners for each stations, so basically we need
+     * to call the init function again.
+     */
+    public void reload() {
+        // Destroy all the previous listeners to have a clean slate
+        this.dsListeners.forEach(S125GDSListener::destroy);
+
+        // And re-initialise the service
+        this.init();
     }
 
 }

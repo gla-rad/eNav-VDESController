@@ -57,6 +57,12 @@ public class StationService {
     EntityManager entityManager;
 
     /**
+     * The S125 Geomesa Datastore Service.
+     */
+    @Autowired
+    S125GDSService s125GDSService;
+
+    /**
      * The Station Repository.
      */
     @Autowired
@@ -76,7 +82,7 @@ public class StationService {
      */
     @Transactional(readOnly = true)
     public List<Station> findAll() {
-        log.debug("Request to get all Stations in a pageable search");
+        log.debug("Request to get all Stations in a list");
         return this.stationRepo.findAll();
     }
 
@@ -127,7 +133,9 @@ public class StationService {
      */
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
-        return this.stationRepo.save(station);
+        Station savedStation =  this.stationRepo.save(station);
+        this.s125GDSService.reload();
+        return savedStation;
     }
 
     /**
@@ -139,6 +147,7 @@ public class StationService {
         log.debug("Request to delete Station : {}", id);
         if(this.stationRepo.existsById(id)) {
             this.stationRepo.deleteById(id);
+            this.s125GDSService.reload();
         } else {
             throw new DataNotFoundException(String.format("No station found for the provided ID: %d", id));
         }

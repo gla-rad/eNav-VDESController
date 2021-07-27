@@ -64,6 +64,12 @@ class StationServiceTest {
     EntityManager entityManager;
 
     /**
+     * The S125 Geomesa Datastore Service mock.
+     */
+    @Mock
+    S125GDSService s125GDSService;
+
+    /**
      * The Station Repository Mock.
      */
     @Mock
