@@ -158,7 +158,7 @@ $(document).ready( function () {
                     channel: rowdata["channel"],
                     port: rowdata["port"],
                     mmsi: rowdata["mmsi"],
-                    geometry: rowdata["geometry"],
+                    geometry: null,
                     piSeqNo: 1
                 }),
                 success: success,
@@ -174,6 +174,10 @@ $(document).ready( function () {
             });
         },
         onEditRow: function (datatable, rowdata, success, error) {
+            // The geometry is not read correctly so we need to access it in-direclty
+            var idx = stationsTable.cell('.selected', 0).index();
+            var data = stationsTable.rows(idx.row).data();
+            var geometry = data[0].geometry;
             $.ajax({
                 url: `/api/stations/${rowdata["id"]}`,
                 type: 'PUT',
@@ -187,7 +191,7 @@ $(document).ready( function () {
                     channel: rowdata["channel"],
                     port: rowdata["port"],
                     mmsi: rowdata["mmsi"],
-                    geometry: rowdata["geometry"],
+                    geometry: geometry,
                     piSeqNo: 1
                 }),
                 success: success,
