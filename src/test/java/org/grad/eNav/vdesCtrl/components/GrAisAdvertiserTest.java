@@ -115,6 +115,22 @@ class GrAisAdvertiserTest {
     }
 
     /**
+     * Test that the GNURadio AIS advertiser can be destroyed gracefully and
+     * will close its UDP connection to the GNURadio device.
+     */
+    @Test
+    void testDestroy() {
+        // Initialise the advertiser
+        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+
+        // Perform the service class
+        this.grAisAdvertiser.destroy();
+
+        // Assert that the UDP socket was closed
+        verify(this.gnuRadioSocket, times(1)).close();
+    }
+
+    /**
      * Test that the GNURadio AIS advertiser can actually read the stations
      * from the station service and advertise the to the GNURadio stations
      * applicable.
@@ -179,6 +195,5 @@ class GrAisAdvertiserTest {
         // Make sure no UDP packet was sent to the GRURadio station
         verify(this.gnuRadioSocket, never()).send(any());
     }
-
 
 }

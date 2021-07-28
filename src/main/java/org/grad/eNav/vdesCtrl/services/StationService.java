@@ -29,6 +29,7 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * The Station Service Class
+ *
  * Service Implementation for managing Stations.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
@@ -60,6 +63,7 @@ public class StationService {
      * The S125 Geomesa Datastore Service.
      */
     @Autowired
+    @Lazy
     S125GDSService s125GDSService;
 
     /**

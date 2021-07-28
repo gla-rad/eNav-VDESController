@@ -32,7 +32,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * The GnuRadion AIS Service Class
+ * The GNURadio AIS Service Class
  *
  * This class implements a handler for the AtoN messages coming into a Spring
  * Integration channel. It will then translate the content using JAXB and

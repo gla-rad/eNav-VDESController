@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.geotools.data.DataStore;
 import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
-import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -33,10 +32,11 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * The AtoN Geomesa Data Store Service.
+ * The AtoN Geomesa Data Store Service Class
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -52,10 +52,10 @@ public class S125GDSService {
     ApplicationContext applicationContext;
 
     /**
-     * The Station Repository.
+     * The Station Service.
      */
     @Autowired
-    StationRepo stationRepo;
+    StationService stationService;
 
     /**
      * The Geomesa Data Store.
@@ -84,7 +84,7 @@ public class S125GDSService {
         }
 
         // Get and initialise a the listener workers
-        this.dsListeners = this.stationRepo.findAll()
+        this.dsListeners = this.stationService.findAll()
                 .stream()
                 .map(station -> {
                     S125GDSListener dsListener = this.applicationContext.getBean(S125GDSListener.class);
@@ -109,7 +109,7 @@ public class S125GDSService {
     @PreDestroy
     public void destroy() {
         log.info("Geomesa Data Store is shutting down...");
-        this.dsListeners.forEach(S125GDSListener::destroy);
+        Optional.ofNullable(this.dsListeners).ifPresent(l -> l.forEach(S125GDSListener::destroy));
         this.consumer.dispose();
     }
 
@@ -119,8 +119,8 @@ public class S125GDSService {
      * to call the init function again.
      */
     public void reload() {
-        // Destroy all the previous listeners to have a clean slate
-        this.dsListeners.forEach(S125GDSListener::destroy);
+        // Destroy all the previous listeners if they exist, to have a clean slate
+        Optional.ofNullable(this.dsListeners).ifPresent(l -> l.forEach(S125GDSListener::destroy));
 
         // And re-initialise the service
         this.init();

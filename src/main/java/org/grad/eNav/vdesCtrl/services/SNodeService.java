@@ -43,6 +43,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
+ * The Station Node Service Class
+ *
  * Service Implementation for managing Station SNodes.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)

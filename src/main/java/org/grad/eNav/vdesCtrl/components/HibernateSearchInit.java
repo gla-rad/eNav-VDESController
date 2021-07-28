@@ -28,10 +28,10 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 /**
- * The HibernateSearchInit Component.
+ * The HibernateSearchInit Component Class
  *
  * This component initialises the Lucence search indexes for the database. This
- * is a persistent content that will remain available throught the whole
+ * is a persistent content that will remain available through the whole
  * application.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)

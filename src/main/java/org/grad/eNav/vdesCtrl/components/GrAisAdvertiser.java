@@ -44,7 +44,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * The GNURadio AIS Advertiser Component
+ * The GNURadio AIS Advertiser Component Class
  *
  * This component is responsible for scheduling the advertisements published
  * from a GNURadio AIS transmitter. This is initialised by a service like the

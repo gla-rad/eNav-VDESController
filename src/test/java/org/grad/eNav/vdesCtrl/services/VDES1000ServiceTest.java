@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -89,6 +90,30 @@ class VDES1000ServiceTest {
 
         // Now create the S125 node object
         this.s125Node = new S125Node("test_aton", point, xml);
+    }
+
+    /**
+     * Test that the VDES-1000 controlling service gets initialised correctly,
+     * and it subscribes to the AtoN publish subscribe channel.
+     */
+    @Test
+    void testInit() throws SocketException {
+        // Perform the service call
+        this.vdes1000Service.init();
+
+        verify(this.atonPublishChannel, times(1)).subscribe(this.vdes1000Service);
+    }
+
+    /**
+     * Test that the VDES-1000 controlling service gets destroyed correctly,
+     * and it un-subscribes from the AtoN publish subscribe channel.
+     */
+    @Test
+    void testDestroy() {
+        // Perform the service call
+        this.vdes1000Service.destroy();
+
+        verify(this.atonPublishChannel, times(1)).destroy();
     }
 
     /**

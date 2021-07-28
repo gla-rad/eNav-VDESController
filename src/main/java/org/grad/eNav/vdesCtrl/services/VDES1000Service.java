@@ -40,7 +40,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 /**
- * The VDES1000Service Class
+ * The VDES-1000 Service Class
  *
  * This class implements a handler for the AtoN messages coming into a Spring
  * Integration channel. It will then translate the content using JAXB and
@@ -127,7 +127,6 @@ public class VDES1000Service implements MessageHandler {
 
         // Now send the S125 message to the VDES station
         this.sendDatagram(address, port, piseqno, mmsi, s125Node);
-
     }
 
     /**
