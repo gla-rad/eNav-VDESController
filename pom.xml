@@ -19,7 +19,7 @@
 		<spring-boot-admin.version>2.3.0</spring-boot-admin.version>
 		<spring-cloud.version>Hoxton.SR8</spring-cloud.version>
 		<keycloak.version>12.0.1</keycloak.version>
-		<swagger.version>3.0.0</swagger.version>
+		<springdoc.version>1.5.10</springdoc.version>
 		<geomesa.version>3.1.0</geomesa.version>
 		<scala.abi.version>2.11</scala.abi.version>
 		<scala.version>2.11.7</scala.version>
@@ -189,14 +189,9 @@
 
 		<!-- Swagger -->
 		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-boot-starter</artifactId>
-			<version>${swagger.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>${swagger.version}</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 
 		<!-- The Webjars -->

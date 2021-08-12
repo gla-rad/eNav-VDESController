@@ -18,9 +18,9 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
@@ -29,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -43,7 +42,7 @@ import java.util.Optional;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-@Controller
+@RestController
 @RequestMapping("/api/stations")
 @Slf4j
 public class StationController {
@@ -67,6 +66,7 @@ public class StationController {
      * @param size the number of entries on each page
      * @return the ResponseEntity with status 200 (OK) and the list of stations in body
      */
+    @ResponseStatus
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Station>> getStations(@RequestParam("page") Optional<Integer> page,
                                                      @RequestParam("size") Optional<Integer> size) {

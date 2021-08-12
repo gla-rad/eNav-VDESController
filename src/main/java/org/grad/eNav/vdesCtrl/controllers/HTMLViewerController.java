@@ -19,9 +19,9 @@ package org.grad.eNav.vdesCtrl.controllers;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletException;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-@Controller
+@RestController
 public class HTMLViewerController {
 
     /**
