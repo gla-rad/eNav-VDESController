@@ -23,7 +23,6 @@ import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
 import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -181,9 +180,12 @@ public class GrAisUtils {
                 .append(",");
 
         // Split the input binary message every 6 bits
-        Splitter.fixedLength(6).split(binaryMsg).iterator().forEachRemaining(piece ->
-            aisBuilder.append(StringBinUtils.convertBinaryToChar(piece, true))
-        );
+        Splitter.fixedLength(6)
+                .split(StringBinUtils.padRight(binaryMsg, binaryMsg.length() + (binaryMsg.length()%8)))
+                .iterator()
+                .forEachRemaining(piece ->
+                        aisBuilder.append(StringBinUtils.convertBinaryToChar(piece, true))
+                );
 
         // Append the checksum and close the sentence
         if(enableNMEA) {
