@@ -205,7 +205,7 @@ public class GrAisUtilsTest {
         byte[] signature1 = GrAisUtils.getNMEASentenceSignature(nmeaSentance1, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance1+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance1).getBytes()));
         assertTrue(sign.verify(signature1));
         assertTrue(signature1.length < 120);
 
@@ -213,7 +213,7 @@ public class GrAisUtilsTest {
         byte[] signature2 = GrAisUtils.getNMEASentenceSignature(nmeaSentance2, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance2+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance2).getBytes()));
         assertTrue(sign.verify(signature2));
         assertTrue(signature2.length < 120);
 
@@ -221,7 +221,7 @@ public class GrAisUtilsTest {
         byte[] signature3 = GrAisUtils.getNMEASentenceSignature(nmeaSentance3, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance3+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance3).getBytes()));
         assertTrue(sign.verify(signature3));
         assertTrue(signature3.length < 1203);
 
@@ -229,7 +229,7 @@ public class GrAisUtilsTest {
         byte[] signature4 = GrAisUtils.getNMEASentenceSignature(nmeaSentance4, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance4+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance4).getBytes()));
         assertTrue(sign.verify(signature4));
         System.out.println(signature4.length);
         assertTrue(signature4.length < 120);
@@ -238,7 +238,7 @@ public class GrAisUtilsTest {
         byte[] signature5 = GrAisUtils.getNMEASentenceSignature(nmeaSentance5, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance5+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance5).getBytes()));
         assertTrue(sign.verify(signature5));
         assertTrue(signature5.length < 120);
 
@@ -246,7 +246,7 @@ public class GrAisUtilsTest {
         byte[] signature6 = GrAisUtils.getNMEASentenceSignature(nmeaSentance6, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance6+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance6).getBytes()));
         assertTrue(sign.verify(signature6));
         System.out.println(signature6.length);
         assertTrue(signature6.length < 120);
@@ -255,7 +255,7 @@ public class GrAisUtilsTest {
         byte[] signature7 = GrAisUtils.getNMEASentenceSignature(nmeaSentance7, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance7+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance7).getBytes()));
         assertTrue(sign.verify(signature7));
         assertTrue(signature7.length < 120);
 
@@ -263,7 +263,7 @@ public class GrAisUtilsTest {
         byte[] signature8 = GrAisUtils.getNMEASentenceSignature(nmeaSentance8, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance8+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance8).getBytes()));
         assertTrue(sign.verify(signature8));
         assertTrue(signature8.length < 120);
 
@@ -271,7 +271,7 @@ public class GrAisUtilsTest {
         byte[] signature9 = GrAisUtils.getNMEASentenceSignature(nmeaSentance9, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance9+timestamp).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance9).getBytes()));
         assertTrue(sign.verify(signature9));
         assertTrue(signature9.length < 120);
     }
