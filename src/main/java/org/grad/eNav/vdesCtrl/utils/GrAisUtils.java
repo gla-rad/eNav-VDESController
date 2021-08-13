@@ -211,7 +211,7 @@ public class GrAisUtils {
      */
     public static byte[] getNMEASentenceSignature(String nmeaSentence, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
         // Create the signature parameters
-        String stampedNmeaSentence = nmeaSentence + timestamp;
+        String stampedNmeaSentence = nmeaSentence;
         byte[] stampedNmeaSentenceHashed = MessageDigest.getInstance("SHA-256")
                 .digest(stampedNmeaSentence.getBytes());
 
