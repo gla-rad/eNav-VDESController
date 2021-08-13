@@ -190,15 +190,15 @@ public class GrAisUtilsTest {
         sign.initVerify(publicKey);
 
         // Define various NMEA sentences and a UNIX timestamp to append to the messages
-        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mgAHg0000000000022VWh0b7W03aOh?E`>000000N010,0*43";
-        String nmeaSentance2 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010";
-        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,0*7B";
-        String nmeaSentance4 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*16";
-        String nmeaSentance5 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010";
-        String nmeaSentance6 = "!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*15";
-        String nmeaSentance7 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*09";
-        String nmeaSentance8 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000";
-        String nmeaSentance9 = "!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*0A";
+        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mgAHg0000000000022VWh0b7W03aOh?E`>000000N010,";
+        String nmeaSentance2 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,";
+        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,";
+        String nmeaSentance4 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,";
+        String nmeaSentance5 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,";
+        String nmeaSentance6 = "!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,";
+        String nmeaSentance7 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,";
+        String nmeaSentance8 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,";
+        String nmeaSentance9 = "!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,";
         long timestamp = System.currentTimeMillis()/1000L;
 
         // Generate the NMEA signature for sentence 1
