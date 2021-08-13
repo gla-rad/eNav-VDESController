@@ -25,6 +25,7 @@ import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -213,7 +214,7 @@ public class GrAisUtils {
         // Create the signature parameters
         String stampedNmeaSentence = nmeaSentence;
         byte[] stampedNmeaSentenceHashed = MessageDigest.getInstance("SHA-256")
-                .digest(stampedNmeaSentence.getBytes());
+                .digest(stampedNmeaSentence.getBytes(StandardCharsets.UTF_8));
 
         // Load the private key to sign with
         ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
