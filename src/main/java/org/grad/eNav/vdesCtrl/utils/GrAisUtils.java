@@ -189,7 +189,7 @@ public class GrAisUtils {
 
         // Append the checksum and close the sentence
         if(enableNMEA) {
-            aisBuilder.append(",0");
+            aisBuilder.append(",2");
             String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
             aisBuilder.append("*").append(calculateNMEAChecksum(tempSentence));
         }
@@ -214,7 +214,7 @@ public class GrAisUtils {
      */
     public static byte[] getNMEASentenceSignature(String nmeaSentence, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
         // Create the signature parameters
-        String stampedNmeaSentence = nmeaSentence.substring(0, nmeaSentence.lastIndexOf(',')+1);
+        String stampedNmeaSentence = nmeaSentence;
         byte[] stampedNmeaSentenceHashed = MessageDigest.getInstance("SHA-256")
                 .digest(stampedNmeaSentence.getBytes(StandardCharsets.UTF_8));
 
