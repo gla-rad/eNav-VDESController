@@ -16,10 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.security.MessageDigest;
+import java.security.Security;
 import java.security.Signature;
 import java.security.interfaces.ECPublicKey;
 
@@ -33,6 +36,14 @@ public class GrAisUtilsTest {
     public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011000100000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
     public static final String S125_NO_2_ENCODED = "010101000001101001111101101011110001111010000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
     public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011100000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001100000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
+
+    /**
+     * Add the Bouncy Castle as a security provider for the unit tests.
+     */
+    @BeforeAll
+    static void addSecurityProvider() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     /**
      * Test that we can encode an AIS Message 6 correctly based on the provided
@@ -186,13 +197,13 @@ public class GrAisUtilsTest {
     public void testSignNMEASentence() throws Exception {
         // Retrieve the public key to initialise a signature with
         ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
-        Signature sign = Signature.getInstance("SHA256withECDSA");
+        Signature sign = Signature.getInstance("SHA256withPLAIN-ECDSA");
         sign.initVerify(publicKey);
 
         // Define various NMEA sentences and a UNIX timestamp to append to the messages
-        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mgAHg0000000000022VWh0b7W03aOh?E`>000000N010,2*43";
-        String nmeaSentance2 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010";
-        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N010,0*7B";
+        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100,2*76";
+        String nmeaSentance2 = "!AIVDM,1,1,,A,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100";
+        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100,0*7B";
         String nmeaSentance4 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*16";
         String nmeaSentance5 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010";
         String nmeaSentance6 = "!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*15";

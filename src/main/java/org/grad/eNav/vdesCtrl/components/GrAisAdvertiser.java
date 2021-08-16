@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -37,6 +38,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
@@ -108,6 +110,9 @@ public class GrAisAdvertiser {
 
         // Create the UDP Connection to the GNURadio stations
         this.gnuRadioSocket = new DatagramSocket();
+
+        // Add the Bouncy castle as a security provider to make signatures
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**

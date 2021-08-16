@@ -207,6 +207,13 @@ public class GrAisUtils {
      * whether the sentence is actually valid!) and generates a signature for
      * it based on a predefined OpenSSL key.
      *
+     * Using the SHA256withPLAIN-ECDSA algorithm from Bouncy Castle generates
+     * fixed length 64 byte signatures. Otherwise, the encoding of ECDSA
+     * (also DSA) signatures uses ASN.1 DER which is variable length.
+     *
+     * Refer to:
+     * https://stackoverflow.com/questions/52122705/java-ecdsawithsha256-signature-with-inconsistent-length
+     *
      * @param nmeaSentence the NMEA sentence to be signed
      * @param timestamp the timestamp to append to the sentence
      * @return the NMEA sentence signature
@@ -226,7 +233,7 @@ public class GrAisUtils {
         ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
 
         // Create the signature
-        Signature sign = Signature.getInstance("SHA256withECDSA");
+        Signature sign = Signature.getInstance("SHA256withPLAIN-ECDSA");
         sign.initSign(privateKey);
         sign.update(stampedNmeaSentenceHashed);
 
