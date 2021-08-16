@@ -179,9 +179,12 @@ public class GrAisUtils {
                 .append(nmeaChannel.getChannel())
                 .append(",");
 
+        // Pad the payload to match an 8bit boundary
+        String paddedBinaryMsg = StringBinUtils.padRight(binaryMsg, binaryMsg.length() + (binaryMsg.length()%8));
+
         // Split the input binary message every 6 bits
         Splitter.fixedLength(6)
-                .split(StringBinUtils.padRight(binaryMsg, binaryMsg.length() + (binaryMsg.length()%8)))
+                .split(paddedBinaryMsg)
                 .iterator()
                 .forEachRemaining(piece ->
                         aisBuilder.append(StringBinUtils.convertBinaryToChar(piece, true))
@@ -189,7 +192,8 @@ public class GrAisUtils {
 
         // Append the checksum and close the sentence
         if(enableNMEA) {
-            aisBuilder.append(",2");
+            aisBuilder.append(",");
+            aisBuilder.append((6 - paddedBinaryMsg.length()%6)%6);
             String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
             aisBuilder.append("*").append(calculateNMEAChecksum(tempSentence));
         }
