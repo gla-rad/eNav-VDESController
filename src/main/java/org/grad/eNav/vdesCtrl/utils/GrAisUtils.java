@@ -233,7 +233,7 @@ public class GrAisUtils {
         ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
 
         // Create the signature
-        Signature sign = Signature.getInstance("SHA256withPLAIN-ECDSA");
+        Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
         sign.initSign(privateKey);
         sign.update(stampedNmeaSentenceHashed);
 

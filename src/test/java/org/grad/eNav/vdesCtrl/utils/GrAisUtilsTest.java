@@ -197,7 +197,7 @@ public class GrAisUtilsTest {
     public void testSignNMEASentence() throws Exception {
         // Retrieve the public key to initialise a signature with
         ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
-        Signature sign = Signature.getInstance("SHA256withPLAIN-ECDSA");
+        Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
         sign.initVerify(publicKey);
 
         // Define various NMEA sentences and a UNIX timestamp to append to the messages
