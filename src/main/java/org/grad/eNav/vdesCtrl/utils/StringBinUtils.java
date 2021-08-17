@@ -18,8 +18,11 @@ package org.grad.eNav.vdesCtrl.utils;
 
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.BitSet;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 /**
  * The StringBin Utility Class.
@@ -60,8 +63,7 @@ public class StringBinUtils {
 
     /**
      * Converts an integer into its binary
-     * representation and returns that in a string format. Note that this
-     * operation supports both 6bit and 8bit representations.
+     * representation and returns that in a string format.
      *
      * @param i The integer to be converted
      * @param padding the right padding with zeros required
@@ -73,8 +75,7 @@ public class StringBinUtils {
 
     /**
      * Converts a byte into its binary representation and returns that in a
-     * string format. Note that this operation supports both 6bit and 8bit
-     * representations.
+     * string format.
      *
      * @param b The byte or character to be converted
      * @param padding the right padding with zeros required
@@ -141,6 +142,25 @@ public class StringBinUtils {
             result.append(convertCharToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
         }
         return padLeft(result.toString(), padding);
+    }
+
+    /**
+     * Converts a binary string o zeros and ones into its byte representation.
+     *
+     * @param binaryString The binary string provided
+     * @return the byte representation of the input binary string
+     */
+    public static byte[] convertBinaryStringToBytes(String binaryString) {
+        // Sanity Check
+        if(StringUtils.isEmpty(binaryString) || !binaryString.matches("[01]+")) {
+            return null;
+        }
+        // Create and populate the bit set
+        BitSet bitSet = new BitSet(binaryString.length());
+        IntStream.range(0, binaryString.length())
+                .forEach(index -> bitSet.set(binaryString.length() - 1 - index, binaryString.charAt(index)=='1'));
+        // Return as a byte array
+        return bitSet.length() == 0 ? new byte[]{0x0} : bitSet.toByteArray();
     }
 
 }

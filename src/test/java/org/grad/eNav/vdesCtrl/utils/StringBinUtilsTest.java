@@ -199,4 +199,51 @@ public class StringBinUtilsTest {
         assertEquals("01001000 01100101 01101100 01101100 01101111 00100000 01010111 01101111 01110010 01101100 01100100".replace(" ", ""), StringBinUtils.convertStringToBinary("Hello World", 10, false));
     }
 
+    /**
+     * Test that we can correctly convert a binary string of zeros and ones
+     * into its byte representation.
+     */
+    @Test
+    public void testConvertBinaryStringToBytes() {
+        // Sanity Assertions
+        assertNull(StringBinUtils.convertBinaryStringToBytes(null));
+        assertNull(StringBinUtils.convertBinaryStringToBytes(""));
+        assertNull(StringBinUtils.convertBinaryStringToBytes("ThisIsNotValid"));
+
+        // Single bytes
+        byte[] result1 = StringBinUtils.convertBinaryStringToBytes("00000000");
+        assertEquals(1, result1.length);
+        assertEquals((byte)0x0, result1[0]);
+        byte[] result2 = StringBinUtils.convertBinaryStringToBytes("00000001");
+        assertEquals(1, result2.length);
+        assertEquals((byte)0x1, result2[0]);
+        byte[] result3 = StringBinUtils.convertBinaryStringToBytes("00001001");
+        assertEquals(1, result3.length);
+        assertEquals((byte)0x9, result3[0]);
+        byte[] result4 = StringBinUtils.convertBinaryStringToBytes("00001010");
+        assertEquals(1, result4.length);
+        assertEquals((byte)0xA, result4[0]);
+
+        // Multiple bytes
+        byte[] result5 = StringBinUtils.convertBinaryStringToBytes("0000000100000001");
+        assertEquals(2, result5.length);
+        assertEquals((byte)0x1, result5[1]);
+        assertEquals((byte)0x1, result5[0]);
+        byte[] result6 = StringBinUtils.convertBinaryStringToBytes("0000101100000001");
+        assertEquals(2, result6.length);
+        assertEquals((byte)0xB, result6[1]);
+        assertEquals((byte)0x1, result6[0]);
+        byte[] result7 = StringBinUtils.convertBinaryStringToBytes("111111110000101100000001");
+        assertEquals(3, result7.length);
+        assertEquals((byte)0xFF, result7[2]);
+        assertEquals((byte)0xB, result7[1]);
+        assertEquals((byte)0x1, result7[0]);
+        byte[] result8 = StringBinUtils.convertBinaryStringToBytes("10000001111111110000101100000001");
+        assertEquals(4, result8.length);
+        assertEquals((byte)0x81, result8[3]);
+        assertEquals((byte)0xFF, result8[2]);
+        assertEquals((byte)0xB, result8[1]);
+        assertEquals((byte)0x1, result8[0]);
+    }
+
 }

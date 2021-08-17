@@ -217,7 +217,7 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         String signatureMessage;
         try {
-            byte[] signature = GrAisUtils.getNMEASentenceSignature(msg21NmeaSentence, txInfo.txTimestamp);
+            byte[] signature = GrAisUtils.getAISMessageSignature(txInfo.message21, txInfo.txTimestamp);
             signatureMessage = Optional.ofNullable(this.signatureDestMmmsi)
                     .map(destMmsi -> new GrAisMsg6Params(txInfo.params.getMmsi(), destMmsi, signature))
                     .map(GrAisUtils::encodeMsg6)

@@ -16,11 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
+import com.google.common.primitives.Longs;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.Security;
 import java.security.Signature;
@@ -190,99 +192,75 @@ public class GrAisUtilsTest {
     }
 
     /**
-     * Test that we can generate correct NMEA sentence signatures.
+     * Test that we can generate correct AIS message signatures.
      * @throws Exception when an exception is thrown while testing
      */
     @Test
-    public void testSignNMEASentence() throws Exception {
+    public void testGetAISMessageSignature() throws Exception {
         // Retrieve the public key to initialise a signature with
         ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
         Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
         sign.initVerify(publicKey);
 
-        // Define various NMEA sentences and a UNIX timestamp to append to the messages
-        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*4A";
-        String nmeaSentance2 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100";
-        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*49";
-        String nmeaSentance4 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*06";
-        String nmeaSentance5 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100";
-        String nmeaSentance6 = "!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*05";
-        String nmeaSentance7 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*38";
-        String nmeaSentance8 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000";
-        String nmeaSentance9 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*3B";
+        // Test parameters
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         long timestamp = System.currentTimeMillis()/1000L;
+        byte[] timestampBytes = Longs.toByteArray(timestamp);
 
-        // Generate the NMEA signature for sentence 1
-        byte[] signature1 = GrAisUtils.getNMEASentenceSignature(nmeaSentance1, timestamp);
+        // Generate the NMEA signature for AIS Msg 6
+        byte[] signature1 = GrAisUtils.getAISMessageSignature(AIS_MSG_6_ENCODED, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance1 + timestamp).getBytes()));
+        outputStream.reset();
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_6_ENCODED));
+        outputStream.write(timestampBytes);
+        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
         assertTrue(sign.verify(signature1));
         assertTrue(signature1.length == 64);
 
-        // Generate the NMEA signature for sentence 2
-        byte[] signature2 = GrAisUtils.getNMEASentenceSignature(nmeaSentance2, timestamp);
+        // Generate the NMEA signature for AIS Msg 8
+        byte[] signature2 = GrAisUtils.getAISMessageSignature(AIS_MSG_8_ENCODED, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance2 + timestamp).getBytes()));
+        outputStream.reset();
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_8_ENCODED));
+        outputStream.write(timestampBytes);
+        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
         assertTrue(sign.verify(signature2));
-        assertTrue(signature2.length == 64);
+        assertTrue(signature1.length == 64);
 
-        // Generate the NMEA signature for sentence 3
-        byte[] signature3 = GrAisUtils.getNMEASentenceSignature(nmeaSentance3, timestamp);
+        // Generate the NMEA signature for S125 No1
+        byte[] signature3 = GrAisUtils.getAISMessageSignature(S125_NO_1_ENCODED, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance3 + timestamp).getBytes()));
+        outputStream.reset();
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_1_ENCODED));
+        outputStream.write(timestampBytes);
+        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
         assertTrue(sign.verify(signature3));
-        assertTrue(signature3.length == 64);
+        assertTrue(signature1.length == 64);
 
-        // Generate the NMEA signature for sentence 4
-        byte[] signature4 = GrAisUtils.getNMEASentenceSignature(nmeaSentance4, timestamp);
+        // Generate the NMEA signature for S125 No2
+        byte[] signature4 = GrAisUtils.getAISMessageSignature(S125_NO_2_ENCODED, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance4 + timestamp).getBytes()));
+        outputStream.reset();
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_2_ENCODED));
+        outputStream.write(timestampBytes);
+        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
         assertTrue(sign.verify(signature4));
-        assertTrue(signature4.length == 64);
+        assertTrue(signature1.length == 64);
 
-        // Generate the NMEA signature for sentence 5
-        byte[] signature5 = GrAisUtils.getNMEASentenceSignature(nmeaSentance5, timestamp);
+        // Generate the NMEA signature for S125 No3
+        byte[] signature5 = GrAisUtils.getAISMessageSignature(S125_NO_3_ENCODED, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance5 + timestamp).getBytes()));
+        outputStream.reset();
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_3_ENCODED));
+        outputStream.write(timestampBytes);
+        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
         assertTrue(sign.verify(signature5));
-        assertTrue(signature5.length == 64);
-
-        // Generate the NMEA signature for sentence 6
-        byte[] signature6 = GrAisUtils.getNMEASentenceSignature(nmeaSentance6, timestamp);
-
-        //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance6 + timestamp).getBytes()));
-        assertTrue(sign.verify(signature6));
-        assertTrue(signature6.length == 64);
-
-        // Generate the NMEA signature for sentence 7
-        byte[] signature7 = GrAisUtils.getNMEASentenceSignature(nmeaSentance7, timestamp);
-
-        //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance7 + timestamp).getBytes()));
-        assertTrue(sign.verify(signature7));
-        assertTrue(signature7.length == 64);
-
-        // Generate the NMEA signature for sentence 8
-        byte[] signature8 = GrAisUtils.getNMEASentenceSignature(nmeaSentance8, timestamp);
-
-        //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance8 + timestamp).getBytes()));
-        assertTrue(sign.verify(signature8));
-        assertTrue(signature8.length == 64);
-
-        // Generate the NMEA signature for sentence 9
-        byte[] signature9 = GrAisUtils.getNMEASentenceSignature(nmeaSentance9, timestamp);
-
-        //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance9 + timestamp).getBytes()));
-        assertTrue(sign.verify(signature9));
-        assertTrue(signature9.length == 64);
+        assertTrue(signature1.length == 64);
     }
 
 }

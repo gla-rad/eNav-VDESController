@@ -18,13 +18,14 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.primitives.Longs;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
 import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -204,7 +205,7 @@ public class GrAisUtils {
     }
 
     /**
-     * This functions accepts an NMEA sentence (careful, we do NOT check
+     * This functions accepts an AIS binary message (careful, we do NOT check
      * whether the sentence is actually valid!) and generates a signature for
      * it based on a predefined OpenSSL key.
      *
@@ -215,7 +216,7 @@ public class GrAisUtils {
      * Refer to:
      * https://stackoverflow.com/questions/52122705/java-ecdsawithsha256-signature-with-inconsistent-length
      *
-     * @param nmeaSentence the NMEA sentence to be signed
+     * @param aisBinaryMessage the AIS binary message to be signed
      * @param timestamp the timestamp to append to the sentence
      * @return the NMEA sentence signature
      * @throws NoSuchAlgorithmException when the cryptographic algorithm is not found
@@ -224,11 +225,16 @@ public class GrAisUtils {
      * @throws InvalidKeyException when the loaded key is invalid
      * @throws SignatureException when the signature operation fails
      */
-    public static byte[] getNMEASentenceSignature(String nmeaSentence, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
-        // Create the signature parameters
-        String stampedNmeaSentence = nmeaSentence + timestamp;
-        byte[] stampedNmeaSentenceHashed = MessageDigest.getInstance("SHA-256")
-                .digest(stampedNmeaSentence.getBytes(StandardCharsets.UTF_8));
+    public static byte[] getAISMessageSignature(String aisBinaryMessage, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+        // Combine the AIS message and the timestamp
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage));
+        outputStream.write(Longs.toByteArray(timestamp));
+        byte[] stampedAisMessage = outputStream.toByteArray();
+
+        // Create the SHA-256 hash of the stamped message
+        byte[] stampedAisMessageHashed = MessageDigest.getInstance("SHA-256")
+                .digest(stampedAisMessage);
 
         // Load the private key to sign with
         ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
@@ -236,7 +242,7 @@ public class GrAisUtils {
         // Create the signature
         Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
         sign.initSign(privateKey);
-        sign.update(stampedNmeaSentenceHashed);
+        sign.update(stampedAisMessageHashed);
 
         // Return the result
         return sign.sign();
