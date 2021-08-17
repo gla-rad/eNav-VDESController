@@ -195,7 +195,8 @@ public class GrAisUtils {
             aisBuilder.append(",");
             aisBuilder.append((6 - paddedBinaryMsg.length()%6)%6);
             String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
-            aisBuilder.append("*").append(calculateNMEAChecksum(tempSentence));
+            aisBuilder.append("*");
+            aisBuilder.append(calculateNMEAChecksum(tempSentence));
         }
 
         // Return the generated NMEA sentence
@@ -207,7 +208,7 @@ public class GrAisUtils {
      * whether the sentence is actually valid!) and generates a signature for
      * it based on a predefined OpenSSL key.
      *
-     * Using the SHA256withPLAIN-ECDSA algorithm from Bouncy Castle generates
+     * Using the SHA256withCVC-ECDSA algorithm from Bouncy Castle, generates
      * fixed length 64 byte signatures. Otherwise, the encoding of ECDSA
      * (also DSA) signatures uses ASN.1 DER which is variable length.
      *
@@ -225,7 +226,7 @@ public class GrAisUtils {
      */
     public static byte[] getNMEASentenceSignature(String nmeaSentence, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
         // Create the signature parameters
-        String stampedNmeaSentence = nmeaSentence;
+        String stampedNmeaSentence = nmeaSentence + timestamp;
         byte[] stampedNmeaSentenceHashed = MessageDigest.getInstance("SHA-256")
                 .digest(stampedNmeaSentence.getBytes(StandardCharsets.UTF_8));
 

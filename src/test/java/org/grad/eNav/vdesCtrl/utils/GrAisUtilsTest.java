@@ -34,8 +34,8 @@ public class GrAisUtilsTest {
     public static final String AIS_MSG_6_ENCODED = "000110000001110101101111001101000101010011101011011110011010001011000100000000000100000101011000010110000101100000";
     public static final String AIS_MSG_8_ENCODED = "001000000001110101101111001101000101010000000000010000010101100001011000010110000000";
     public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011000100000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_2_ENCODED = "010101000001101001111101101011110001111010000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011100000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001100000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
+    public static final String S125_NO_2_ENCODED = "010101000001110101101111001101000101011100000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
+    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001100000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
 
     /**
      * Add the Bouncy Castle as a security provider for the unit tests.
@@ -123,15 +123,15 @@ public class GrAisUtilsTest {
      * output will be checked against the result produced by the AIS
      * Blacktoolkit AIVDM_Encoder.py utility for the following definition:
      * <p>
-     * ./AIVDM_Encoder.py --type=21 --mmsi=123456789 --lat=53.61 --long=1.594 --aid_type=24 --aid_name='Test AtoN No 3' --vsize=4x4
+     * ./AIVDM_Encoder.py --type=21 --mmsi=123456789 --lat=1.594 --long=53.61 --aid_type=24 --aid_name='Test AtoN No 2' --v_AtoN
      */
     @Test
     public void testEncodeMsg21VAtoNNo2()  {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
-        msgParams.setMmsi(111111111);
+        msgParams.setMmsi(123456789);
         msgParams.setName("Test AtoN No 2");
-        msgParams.setAtonType(AtonType.NORTH_CARDINAL);
+        msgParams.setAtonType(AtonType.PORT_HAND_MARK);
         msgParams.setLatitude(1.594);
         msgParams.setLongitude(53.61);
         msgParams.setVaton(Boolean.TRUE);
@@ -157,7 +157,7 @@ public class GrAisUtilsTest {
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
         msgParams.setName("Test AtoN No 3");
-        msgParams.setAtonType(AtonType.PORT_HAND_MARK);
+        msgParams.setAtonType(AtonType.SPECIAL_MARK);
         msgParams.setLatitude(53.61);
         msgParams.setLongitude(1.594);
         msgParams.setLength(4);
@@ -179,14 +179,14 @@ public class GrAisUtilsTest {
         assertEquals("", GrAisUtils.generateNMEASentence(null, true, NMEAChannel.A));
         assertEquals("", GrAisUtils.generateNMEASentence("", true, NMEAChannel.A));
         assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*4A", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
         assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*49", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*24", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N0100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*27", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*3B", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*38", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*06", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*05", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*38", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*3B", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
     }
 
     /**
@@ -201,90 +201,88 @@ public class GrAisUtilsTest {
         sign.initVerify(publicKey);
 
         // Define various NMEA sentences and a UNIX timestamp to append to the messages
-        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100,2*76";
-        String nmeaSentance2 = "!AIVDM,1,1,,A,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100";
-        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5KP0003a0R@:2ab@0b7W@HP46aH?2Va000000N0100,0*7B";
-        String nmeaSentance4 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*16";
-        String nmeaSentance5 = "!AIVDM,1,1,,A,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010";
-        String nmeaSentance6 = "!AIVDM,1,1,,B,E1aucir000000:2ab@0b7W@77hI1re1h0M;v000000N010,0*15";
-        String nmeaSentance7 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*09";
-        String nmeaSentance8 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000";
-        String nmeaSentance9 = "!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000,0*0A";
+        String nmeaSentance1 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*4A";
+        String nmeaSentance2 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100";
+        String nmeaSentance3 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*49";
+        String nmeaSentance4 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*06";
+        String nmeaSentance5 = "!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100";
+        String nmeaSentance6 = "!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*05";
+        String nmeaSentance7 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*38";
+        String nmeaSentance8 = "!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N000";
+        String nmeaSentance9 = "!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*3B";
         long timestamp = System.currentTimeMillis()/1000L;
 
         // Generate the NMEA signature for sentence 1
         byte[] signature1 = GrAisUtils.getNMEASentenceSignature(nmeaSentance1, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance1).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance1 + timestamp).getBytes()));
         assertTrue(sign.verify(signature1));
-        assertTrue(signature1.length < 120);
+        assertTrue(signature1.length == 64);
 
         // Generate the NMEA signature for sentence 2
         byte[] signature2 = GrAisUtils.getNMEASentenceSignature(nmeaSentance2, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance2).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance2 + timestamp).getBytes()));
         assertTrue(sign.verify(signature2));
-        assertTrue(signature2.length < 120);
+        assertTrue(signature2.length == 64);
 
         // Generate the NMEA signature for sentence 3
         byte[] signature3 = GrAisUtils.getNMEASentenceSignature(nmeaSentance3, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance3).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance3 + timestamp).getBytes()));
         assertTrue(sign.verify(signature3));
-        assertTrue(signature3.length < 1203);
+        assertTrue(signature3.length == 64);
 
         // Generate the NMEA signature for sentence 4
         byte[] signature4 = GrAisUtils.getNMEASentenceSignature(nmeaSentance4, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance4).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance4 + timestamp).getBytes()));
         assertTrue(sign.verify(signature4));
-        System.out.println(signature4.length);
-        assertTrue(signature4.length < 120);
+        assertTrue(signature4.length == 64);
 
         // Generate the NMEA signature for sentence 5
         byte[] signature5 = GrAisUtils.getNMEASentenceSignature(nmeaSentance5, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance5).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance5 + timestamp).getBytes()));
         assertTrue(sign.verify(signature5));
-        assertTrue(signature5.length < 120);
+        assertTrue(signature5.length == 64);
 
         // Generate the NMEA signature for sentence 6
         byte[] signature6 = GrAisUtils.getNMEASentenceSignature(nmeaSentance6, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance6).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance6 + timestamp).getBytes()));
         assertTrue(sign.verify(signature6));
-        System.out.println(signature6.length);
-        assertTrue(signature6.length < 120);
+        assertTrue(signature6.length == 64);
 
         // Generate the NMEA signature for sentence 7
         byte[] signature7 = GrAisUtils.getNMEASentenceSignature(nmeaSentance7, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance7).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance7 + timestamp).getBytes()));
         assertTrue(sign.verify(signature7));
-        assertTrue(signature7.length < 120);
+        assertTrue(signature7.length == 64);
 
         // Generate the NMEA signature for sentence 8
         byte[] signature8 = GrAisUtils.getNMEASentenceSignature(nmeaSentance8, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance8).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance8 + timestamp).getBytes()));
         assertTrue(sign.verify(signature8));
-        assertTrue(signature8.length < 120);
+        assertTrue(signature8.length == 64);
 
         // Generate the NMEA signature for sentence 9
         byte[] signature9 = GrAisUtils.getNMEASentenceSignature(nmeaSentance9, timestamp);
 
         //Verify the signature is correct
-        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance9).getBytes()));
+        sign.update(MessageDigest.getInstance("SHA-256").digest((nmeaSentance9 + timestamp).getBytes()));
         assertTrue(sign.verify(signature9));
-        assertTrue(signature9.length < 120);
+        assertTrue(signature9.length == 64);
     }
 
 }
