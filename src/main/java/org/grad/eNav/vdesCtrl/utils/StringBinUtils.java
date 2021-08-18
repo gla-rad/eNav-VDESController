@@ -152,6 +152,10 @@ public class StringBinUtils {
      * significant bit (so zero in our string) but then we need to reverse
      * the bytes order to keep it the same as the original string.
      *
+     * If the string does not represent a full 8bit byte array, the additional
+     * zeros will be appended in the end of the string, hence the last byte
+     * of the returned array.
+     *
      * @param binaryString The binary string provided
      * @return the byte representation of the input binary string
      */
@@ -160,14 +164,22 @@ public class StringBinUtils {
         if(StringUtils.isEmpty(binaryString) || !binaryString.matches("[01]+")) {
             return null;
         }
-        // Create and populate the bit set
-        BitSet bitSet = new BitSet(binaryString.length());
-        IntStream.range(0, binaryString.length())
-                .forEach(index -> bitSet.set(binaryString.length() - 1 - index, binaryString.charAt(index)=='1'));
 
-        //Reverse the byte array
+        // Get the additional bits to match a full 8bit byte array
+        int offset = (8 - binaryString.length()%8)%8;
+        int end = binaryString.length() + offset - 1;
+
+        // Create and populate the bit set
+        BitSet bitSet = new BitSet(binaryString.length() + offset);
+        IntStream.range(0, binaryString.length())
+                .forEach(index -> {
+                    bitSet.set(end - index, binaryString.charAt(index)=='1');
+                });
+
+        // Reverse the byte array to match a big endian sequence
         byte[] bytearray = bitSet.length() == 0 ? new byte[]{0x0} : bitSet.toByteArray();
         ArrayUtils.reverse(bytearray);
+
         // Return as a byte array
         return bytearray;
     }

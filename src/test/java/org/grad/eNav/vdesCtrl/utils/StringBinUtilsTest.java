@@ -244,6 +244,14 @@ public class StringBinUtilsTest {
         assertEquals((byte)0xFF, result8[1]);
         assertEquals((byte)0x0B, result8[2]);
         assertEquals((byte)0x01, result8[3]);
+
+        // Also test a string is not a complete 8bit byte string
+        byte[] resultx = StringBinUtils.convertBinaryStringToBytes("0101010000011101001");
+        assertEquals(3, resultx.length);
+        assertEquals((byte)0x54, resultx[0]);
+        assertEquals((byte)0x1D, resultx[1]);
+        assertEquals((byte)0x20, resultx[2]);
+
     }
 
 }
