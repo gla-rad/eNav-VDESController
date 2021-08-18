@@ -21,9 +21,9 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.BitSet;
 import java.util.Objects;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The StringBin Utility Class.
@@ -148,9 +148,10 @@ public class StringBinUtils {
     /**
      * Converts a binary string o zeros and ones into its byte representation.
      *
-     * Note that we translate the bits onto bits starting from the less
-     * significant bit (so zero in our string) but then we need to reverse
-     * the bytes order to keep it the same as the original string.
+     * Note that we translate the bits onto bytes from left to right, so keeping
+     * in line with how the python bitarray library works.
+     *
+     * https://pypi.org/project/bitarray/
      *
      * If the string does not represent a full 8bit byte array, the additional
      * zeros will be appended in the end of the string, hence the last byte
@@ -165,23 +166,13 @@ public class StringBinUtils {
             return null;
         }
 
-        // Get the additional bits to match a full 8bit byte array
-        int offset = (8 - binaryString.length()%8)%8;
-        int end = binaryString.length() + offset - 1;
-
-        // Create and populate the bit set
-        BitSet bitSet = new BitSet(binaryString.length() + offset);
-        IntStream.range(0, binaryString.length())
-                .forEach(index -> {
-                    bitSet.set(end - index, binaryString.charAt(index)=='1');
-                });
-
-        // Reverse the byte array to match a big endian sequence
-        byte[] bytearray = bitSet.length() == 0 ? new byte[]{0x0} : bitSet.toByteArray();
-        ArrayUtils.reverse(bytearray);
-
-        // Return as a byte array
-        return bytearray;
+        // Break into bit octets and translate to bytes
+       return ArrayUtils.toPrimitive(Stream.of(binaryString.split("(?<=\\G.{8})"))
+                .map(bits -> StringUtils.rightPad(bits, 8, '0'))
+                .map(bits ->(Integer.parseInt(bits, 2)))
+                .map(i -> i.byteValue())
+                .collect(Collectors.toList())
+                .toArray(new  Byte[]{}));
     }
 
 }
