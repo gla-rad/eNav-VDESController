@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.utils;
 
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.BitSet;
@@ -147,6 +148,10 @@ public class StringBinUtils {
     /**
      * Converts a binary string o zeros and ones into its byte representation.
      *
+     * Note that we translate the bits onto bits starting from the less
+     * significant bit (so zero in our string) but then we need to reverse
+     * the bytes order to keep it the same as the original string.
+     *
      * @param binaryString The binary string provided
      * @return the byte representation of the input binary string
      */
@@ -159,8 +164,12 @@ public class StringBinUtils {
         BitSet bitSet = new BitSet(binaryString.length());
         IntStream.range(0, binaryString.length())
                 .forEach(index -> bitSet.set(binaryString.length() - 1 - index, binaryString.charAt(index)=='1'));
+
+        //Reverse the byte array
+        byte[] bytearray = bitSet.length() == 0 ? new byte[]{0x0} : bitSet.toByteArray();
+        ArrayUtils.reverse(bytearray);
         // Return as a byte array
-        return bitSet.length() == 0 ? new byte[]{0x0} : bitSet.toByteArray();
+        return bytearray;
     }
 
 }
