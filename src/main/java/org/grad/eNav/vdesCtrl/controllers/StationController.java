@@ -73,7 +73,7 @@ public class StationController {
         log.debug("REST request to get page of Stations");
         int currentPage = page.orElse(1);
         int pageSize = size.orElse(10);
-        Page<Station> stationPage = stationService.findAll(PageRequest.of(currentPage - 1, pageSize));
+        Page<Station> stationPage = this.stationService.findAll(PageRequest.of(currentPage - 1, pageSize));
         return ResponseEntity.ok()
                 .body(stationPage.getContent());
     }
@@ -88,7 +88,7 @@ public class StationController {
     public ResponseEntity<DtPage<Station>> getStationsForDatatables(@RequestBody DtPagingRequest dtPagingRequest) {
         log.debug("REST request to get page of Stations for datatables");
         return ResponseEntity.ok()
-                .body(stationService.handleDatatablesPagingRequest(dtPagingRequest));
+                .body(this.stationService.handleDatatablesPagingRequest(dtPagingRequest));
     }
 
     /**

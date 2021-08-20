@@ -106,7 +106,7 @@ public class SNodeService {
     }
 
     /**
-     * Get one node by UDI.
+     * Get one node by UID.
      *
      * @param uid the UID of the node
      * @return the node
@@ -159,7 +159,7 @@ public class SNodeService {
     }
 
     /**
-     * Delete the node by ID.
+     * Delete the node by UID.
      *
      * @param uid the UID the node
      */

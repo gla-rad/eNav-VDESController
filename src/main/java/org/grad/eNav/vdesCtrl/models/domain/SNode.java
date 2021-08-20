@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * The SNode Class
+ * The Station Node Class
  * <p></p>
  * This class defines the database structure of the station node entries. These
  * are any types of S-100/S-200 IALA product specification objects that are
@@ -72,15 +72,15 @@ public class SNode {
     private Set<Station> stations = new HashSet<>();
 
     /**
-     * Instantiates a new S node.
+     * Instantiates a new Station Node.
      */
     public SNode() {
     }
 
     /**
-     * Instantiates a new S node.
+     * Instantiates a new Station Node using an S124 object.
      *
-     * @param s124Node the s125 node
+     * @param s124Node the s124 node object
      */
     public SNode(S124Node s124Node) {
         this.uid = s124Node.getMessageId();
@@ -89,9 +89,9 @@ public class SNode {
     }
 
     /**
-     * Instantiates a new S node.
+     * Instantiates a new Station Node using an S125 object.
      *
-     * @param s125Node the s125 node
+     * @param s125Node the s125 node object
      */
     public SNode(S125Node s125Node) {
         this.uid = s125Node.getAtonUID();

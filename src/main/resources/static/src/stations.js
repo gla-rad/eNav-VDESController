@@ -17,7 +17,7 @@ var stationsColumnDefs = [{
     type: "hidden",
     visible: false,
     searchable: false
-},{
+}, {
     data: "geometry",
     title: "Geometry",
     type: "hidden",

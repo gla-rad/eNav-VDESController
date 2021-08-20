@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.repos;
 
-import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.springframework.data.jpa.repository.JpaRepository;

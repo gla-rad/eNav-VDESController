@@ -26,21 +26,21 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Spring Data JPA repository for the SNode entity.
+ * Spring Data JPA repository for the Station Node entity.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public interface SNodeRepo extends JpaRepository<SNode, BigInteger> {
 
     /**
-     * Find all with eager relationships list.
+     * Find one using the Station Node UID.
      *
-     * @return The complete station list
+     * @return The Station Node matching the UID
      */
     SNode findByUid(String uid);
 
     /**
-     * Find one with eager relationships design.
+     * Find one Station Node with eager relationships.
      *
      * @param id The id
      * @return The matching station
