@@ -7,11 +7,11 @@
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.grad.eNav.vdesCtrl.controllers;
@@ -92,9 +92,9 @@ public class StationController {
     }
 
     /**
-     * GET /api/instances/:id : get the "id" instance.
+     * GET /api/stations/:id : get the "ID" station.
      *
-     * @param id the id of the instance to retrieve
+     * @param id the ID of the station to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the station, or with status 404 (Not Found)
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,8 +107,8 @@ public class StationController {
     /**
      * POST /api/stations : Create a new station.
      *
-     * @param station the instance to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new instance, or with status 400 (Bad Request) if the instance has already an ID
+     * @param station the station to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new station, or with status 400 (Bad Request) if the station has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -130,14 +130,15 @@ public class StationController {
         }
 
         // Build the response
-        return ResponseEntity.created(new URI("/api/instances/" + station.getId())).body(station);
+        return ResponseEntity.created(new URI("/api/stations/" + station.getId())).body(station);
     }
 
     /**
      * PUT /api/stations : Update an existing station.
      *
-     * @param station the instance to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new instance, or with status 400 (Bad Request) if the instance has already an ID
+     * @param id the ID of the station to update
+     * @param station the station to update
+     * @return the ResponseEntity with status 201 (Created) and with body the new station, or with status 400 (Bad Request) if the station has already an ID
      */
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Station> updateStation(@PathVariable BigInteger id,
@@ -165,14 +166,14 @@ public class StationController {
     }
 
     /**
-     * DELETE /api/stations/:id : Delete the "id" station.
+     * DELETE /api/stations/:id : Delete the "ID" station.
      *
-     * @param id the id of the station to delete
+     * @param id the ID of the station to delete
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteStation(@PathVariable BigInteger id) {
-        log.debug("REST request to delete Instance : {}", id);
+        log.debug("REST request to delete Station : {}", id);
         this.stationService.delete(id);
         return ResponseEntity.ok()
                 .headers(HeaderUtil.createEntityDeletionAlert("station", id.toString()))
