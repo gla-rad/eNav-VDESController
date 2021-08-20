@@ -1,3 +1,6 @@
+/**
+ * Global variables
+ */
 var stompClient = null;
 var noOfMessages = 0;
 var maxNoOfMessages = 10;

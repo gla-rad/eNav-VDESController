@@ -8,11 +8,11 @@
 		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>org.thls</groupId>
+	<groupId>org.grad</groupId>
 	<artifactId>vdes-controller</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>VDESController</name>
-	<description>GRAD e-Navigation VDES Controller Microservice </description>
+	<description>GRAD e-Navigation VDES Controller Microservice</description>
 
 	<properties>
 		<java.version>1.8</java.version>

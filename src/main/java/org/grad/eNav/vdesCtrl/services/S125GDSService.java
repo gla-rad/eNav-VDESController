@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 GLA UK Research and Development Directive
+ * Copyright (c) 2021 GLA Research and Development Directorate
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
+@Singleton
 @Service
 @Slf4j
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)

@@ -52,25 +52,29 @@ required. Everything should be picked up through the properties files.
 
 ## Description
 **The VDES controller is still under development and the actual VDES connection
-has not yet been implemented.**
+has not yet been implemented.** It does however have the ability to connect to
+a USRP receiver through a UDP port and send AIS 21 messages. These can also
+be followed through a signature messages containing an Elliptic Key signature.
+This allows the previous message to be validated. To enable the signature 
+operation, enable the following configuration parameter in the 
+*application.properties* file.
 
-The service's core component is  the AtonGDSServices which boots up as a 
+    gla.rad.vdes-ctrl.gr-aid-advertiser.enableSignatures
+
+The service's core component is  the S125GDSService which boots up as a 
 singleton component (only one per instance). This will create a consumer for 
-a Geomesa Kafka Data Store and a number of listeners based on the configuration
-provided in the *application.propeties* file:
-
-    gla.rad.vdes-ctrl.aton.listeners[0].address: 10.0.0.1
-    gla.rad.vdes-ctrl.aton.listeners[0].port: 9000
-    gla.rad.vdes-ctrl.aton.listeners[0].polygon: 0.0,0.0,0.0,0.0
-    gla.rad.vdes-ctrl.aton.listeners[1].address: 10.0.0.2
-    gla.rad.vdes-ctrl.aton.listeners[1].port: 9001
-    gla.rad.vdes-ctrl.aton.listeners[1].polygon: 1.0,1.0,1.0,1.0
-
-In the above example, we get two listeners, controlling two different VDES 
-stations. The crucial different is the polygon definition, which specified the
-geographical area to which the listener will respond. All messages included in
-that area will be sent to the VDES stations with the respective IP address and
-port number.
+a Geomesa Kafka Data Store and a number of listeners based on the list of 
+stations defined in the connected database. Each station is defined by the
+following fields:
+* ID - The ID of the station
+* Name - The name of the station
+* IP Address - The IP address that the station is listening to
+* Port Number - The port number to send the message to
+* PI Sequence Number - Used only during the VDES_1000 operation
+* Type - The type of the station (VDES_1000/GNU_RADIOn)
+* Channel - The AIS channel that the station will utitilise to send the messages
+* Geometry - The geometric description of the area the station is responsible for
+* Nodes - The list of messages the station is currently advertising 
 
 Listeners will also propagate the received messages to a web-socket for 
 debugging purposes.
