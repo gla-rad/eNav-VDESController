@@ -43,6 +43,7 @@ import java.util.function.Predicate;
 public class GrAisMsg21Params {
 
     // Class Variables
+    private String uid;
     private Integer mmsi;
     private AtonType atonType;
     private String name;
@@ -57,6 +58,7 @@ public class GrAisMsg21Params {
      * Empty Constructor.
      */
     public GrAisMsg21Params() {
+        this.uid = null;
         this.mmsi = null;
         this.atonType = AtonType.DEFAULT;
         this.name = "";
@@ -93,6 +95,9 @@ public class GrAisMsg21Params {
                 .filter(S125NavAidStructureType.class::isInstance)
                 .map(S125NavAidStructureType.class::cast)
                 .ifPresent(navAid -> {
+                    this.uid = Optional.of(dataset)
+                            .map(DataSet::getId)
+                            .orElse(null);
                     this.atonType = AtonType.fromString(Optional.of(navAid).
                             map(S125NavAidStructureType::getAtonType)
                             .map(S125AtonType::value)
@@ -127,6 +132,24 @@ public class GrAisMsg21Params {
                     this.raim = navAid.isRaimFlag();
                     this.vaton = navAid.isVatonFlag();
                 });
+    }
+
+    /**
+     * Gets uid.
+     *
+     * @return the uid
+     */
+    public String getUid() {
+        return uid;
+    }
+
+    /**
+     * Sets uid.
+     *
+     * @param uid the uid
+     */
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     /**
