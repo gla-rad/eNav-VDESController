@@ -205,47 +205,21 @@ public class GrAisUtils {
     }
 
     /**
-     * This functions accepts an AIS binary message (careful, we do NOT check
-     * whether the sentence is actually valid!) and generates a signature for
-     * it based on a predefined OpenSSL key.
+     * This function translated the AIS message binary content string
+     * to a byte array and stamps it with the provided timestamp. This
+     * can be used to easily generate a payload for signing.
      *
-     * Using the SHA256withCVC-ECDSA algorithm from Bouncy Castle, generates
-     * fixed length 64 byte signatures. Otherwise, the encoding of ECDSA
-     * (also DSA) signatures uses ASN.1 DER which is variable length.
-     *
-     * Refer to:
-     * https://stackoverflow.com/questions/52122705/java-ecdsawithsha256-signature-with-inconsistent-length
-     *
-     * @param aisBinaryMessage the AIS binary message to be signed
-     * @param timestamp the timestamp to append to the sentence
+     * @param aisBinaryMessage the AIS binary message to be stamped
+     * @param timestamp the timestamp to append to the content
      * @return the NMEA sentence signature
-     * @throws NoSuchAlgorithmException when the cryptographic algorithm is not found
-     * @throws IOException when the key resource file is not found
-     * @throws InvalidKeySpecException when the loaded key specification is invalid
-     * @throws InvalidKeyException when the loaded key is invalid
-     * @throws SignatureException when the signature operation fails
+     * @throws IOException when the message content operation fails
      */
-    public static byte[] getAISMessageSignature(String aisBinaryMessage, long timestamp) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+    public static byte[] getStampedAISMessageContent(String aisBinaryMessage, long timestamp) throws IOException {
         // Combine the AIS message and the timestamp
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage));
         outputStream.write(Longs.toByteArray(timestamp));
-        byte[] stampedAisMessage = outputStream.toByteArray();
-
-        // Create the SHA-256 hash of the stamped message
-        byte[] stampedAisMessageHashed = MessageDigest.getInstance("SHA-256")
-                .digest(stampedAisMessage);
-
-        // Load the private key to sign with
-        ECPrivateKey privateKey = CryptoUtils.readECPrivateKey("CorkHoleTest-PrivateKeyPair.pem");
-
-        // Create the signature
-        Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
-        sign.initSign(privateKey);
-        sign.update(stampedAisMessageHashed);
-
-        // Return the result
-        return sign.sign();
+        return outputStream.toByteArray();
     }
 
     /**

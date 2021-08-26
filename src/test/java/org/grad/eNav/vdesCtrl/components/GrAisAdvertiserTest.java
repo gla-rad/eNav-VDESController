@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.components;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
+import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
@@ -42,6 +43,8 @@ import java.math.BigInteger;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,6 +61,12 @@ class GrAisAdvertiserTest {
     GrAisAdvertiser grAisAdvertiser;
 
     /**
+     * The CKeeper Client mock.
+     */
+    @Mock
+    CKeeperClient cKeeperClient;
+
+    /**
      * The SNode Service mock.
      */
     @Mock
@@ -66,13 +75,14 @@ class GrAisAdvertiserTest {
     // Test Variables
     private Station station;
     private S125Node s125Node;
+    private byte[] signature;
     private DatagramSocket gnuRadioSocket;
 
     /**
      * Common setup for all the tests.
      */
     @BeforeEach
-    void setup() throws IOException {
+    void setup() throws IOException, NoSuchAlgorithmException {
         // Create a temp geometry factory to get a test geometries
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -97,6 +107,9 @@ class GrAisAdvertiserTest {
 
         // Now create the S125 node object
         this.s125Node = new S125Node("test_aton", point, xml);
+
+        // Mock a signature
+        this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
 
         // Also mock a UDP socket that does nothing, to be used in the tests
         this.gnuRadioSocket = mock(DatagramSocket.class);
@@ -160,6 +173,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException, InterruptedException {
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+        doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

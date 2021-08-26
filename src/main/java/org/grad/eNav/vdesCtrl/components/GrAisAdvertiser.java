@@ -18,7 +18,11 @@ package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
+import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
@@ -36,11 +40,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -77,6 +77,12 @@ public class GrAisAdvertiser {
      */
     @Value("${gla.rad.vdes-ctrl.gr-aid-advertiser.destMmsi:}")
     Integer signatureDestMmmsi;
+
+    /**
+     * The CKeeper Client
+     */
+    @Autowired
+    CKeeperClient cKeeperClient;
 
     /**
      * The SNode Service.
@@ -217,12 +223,18 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         String signatureMessage;
         try {
-            byte[] signature = GrAisUtils.getAISMessageSignature(txInfo.message21, txInfo.txTimestamp);
+            // Combine the AIS message and the timestamp
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageContent(txInfo.message21, txInfo.txTimestamp);
+
+            // Get the signature
+            byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getName(), stampedAisMessage);
+
+            // And generate the signature message
             signatureMessage = Optional.ofNullable(this.signatureDestMmmsi)
                     .map(destMmsi -> new GrAisMsg6Params(txInfo.params.getMmsi(), destMmsi, signature))
                     .map(GrAisUtils::encodeMsg6)
                     .orElseGet(() -> GrAisUtils.encodeMsg8(new GrAisMsg8Params(txInfo.params.getMmsi(), signature)));
-        } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException | InvalidKeyException | SignatureException ex) {
+        } catch (IOException ex) {
             log.error(ex.getMessage());
             return;
         }

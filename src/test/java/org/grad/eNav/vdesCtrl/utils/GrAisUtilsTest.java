@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.Security;
 import java.security.Signature;
@@ -192,75 +193,36 @@ public class GrAisUtilsTest {
     }
 
     /**
-     * Test that we can generate correct AIS message signatures.
-     * @throws Exception when an exception is thrown while testing
+     * Test that we can generate stamped AIS message content byte arrays
+     * with the correct length.
+     * @throws IOException when an exception is thrown while generating the byte arrays
      */
     @Test
-    public void testGetAISMessageSignature() throws Exception {
-        // Retrieve the public key to initialise a signature with
-        ECPublicKey publicKey = CryptoUtils.readECPublicKey("CorkHoleTest-Public.pem");
-        Signature sign = Signature.getInstance("SHA256withCVC-ECDSA");
-        sign.initVerify(publicKey);
-
+    public void testGetStampedAISMessageContent() throws IOException {
         // Test parameters
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         long timestamp = System.currentTimeMillis()/1000L;
         byte[] timestampBytes = Longs.toByteArray(timestamp);
 
-        // Generate the NMEA signature for AIS Msg 6
-        byte[] signature1 = GrAisUtils.getAISMessageSignature(AIS_MSG_6_ENCODED, timestamp);
+        // Generate the stamped message for AIS Msg 6
+        byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_6_ENCODED, timestamp);
+        assertEquals(AIS_MSG_6_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage1.length);
 
-        //Verify the signature is correct
-        outputStream.reset();
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_6_ENCODED));
-        outputStream.write(timestampBytes);
-        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
-        assertTrue(sign.verify(signature1));
-        assertTrue(signature1.length == 64);
+        // Generate the stamped message for AIS Msg 8
+        byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_8_ENCODED, timestamp);
+        assertEquals(AIS_MSG_8_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage2.length);
 
-        // Generate the NMEA signature for AIS Msg 8
-        byte[] signature2 = GrAisUtils.getAISMessageSignature(AIS_MSG_8_ENCODED, timestamp);
+        // Generate the stamped message for S125 No1
+        byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageContent(S125_NO_1_ENCODED, timestamp);
+        assertEquals(S125_NO_1_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage3.length);
 
-        //Verify the signature is correct
-        outputStream.reset();
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_8_ENCODED));
-        outputStream.write(timestampBytes);
-        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
-        assertTrue(sign.verify(signature2));
-        assertTrue(signature1.length == 64);
+        // Generate the stamped message for S125 No2
+        byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageContent(S125_NO_2_ENCODED, timestamp);
+        assertEquals(S125_NO_2_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage4.length);
 
-        // Generate the NMEA signature for S125 No1
-        byte[] signature3 = GrAisUtils.getAISMessageSignature(S125_NO_1_ENCODED, timestamp);
-
-        //Verify the signature is correct
-        outputStream.reset();
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_1_ENCODED));
-        outputStream.write(timestampBytes);
-        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
-        assertTrue(sign.verify(signature3));
-        assertTrue(signature1.length == 64);
-
-        // Generate the NMEA signature for S125 No2
-        byte[] signature4 = GrAisUtils.getAISMessageSignature(S125_NO_2_ENCODED, timestamp);
-
-        //Verify the signature is correct
-        outputStream.reset();
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_2_ENCODED));
-        outputStream.write(timestampBytes);
-        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
-        assertTrue(sign.verify(signature4));
-        assertTrue(signature1.length == 64);
-
-        // Generate the NMEA signature for S125 No3
-        byte[] signature5 = GrAisUtils.getAISMessageSignature(S125_NO_3_ENCODED, timestamp);
-
-        //Verify the signature is correct
-        outputStream.reset();
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(S125_NO_3_ENCODED));
-        outputStream.write(timestampBytes);
-        sign.update(MessageDigest.getInstance("SHA-256").digest(outputStream.toByteArray()));
-        assertTrue(sign.verify(signature5));
-        assertTrue(signature1.length == 64);
+        // Generate the stamped message for S125 No3
+        byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageContent(S125_NO_3_ENCODED, timestamp);
+        assertEquals(S125_NO_3_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage5.length);
     }
 
 }
