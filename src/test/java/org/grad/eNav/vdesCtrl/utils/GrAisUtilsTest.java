@@ -216,7 +216,7 @@ public class GrAisUtilsTest {
 
         // Generate the stamped message for S125 No1
         byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageContent(S125_NO_1_ENCODED, timestamp);
-        assertEquals(256/81, stampedMessage3.length);
+        assertEquals(256/8, stampedMessage3.length);
 
         // Generate the stamped message for S125 No2
         byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageContent(S125_NO_2_ENCODED, timestamp);
