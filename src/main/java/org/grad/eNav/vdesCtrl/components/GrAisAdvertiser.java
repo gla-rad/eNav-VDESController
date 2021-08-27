@@ -224,8 +224,8 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         String signatureMessage;
         try {
-            // Combine the AIS message and the timestamp
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageContent(txInfo.message21, txInfo.txTimestamp);
+            // Combine the AIS message and the timestamp into a hash
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.txTimestamp);
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), stampedAisMessage);
