@@ -293,11 +293,11 @@ function addNonGroupLayers(sourceLayer, targetGroup) {
 }
 
 /**
- * This function will initialise the station_nodes_table DOM element and load
+ * This function will initialise the station_nodes_table DOM element and loads
  * the station nodes applicable for the provided row's station ID.
  *
  * @param {Event}         event         The event that took place
- * @param {DataTable}     table         The AtoN type table
+ * @param {DataTable}     table         The stations table
  * @param {Node}          button        The button node that was pressed
  * @param {Configuration} config        The table configuration
  */
@@ -324,7 +324,7 @@ function loadStationNodes(event, table, button, config) {
                 json.forEach(node => {
                     node["content"] = "<textarea style=\"width: 100%; max-height: 300px\" readonly>"
                      + node["content"]
-                     + "/<textarea>";
+                     + "</textarea>";
                 });
                 return json;
             },

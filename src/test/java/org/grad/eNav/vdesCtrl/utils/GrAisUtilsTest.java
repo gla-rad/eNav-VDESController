@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.Signature;
 import java.security.interfaces.ECPublicKey;
@@ -194,11 +195,12 @@ public class GrAisUtilsTest {
 
     /**
      * Test that we can generate stamped AIS message content byte arrays
-     * with the correct length.
-     * @throws IOException when an exception is thrown while generating the byte arrays
+     * with the correct length. Note that we are hashing the AIVDM content
+     * + timestamp with an SHA-256 hash which should give us 256/8 = 32 byte
+     * long result.
      */
     @Test
-    public void testGetStampedAISMessageContent() throws IOException {
+    public void testGetStampedAISMessageContent() throws NoSuchAlgorithmException,  IOException {
         // Test parameters
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         long timestamp = System.currentTimeMillis()/1000L;
@@ -206,23 +208,23 @@ public class GrAisUtilsTest {
 
         // Generate the stamped message for AIS Msg 6
         byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_6_ENCODED, timestamp);
-        assertEquals(AIS_MSG_6_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage1.length);
+        assertEquals(256/8, stampedMessage1.length);
 
         // Generate the stamped message for AIS Msg 8
         byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_8_ENCODED, timestamp);
-        assertEquals(AIS_MSG_8_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage2.length);
+        assertEquals(256/8, stampedMessage2.length);
 
         // Generate the stamped message for S125 No1
         byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageContent(S125_NO_1_ENCODED, timestamp);
-        assertEquals(S125_NO_1_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage3.length);
+        assertEquals(256/81, stampedMessage3.length);
 
         // Generate the stamped message for S125 No2
         byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageContent(S125_NO_2_ENCODED, timestamp);
-        assertEquals(S125_NO_2_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage4.length);
+        assertEquals(256/8, stampedMessage4.length);
 
         // Generate the stamped message for S125 No3
         byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageContent(S125_NO_3_ENCODED, timestamp);
-        assertEquals(S125_NO_3_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage5.length);
+        assertEquals(256/8, stampedMessage5.length);
     }
 
 }

@@ -214,12 +214,15 @@ public class GrAisUtils {
      * @return the NMEA sentence signature
      * @throws IOException when the message content operation fails
      */
-    public static byte[] getStampedAISMessageContent(String aisBinaryMessage, long timestamp) throws IOException {
+    public static byte[] getStampedAISMessageContent(String aisBinaryMessage, long timestamp) throws IOException, NoSuchAlgorithmException {
         // Combine the AIS message and the timestamp
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage));
         outputStream.write(Longs.toByteArray(timestamp));
-        return outputStream.toByteArray();
+        byte[] stampedAisMessage = outputStream.toByteArray();
+
+        // Return the SHA-256 hash of the stamped message
+        return MessageDigest.getInstance("SHA-256").digest(stampedAisMessage);
     }
 
     /**
