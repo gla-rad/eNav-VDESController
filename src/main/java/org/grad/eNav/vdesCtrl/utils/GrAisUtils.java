@@ -118,11 +118,11 @@ public class GrAisUtils {
         StringBuilder aisBuilder = new StringBuilder();
 
         // Quickly calculate the extra specific message 21 information required
-        String name = msgParams.getName();
+        String name = msgParams.getUid();
         String nameExt = "";
         if(msgParams.getName().length() > 20) {
-            name = msgParams.getName().substring(0, 20);
-            nameExt = msgParams.getName().substring(20);
+            name = msgParams.getUid().substring(0, 20);
+            nameExt = msgParams.getUid().substring(20);
         }
         int halfLength = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getLength()/2));
         int halfWidth = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getWidth()/2));
