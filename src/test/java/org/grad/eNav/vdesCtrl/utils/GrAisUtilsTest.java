@@ -16,18 +16,14 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.google.common.primitives.Longs;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.security.Signature;
-import java.security.interfaces.ECPublicKey;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,9 +32,9 @@ public class GrAisUtilsTest {
     // Define the test S125 Messages Expected Encoding
     public static final String AIS_MSG_6_ENCODED = "000110000001110101101111001101000101010011101011011110011010001011000100000000000100000101011000010110000101100000";
     public static final String AIS_MSG_8_ENCODED = "001000000001110101101111001101000101010000000000010000010101100001011000010110000000";
-    public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011000100000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_2_ENCODED = "010101000001110101101111001101000101011100000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011111000000000000000000000000000000000000001010000010101001101010010000000000101010000111100111010000000111000111110000011001100000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
+    public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011000110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
+    public static final String S125_NO_2_ENCODED = "010101000001110101101111001101000101011100001010000010101001101010010000000000101010000111100111010000000111000111110000011001010000010000010000010000010000010000000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
+    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011001110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
 
     /**
      * Add the Bouncy Castle as a security provider for the unit tests.
@@ -107,6 +103,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
+        msgParams.setUid("Test AtoN No 1");
         msgParams.setName("Test AtoN No 1");
         msgParams.setAtonType(AtonType.SPECIAL_MARK);
         msgParams.setLatitude(53.61);
@@ -133,6 +130,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
+        msgParams.setUid("Test AtoN No 2");
         msgParams.setName("Test AtoN No 2");
         msgParams.setAtonType(AtonType.PORT_HAND_MARK);
         msgParams.setLatitude(1.594);
@@ -159,6 +157,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
+        msgParams.setUid("Test AtoN No 3");
         msgParams.setName("Test AtoN No 3");
         msgParams.setAtonType(AtonType.SPECIAL_MARK);
         msgParams.setLatitude(53.61);
@@ -181,48 +180,48 @@ public class GrAisUtilsTest {
     public void testGenerateNMEASentence() {
         assertEquals("", GrAisUtils.generateNMEASentence(null, true, NMEAChannel.A));
         assertEquals("", GrAisUtils.generateNMEASentence("", true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*4A", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hHP3aOh?E`>000000N0100,2*49", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*06", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5L000000:2ab@0b7W@77hI1re1h0M;v000000N0100,2*05", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*38", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O000000:2ab@0b7W@77hIP3aOh?E`>020@@@N0000,2*3B", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100,2*02", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100,2*01", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100,2*06", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100,2*05", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000,2*70", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000,2*73", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
     }
 
     /**
-     * Test that we can generate stamped AIS message content byte arrays
-     * with the correct length.
-     * @throws IOException when an exception is thrown while generating the byte arrays
+     * Test that we can generate stamped AIS message hash byte array with the
+     * correct length.
+     *
+     * Note that we are hashing the AIVDM content + timestamp with an SHA-256
+     * hash which should give us 256/8 = 32 byte long result.
      */
     @Test
-    public void testGetStampedAISMessageContent() throws IOException {
+    public void testGetStampedAISMessageHash() throws NoSuchAlgorithmException,  IOException {
         // Test parameters
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         long timestamp = System.currentTimeMillis()/1000L;
-        byte[] timestampBytes = Longs.toByteArray(timestamp);
 
         // Generate the stamped message for AIS Msg 6
-        byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_6_ENCODED, timestamp);
-        assertEquals(AIS_MSG_6_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage1.length);
+        byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageHash(AIS_MSG_6_ENCODED, timestamp);
+        assertEquals(256/8, stampedMessage1.length);
 
         // Generate the stamped message for AIS Msg 8
-        byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageContent(AIS_MSG_8_ENCODED, timestamp);
-        assertEquals(AIS_MSG_8_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage2.length);
+        byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageHash(AIS_MSG_8_ENCODED, timestamp);
+        assertEquals(256/8, stampedMessage2.length);
 
         // Generate the stamped message for S125 No1
-        byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageContent(S125_NO_1_ENCODED, timestamp);
-        assertEquals(S125_NO_1_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage3.length);
+        byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageHash(S125_NO_1_ENCODED, timestamp);
+        assertEquals(256/8, stampedMessage3.length);
 
         // Generate the stamped message for S125 No2
-        byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageContent(S125_NO_2_ENCODED, timestamp);
-        assertEquals(S125_NO_2_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage4.length);
+        byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageHash(S125_NO_2_ENCODED, timestamp);
+        assertEquals(256/8, stampedMessage4.length);
 
         // Generate the stamped message for S125 No3
-        byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageContent(S125_NO_3_ENCODED, timestamp);
-        assertEquals(S125_NO_3_ENCODED.length()/8 + timestampBytes.length + 1, stampedMessage5.length);
+        byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageHash(S125_NO_3_ENCODED, timestamp);
+        assertEquals(256/8, stampedMessage5.length);
     }
 
 }

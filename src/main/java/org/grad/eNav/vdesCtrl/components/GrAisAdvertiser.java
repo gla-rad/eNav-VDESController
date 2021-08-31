@@ -40,6 +40,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.List;
 import java.util.Objects;
@@ -223,8 +224,8 @@ public class GrAisAdvertiser {
         // Construct the UDP message for the VDES station
         String signatureMessage;
         try {
-            // Combine the AIS message and the timestamp
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageContent(txInfo.message21, txInfo.txTimestamp);
+            // Combine the AIS message and the timestamp into a hash
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.txTimestamp);
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), txInfo.params.getMmsi(), stampedAisMessage);
@@ -234,7 +235,7 @@ public class GrAisAdvertiser {
                     .map(destMmsi -> new GrAisMsg6Params(txInfo.params.getMmsi(), destMmsi, signature))
                     .map(GrAisUtils::encodeMsg6)
                     .orElseGet(() -> GrAisUtils.encodeMsg8(new GrAisMsg8Params(txInfo.params.getMmsi(), signature)));
-        } catch (IOException ex) {
+        } catch (NoSuchAlgorithmException | IOException ex) {
             log.error(ex.getMessage());
             return;
         }

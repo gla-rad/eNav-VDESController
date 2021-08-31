@@ -118,11 +118,11 @@ public class GrAisUtils {
         StringBuilder aisBuilder = new StringBuilder();
 
         // Quickly calculate the extra specific message 21 information required
-        String name = msgParams.getName();
+        String name = msgParams.getUid();
         String nameExt = "";
         if(msgParams.getName().length() > 20) {
-            name = msgParams.getName().substring(0, 20);
-            nameExt = msgParams.getName().substring(20);
+            name = msgParams.getUid().substring(0, 20);
+            nameExt = msgParams.getUid().substring(20);
         }
         int halfLength = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getLength()/2));
         int halfWidth = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getWidth()/2));
@@ -132,7 +132,7 @@ public class GrAisUtils {
                 .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
                 .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
                 .append(StringBinUtils.convertIntToBinary(msgParams.getAtonType().getCode(),5)) // The AtoN Type
-                .append(StringBinUtils.convertStringToBinary(name,120, true)) // The AtoN Name
+                .append(StringBinUtils.convertStringToBinary(String.format("%" + (-20) + "s", name),120, true)) // The AtoN Name
                 .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
                 // Longitude/Latitude
                 .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
@@ -205,21 +205,24 @@ public class GrAisUtils {
     }
 
     /**
-     * This function translated the AIS message binary content string
+     * This function translates the AIS message binary content string
      * to a byte array and stamps it with the provided timestamp. This
-     * can be used to easily generate a payload for signing.
+     * can be used to easily generate am SHA-256 hash for signing.
      *
      * @param aisBinaryMessage the AIS binary message to be stamped
      * @param timestamp the timestamp to append to the content
      * @return the NMEA sentence signature
      * @throws IOException when the message content operation fails
      */
-    public static byte[] getStampedAISMessageContent(String aisBinaryMessage, long timestamp) throws IOException {
+    public static byte[] getStampedAISMessageHash(String aisBinaryMessage, long timestamp) throws IOException, NoSuchAlgorithmException {
         // Combine the AIS message and the timestamp
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
         outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage));
         outputStream.write(Longs.toByteArray(timestamp));
-        return outputStream.toByteArray();
+        byte[] stampedAisMessage = outputStream.toByteArray();
+
+        // Return the SHA-256 hash of the stamped message
+        return MessageDigest.getInstance("SHA-256").digest(stampedAisMessage);
     }
 
     /**
