@@ -103,7 +103,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
-        msgParams.setUid("Test AtoN No 1");
+        msgParams.setUid("test_aton_no_1");
         msgParams.setName("Test AtoN No 1");
         msgParams.setAtonType(AtonType.SPECIAL_MARK);
         msgParams.setLatitude(53.61);
@@ -130,7 +130,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
-        msgParams.setUid("Test AtoN No 2");
+        msgParams.setUid("test_aton_no_2");
         msgParams.setName("Test AtoN No 2");
         msgParams.setAtonType(AtonType.PORT_HAND_MARK);
         msgParams.setLatitude(1.594);
@@ -157,7 +157,7 @@ public class GrAisUtilsTest {
         // Create an GrAisMsg21Params parameters
         GrAisMsg21Params msgParams = new GrAisMsg21Params();
         msgParams.setMmsi(123456789);
-        msgParams.setUid("Test AtoN No 3");
+        msgParams.setUid("test_aton_no_3");
         msgParams.setName("Test AtoN No 3");
         msgParams.setAtonType(AtonType.SPECIAL_MARK);
         msgParams.setLatitude(53.61);
