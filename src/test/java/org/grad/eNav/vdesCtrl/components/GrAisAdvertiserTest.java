@@ -173,7 +173,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException, InterruptedException {
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
-        doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(Integer.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

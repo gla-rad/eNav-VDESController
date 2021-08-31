@@ -34,6 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface CKeeperClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/signatures/atons/generate", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-    byte[] generateAtoNSignature(@RequestParam("atonUID") String atonUID, @RequestBody byte[] signaturePayload);
+    byte[] generateAtoNSignature(@RequestParam("atonUID") String atonUID, @RequestParam("mmsi") Integer mmsi, @RequestBody byte[] signaturePayload);
 
 }
