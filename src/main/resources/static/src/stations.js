@@ -89,10 +89,10 @@ var nodesColumnDefs = [{
 // Run when the document is ready
 $(document).ready( function () {
     stationsTable = $('#stations_table').DataTable({
-        //"processing": true,
-        //"language": {
-        //    processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
-        //},
+        "processing": true,
+        "language": {
+            processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
+        },
         "serverSide": true,
         ajax: {
             "type": "POST",
@@ -106,7 +106,7 @@ $(document).ready( function () {
             }
         },
         columns: stationsColumnDefs,
-        dom: 'Bfrltip',
+        dom: "<'row'<'col-lg-3 col-md-4'B><'col-lg-3 col-md-4'l><'col-lg-6 col-md-4'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
         select: 'single',
         lengthMenu: [10, 25, 50, 75, 100],
         responsive: true,
@@ -205,14 +205,14 @@ $(document).ready( function () {
     // jQuery.
     stationsTable.buttons('.station-area-toggle')
         .nodes()
-        .attr({ "data-toggle": "modal", "data-target": "#stationAreasPanel" });
+        .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationAreasPanel" });
 
     // We also need to link the station nodes toggle button with the the modal
     // side panel so that by clicking the button the panel pops up. It's easier
     // done with jQuery.
     stationsTable.buttons('.station-nodes-toggle')
         .nodes()
-        .attr({ "data-toggle": "modal", "data-target": "#stationNodesPanel" });
+        .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationNodesPanel" });
 
     // Now also initialise the station map before we need it
     stationsMap = L.map('stationMap').setView([54.910, -3.432], 5);
@@ -333,7 +333,7 @@ function loadStationNodes(event, table, button, config) {
             }
         },
         columns: nodesColumnDefs,
-        dom: 'Bfrltip',
+        dom: "<'row'<'col-lg-3 col-md-4'B><'col-lg-2 col-md-4'l><'col-lg-7 col-md-4'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
         select: 'single',
         lengthMenu: [10, 25, 50, 75, 100],
         responsive: true,
