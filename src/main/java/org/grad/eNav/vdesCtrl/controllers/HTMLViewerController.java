@@ -93,6 +93,7 @@ public class HTMLViewerController {
                 .stream()
                 .map(station -> String.format("%s:%d", station.getIpAddress(), station.getPort()))
                 .collect(Collectors.toList()));
+        model.addAttribute("appName", this.appName);
         model.addAttribute("appOperatorUrl", this.appOperatorUrl);
         model.addAttribute("appCopyright", this.appCopyright);
         // Return the rendered index
@@ -107,6 +108,7 @@ public class HTMLViewerController {
      */
     @GetMapping("/stations")
     public String stations(Model model) {
+        model.addAttribute("appName", this.appName);
         model.addAttribute("appOperatorUrl", this.appOperatorUrl);
         model.addAttribute("appCopyright", this.appCopyright);
         return "stations";
