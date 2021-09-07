@@ -277,7 +277,9 @@ function loadStationGeometry(event, table, button, config) {
     // Recreate the drawn items feature group
     drawnItems.clearLayers();
     if(geometry) {
-        addNonGroupLayers(L.geoJson(geometry), drawnItems);
+        var geomLayer = L.geoJson(geometry);
+        addNonGroupLayers(geomLayer, drawnItems);
+        instanceMap.setView(geomLayer.getBounds().getCenter(), 5);
     }
 }
 
