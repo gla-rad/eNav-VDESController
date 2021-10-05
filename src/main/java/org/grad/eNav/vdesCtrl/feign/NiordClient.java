@@ -16,6 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.feign;
 
+import org.grad.eNav.vdesCtrl.config.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,7 @@ import org.springframework.stereotype.Component;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
-@FeignClient(name = "niord")
+@FeignClient(name = "niord", configuration = FeignClientConfig.class)
 public interface NiordClient {
-
 
 }

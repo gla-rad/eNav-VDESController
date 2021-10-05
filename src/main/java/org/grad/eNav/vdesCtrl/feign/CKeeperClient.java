@@ -16,6 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.feign;
 
+import org.grad.eNav.vdesCtrl.config.FeignClientConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
-@FeignClient(name = "ckeeper")
+@FeignClient(name = "ckeeper", configuration = FeignClientConfig.class)
 public interface CKeeperClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/signatures/atons/generate", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
