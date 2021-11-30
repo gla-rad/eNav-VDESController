@@ -21,6 +21,7 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.filter.FidFilterImpl;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.GeomesaData;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
@@ -59,7 +60,7 @@ import java.util.Optional;
 @Transactional
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
-public class S125GDSListener {
+public class S125GDSListener implements FeatureListener {
 
     /**
      * The AtoN Data Channel to publish the incoming data to.
@@ -82,10 +83,10 @@ public class S125GDSListener {
 
     // Component Variables
     protected DataStore consumer;
-    protected FeatureListener listener;
     protected GeomesaData<S125Node> geomesaData;
     protected Station station;
     protected SimpleFeatureSource featureSource;
+    protected boolean deletionHandler;
 
     /**
      * Once the listener has been initialised, it will create a consumer of
@@ -96,15 +97,16 @@ public class S125GDSListener {
      */
     public void init(DataStore consumer,
                      GeomesaData<S125Node> geomesaData,
-                     Station station) throws IOException {
+                     Station station,
+                     boolean handleDeletions) throws IOException {
         this.consumer = consumer;
         this.geomesaData = geomesaData;
         this.station = station;
-        this.listener = (this::listenToEvents);
+        this.deletionHandler = handleDeletions;
 
         // And add the feature listener to start reading
         this.featureSource = this.consumer.getFeatureSource(this.geomesaData.getTypeName());
-        this.featureSource.addFeatureListener(listener);
+        this.featureSource.addFeatureListener(this);
 
         // Log an information message
         log.info(String.format("Initialised AtoN listener for VDES at %s:%d for area: %s",
@@ -120,7 +122,17 @@ public class S125GDSListener {
     @PreDestroy
     public void destroy() {
         log.info("AtoN Data Listener is shutting down...");
-        this.featureSource.removeFeatureListener(this.listener);
+        this.featureSource.removeFeatureListener(this);
+    }
+
+    /**
+     * Returns whether the listener is setup as to handle S-125 station node
+     * deletions.
+     *
+     * @return Whether the listener handles S-125 deletion events
+     */
+    public boolean isDeletionHandler() {
+        return this.deletionHandler;
     }
 
     /**
@@ -128,7 +140,7 @@ public class S125GDSListener {
      *
      * @param featureEvent      The feature event that took place
      */
-    protected void listenToEvents(FeatureEvent featureEvent) {
+    public void changed(FeatureEvent featureEvent) {
         // We are only interested in Kafka Feature Messages, otherwise don't bother
         if(!(featureEvent instanceof  KafkaFeatureEvent)) {
             return;
@@ -159,19 +171,18 @@ public class S125GDSListener {
                     });
         }
         // For feature deletions,
-        else if (featureEvent.getType() == FeatureEvent.Type.REMOVED) {
-            // Extract the S-125 message and just log it
+        else if (featureEvent.getType() == FeatureEvent.Type.REMOVED && this.deletionHandler) {
+            // Extract the S-125 message UID and use it to delete all referencing nodes
             Optional.of(featureEvent)
                     .filter(KafkaFeatureEvent.KafkaFeatureRemoved.class::isInstance)
                     .map(KafkaFeatureEvent.KafkaFeatureRemoved.class::cast)
-                    .map(KafkaFeatureEvent.KafkaFeatureRemoved::feature)
-                    .filter(this.geomesaData.getSubsetFilter()::evaluate)
-                    .map(Collections::singletonList)
-                    .map(sl -> new GeomesaS125().retrieveData(sl))
-                    .orElseGet(Collections::emptyList)
+                    .map(KafkaFeatureEvent.KafkaFeatureRemoved::getFilter)
+                    .filter(FidFilterImpl.class::isInstance)
+                    .map(FidFilterImpl.class::cast)
+                    .map(FidFilterImpl::getFidsSet)
+                    .orElse(Collections.emptySet())
                     .stream()
-                    .map(S125Node::getAtonUID)
-                    .forEach(uid -> log.info("Received Delete for AtoN: " + uid));
+                    .forEach(this.sNodeService::deleteByUid);
         }
     }
 

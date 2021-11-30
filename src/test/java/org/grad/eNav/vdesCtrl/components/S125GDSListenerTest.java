@@ -22,15 +22,18 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureEvent;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.filter.FidFilterImpl;
 import org.geotools.filter.text.cql2.CQLException;
 import org.grad.eNav.vdesCtrl.models.GeomesaS125;
 import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.hibernate.internal.FilterImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -130,7 +133,7 @@ class S125GDSListenerTest {
         // Also create a GeoJSON point geometry for our S125 message
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
 
-        // Now create the S125 node object
+        // Now create the S125 node object and populate the data
         this.s125Node = new S125Node("test_aton", point, xml);
         this.geomesaData = new GeomesaS125(this.station.getGeometry());
 
@@ -155,7 +158,7 @@ class S125GDSListenerTest {
     @Test
     void testInit() throws IOException {
         // Init the component
-        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station);
+        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station, false);
 
         // Make sure the initialisation was successful
         assertEquals(this.s125GDSListener.consumer, this.consumer);
@@ -177,7 +180,7 @@ class S125GDSListenerTest {
         }).when(this.featureSource).removeFeatureListener(any(FeatureListener.class));
 
         // Init and perform the component call
-        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station);
+        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station, false);
         this.s125GDSListener.destroy();
 
         // Assert that the feature listeners list is empty
@@ -203,8 +206,8 @@ class S125GDSListenerTest {
         doReturn(this.station).when(this.stationService).findOne(this.station.getId());
 
         // Init and perform the component call
-        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station);
-        this.s125GDSListener.listenToEvents(featureEvent);
+        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station, false);
+        this.s125GDSListener.changed(featureEvent);
 
         // Verify that our message was saved and sent
         verify(this.stationService, times(1)).save(any(Station.class));
@@ -235,8 +238,8 @@ class S125GDSListenerTest {
         doReturn(simpleFeatureList.stream().findFirst().orElse(null)).when(featureEvent).feature();
 
         // Init and perform the component call
-        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station);
-        this.s125GDSListener.listenToEvents(featureEvent);
+        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station, false);
+        this.s125GDSListener.changed(featureEvent);
 
         // Verify that our message was not saved or sent
         verify(this.stationService, never()).save(any(Station.class));
@@ -244,28 +247,26 @@ class S125GDSListenerTest {
     }
 
     /**
-     * Currently the removed Geomesa feature event doesn't do much so a simple
-     * test just to make sure it doesn't break.
+     * Test that the S125 Geomesa Listener, if initialise correctly as a deletion
+     * handler, it can correctly handle the incoming S125 Geomesa delete events,
+     * regardless of the coverage area and will delete the applicable S-125
+     * station nodes.
      */
     @Test
-    void testListenToEventsRemovedDoesNothing() throws IOException {
-        // Translate our S125Node to a feature list
-        List<SimpleFeature> simpleFeatureList = this.geomesaData.getFeatureData(Collections.singletonList(this.s125Node));
-
+    void testListenToEventsRemoved() throws IOException {
         // Mock a new event
+        FidFilterImpl filter = mock(FidFilterImpl.class);
+        doReturn(Collections.singleton(this.s125Node.getAtonUID())).when(filter).getFidsSet();
         KafkaFeatureEvent.KafkaFeatureRemoved featureEvent = mock(KafkaFeatureEvent.KafkaFeatureRemoved.class);
         doReturn(FeatureEvent.Type.REMOVED).when(featureEvent).getType();
-        doReturn(simpleFeatureList.stream().findFirst().orElse(null)).when(featureEvent).feature();
-
-        // Create a Geomesa data spy to view the calls
-        GeomesaS125 geomesaDataSpy = spy(this.geomesaData);
+        doReturn(filter).when(featureEvent).getFilter();
 
         // Init and perform the component call
-        this.s125GDSListener.init(this.consumer, geomesaDataSpy, this.station);
-        this.s125GDSListener.listenToEvents(featureEvent);
+        this.s125GDSListener.init(this.consumer, this.geomesaData, this.station, true);
+        this.s125GDSListener.changed(featureEvent);
 
         // Make sure the evaluation works
-        verify(geomesaDataSpy, times(1)).getSubsetFilter();
+        verify(this.sNodeService, times(1)).deleteByUid(eq(this.s125Node.getAtonUID()));
     }
 
 }

@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -85,7 +86,12 @@ public class S125GDSService {
             return;
         }
 
-        // Get and initialise a the listener workers
+        // Get and initialise the listener workers' list
+        // Note that the first listener also becomes responsible for handling
+        // the station node deletions by UID. Unfortunately Geomesa does not
+        // support geographic filtering in deletions, so we have to do it
+        // manually.
+        AtomicBoolean firstListener = new AtomicBoolean(true);
         this.dsListeners = this.stationService.findAll()
                 .stream()
                 .map(station -> {
@@ -93,7 +99,8 @@ public class S125GDSService {
                     try {
                         dsListener.init(this.consumer,
                                         new GeomesaS125(station.getGeometry()),
-                                        station);
+                                        station,
+                                        firstListener.getAndSet(false));
                     } catch (IOException e) {
                         log.error(e.getMessage());
                         return null;

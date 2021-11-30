@@ -17,6 +17,8 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import org.geotools.data.DataStore;
+import org.geotools.data.FeatureStore;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
@@ -34,13 +36,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,18 +115,26 @@ class S125GDSServiceTest {
      * the database.
      */
     @Test
-    void testInit() {
+    void testInit() throws IOException {
         doReturn(this.stations).when(this.stationService).findAll();
 
-        // Create a mock Datastore Listener to be returned by the listener initialisation
-        S125GDSListener mockListener = mock(S125GDSListener.class);
-        doReturn(mockListener).when(this.applicationContext).getBean(S125GDSListener.class);
+        // Create a Datastore Listener to be returned by the listener initialisation
+        doAnswer((invocation) -> new S125GDSListener()).when(this.applicationContext).getBean(S125GDSListener.class);
+        SimpleFeatureSource featureSource = mock(SimpleFeatureSource.class);
+        doReturn(featureSource).when(this.consumer).getFeatureSource(any(String.class));
 
         // Perform the service call
         this.s125GDSService.init();
 
         // Assert all the datastore listeners were created as expected
         assertEquals(this.stations.size(), this.s125GDSService.dsListeners.size());
+
+        // Assert that only the one listener is set as a deletion handler
+        assertTrue(this.s125GDSService.dsListeners
+                .stream()
+                .filter(S125GDSListener::isDeletionHandler).
+                collect(Collectors.toList())
+                .size() == 1);
     }
 
     /**

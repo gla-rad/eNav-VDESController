@@ -66,7 +66,7 @@ public class SNode {
     @Column(name = "message")
     private String message;
 
-    @ManyToMany(mappedBy = "nodes")
+    @ManyToMany(mappedBy = "nodes", fetch = FetchType.LAZY)
     @JsonIgnore
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<Station> stations = new HashSet<>();
