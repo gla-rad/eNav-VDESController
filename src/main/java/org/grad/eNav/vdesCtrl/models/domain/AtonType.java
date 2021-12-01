@@ -86,7 +86,7 @@ public enum AtonType {
     WRECK("Emergency Wreck Marking Buoy", 4),
     NORTH_CARDINAL("Cardinal Mark N", 20),
     EAST_CARDINAL("Cardinal Mark E", 21),
-    SOUTH_CARDINAL("Cardinal Mark Sy", 22),
+    SOUTH_CARDINAL("Cardinal Mark S", 22),
     WEST_CARDINAL("Cardinal Mark W", 23),
     PORT_HAND_MARK("Port hand Mark", 24),
     STARBOARD_HAND_MARK("Starboard hand Mark", 25),
