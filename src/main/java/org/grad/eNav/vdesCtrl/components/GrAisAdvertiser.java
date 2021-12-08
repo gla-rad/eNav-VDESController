@@ -228,7 +228,7 @@ public class GrAisAdvertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.txTimestamp);
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), txInfo.params.getMmsi(), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), String.valueOf(txInfo.params.getMmsi()), stampedAisMessage);
 
             // And generate the signature message
             signatureMessage = Optional.ofNullable(this.signatureDestMmmsi)
