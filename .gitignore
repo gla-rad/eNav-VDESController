@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Lucence Index ###
-/org.grad.eNav.vdesCtrl.models.domain.Station
+/lucene/

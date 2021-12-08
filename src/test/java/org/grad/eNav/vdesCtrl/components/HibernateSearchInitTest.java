@@ -16,18 +16,18 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import org.hibernate.search.MassIndexer;
-import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityManager;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,18 +46,17 @@ class HibernateSearchInitTest {
     @Mock
     EntityManager entityManager;
 
-    /**
-     * The Full Text Entity Manager mock.
-     */
-    @Mock
-    FullTextEntityManager fullTextEntityManager;
+    // Test Variables
+    private SearchSession searchSession;
+    private MassIndexer massIndexer;
 
     /**
      * Common setup for all the tests.
      */
     @BeforeEach
     void setup() {
-        doReturn(fullTextEntityManager).when(this.hibernateSearchInit).getFullTextEntityManager();
+        this.searchSession = mock(SearchSession.class);
+        this.massIndexer = mock(MassIndexer.class);
     }
 
     /**
@@ -66,16 +65,19 @@ class HibernateSearchInitTest {
      */
     @Test
     void testOnApplicationEvent() throws InterruptedException {
-        // Mock the indexing initialisation
-        MassIndexer mockedIndexer = mock(MassIndexer.class);
-        doNothing().when(mockedIndexer).startAndWait();
-        doReturn(mockedIndexer).when(fullTextEntityManager).createIndexer();
+        try (MockedStatic<Search> mockedSearch = Mockito.mockStatic(Search.class)) {
+            mockedSearch.when(() -> Search.session(this.entityManager)).thenReturn(this.searchSession);
 
-        // Perform the component call
-        this.hibernateSearchInit.onApplicationEvent(null);
+            doReturn(this.massIndexer).when(this.searchSession).massIndexer(any(Class.class));
+            doReturn(this.massIndexer).when(this.massIndexer).threadsToLoadObjects(anyInt());
+            doNothing().when(this.massIndexer).startAndWait();
+
+            // Perform the component call
+            this.hibernateSearchInit.onApplicationEvent(null);
+        }
 
         // Verify the indexing initialisation was performed
-        verify(mockedIndexer, times(1)).startAndWait();
+        verify(this.massIndexer, times(1)).startAndWait();
     }
 
     /**
@@ -84,16 +86,19 @@ class HibernateSearchInitTest {
      */
     @Test
     void testOnApplicationEventFailed() throws InterruptedException {
-        // Mock the indexing initialisation
-        MassIndexer mockedIndexer = mock(MassIndexer.class);
-        doThrow(InterruptedException.class).when(mockedIndexer).startAndWait();
-        doReturn(mockedIndexer).when(fullTextEntityManager).createIndexer();
+        try (MockedStatic<Search> mockedSearch = Mockito.mockStatic(Search.class)) {
+            mockedSearch.when(() -> Search.session(this.entityManager)).thenReturn(this.searchSession);
 
-        // Perform the component call
-        this.hibernateSearchInit.onApplicationEvent(null);
+            doReturn(this.massIndexer).when(this.searchSession).massIndexer(any(Class.class));
+            doReturn(this.massIndexer).when(this.massIndexer).threadsToLoadObjects(anyInt());
+            doThrow(InterruptedException.class).when(this.massIndexer).startAndWait();
+
+            // Perform the component call
+            this.hibernateSearchInit.onApplicationEvent(null);
+        }
 
         // Verify the indexing initialisation was performed
-        verify(mockedIndexer, times(1)).startAndWait();
+        verify(massIndexer, times(1)).startAndWait();
     }
 
 }

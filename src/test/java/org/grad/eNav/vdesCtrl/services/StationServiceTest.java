@@ -20,7 +20,9 @@ import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
-import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.engine.search.query.SearchResultTotal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -336,9 +338,14 @@ class StationServiceTest {
         dtPagingRequest.setSearch(dtSearch);
 
         // Mock the full text query
-        FullTextQuery mockedQuery = mock(FullTextQuery.class);
-        doReturn(this.stations.subList(0, 5)).when(mockedQuery).getResultList();
-        doReturn(mockedQuery).when(this.stationService).searchStationsQuery(any());
+        SearchQuery mockedQuery = mock(SearchQuery.class);
+        SearchResult mockedResult = mock(SearchResult.class);
+        SearchResultTotal mockedResultTotal = mock(SearchResultTotal.class);
+        doReturn(5L).when(mockedResultTotal).hitCount();
+        doReturn(mockedResultTotal).when(mockedResult).total();
+        doReturn(this.stations.subList(0, 5)).when(mockedResult).hits();
+        doReturn(mockedResult).when(mockedQuery).fetch(any(), any());
+        doReturn(mockedQuery).when(this.stationService).searchStationsQuery(any(), any());
 
         // Perform the service call
         DtPage<Station> result = this.stationService.handleDatatablesPagingRequest(dtPagingRequest);

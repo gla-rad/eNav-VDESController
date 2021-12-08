@@ -43,13 +43,14 @@ import java.util.Set;
 @Entity
 @Table(name = "node")
 @Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class SNode {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "snode_generator")
+    @SequenceGenerator(name="snode_generator", sequenceName = "snode_seq")
     private BigInteger id;
 
     @NotNull

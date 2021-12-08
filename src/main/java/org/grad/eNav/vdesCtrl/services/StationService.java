@@ -17,17 +17,18 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.backend.lucene.LuceneExtension;
+import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.scope.SearchScope;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -167,20 +168,15 @@ public class StationService {
     @Transactional(readOnly = true)
     public DtPage<Station> handleDatatablesPagingRequest(DtPagingRequest dtPagingRequest) {
         // Create the search query
-        FullTextQuery searchQuery = this.searchStationsQuery(dtPagingRequest.getSearch().getValue());
-        searchQuery.setFirstResult(dtPagingRequest.getStart());
-        searchQuery.setMaxResults(dtPagingRequest.getLength());
-
-        // Add sorting if requested
-        Optional.of(dtPagingRequest)
-                .map(DtPagingRequest::getLucenceSort)
-                .filter(ls -> ls.getSort().length > 0)
-                .ifPresent(searchQuery::setSort);
+        SearchQuery searchQuery = this.searchStationsQuery(
+                dtPagingRequest.getSearch().getValue(),
+                dtPagingRequest.getLucenceSort()
+        );
 
         // For some reason we need this casting otherwise JDK8 complains
-        return (DtPage<Station>) Optional.of(searchQuery)
-                .map(FullTextQuery::getResultList)
-                .map(stations -> new PageImpl<>(stations, dtPagingRequest.toPageRequest(), searchQuery.getResultSize()))
+        return Optional.of(searchQuery)
+                .map(query -> query.fetch(dtPagingRequest.getStart(), dtPagingRequest.getLength()))
+                .map(searchResult -> new PageImpl<Station>(searchResult.hits(), dtPagingRequest.toPageRequest(), searchResult.total().hitCount()))
                 .map(Page.class::cast)
                 .map(page -> new DtPage<>((Page<Station>)page, dtPagingRequest))
                 .orElseGet(DtPage::new);
@@ -195,23 +191,20 @@ public class StationService {
      * - MMSI
      *
      * @param searchText the text to be searched
+     * @param sort the sorting selection for the search query
      * @return the full text query
      */
-    protected FullTextQuery searchStationsQuery(String searchText) {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
-        QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
-                .buildQueryBuilder()
-                .forEntity(Station.class)
-                .get();
-
-        Query luceneQuery = queryBuilder
-                .keyword()
-                .wildcard()
-                .onFields(this.searchFields)
-                .matching(Optional.ofNullable(searchText).orElse("").toLowerCase() + "*")
-                .createQuery();
-
-        return fullTextEntityManager.createFullTextQuery(luceneQuery, Station.class);
+    protected SearchQuery<Station> searchStationsQuery(String searchText, Sort sort) {
+        SearchSession searchSession = Search.session( entityManager );
+        SearchScope<Station> scope = searchSession.scope( Station.class );
+        return searchSession.search( scope )
+                .extension(LuceneExtension.get())
+                .where( scope.predicate().wildcard()
+                        .fields( this.searchFields )
+                        .matching( Optional.ofNullable(searchText).map(st -> "*"+st).orElse("") + "*" )
+                        .toPredicate() )
+                .sort(f -> f.fromLuceneSort(sort))
+                .toQuery();
     }
 
 }
