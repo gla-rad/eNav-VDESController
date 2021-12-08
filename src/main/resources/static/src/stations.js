@@ -165,12 +165,14 @@ $(document).ready( function () {
                 error: error
             });
         },
-        onDeleteRow: function (datatable, rowdata, success, error) {
-            $.ajax({
-                url: `/api/stations/${rowdata["id"]}`,
-                type: 'DELETE',
-                success: success,
-                error: error
+        onDeleteRow: function (datatable, selectedRows, success, error) {
+            selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
+                $.ajax({
+                    url: `/api/stations/${this.data()["id"]}`,
+                    type: 'DELETE',
+                    success: success,
+                    error: error
+                });
             });
         },
         onEditRow: function (datatable, rowdata, success, error) {
@@ -346,12 +348,14 @@ function loadStationNodes(event, table, button, config) {
             titleAttr: 'Delete Node',
             name: 'delete' // do not change name
         }],
-        onDeleteRow: function (datatable, rowdata, success, error) {
-            $.ajax({
-                url: `/api/snodes/uid/${rowdata["atonUID"]}`,
-                type: 'DELETE',
-                success: success,
-                error: error
+        onDeleteRow: function (datatable, selectedRows, success, error) {
+            selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
+                $.ajax({
+                    url: `/api/snodes/uid/${this.data()["atonUID"]}`,
+                    type: 'DELETE',
+                    success: success,
+                    error: error
+                });
             });
         }
     });
