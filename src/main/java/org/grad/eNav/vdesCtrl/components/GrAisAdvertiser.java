@@ -98,7 +98,6 @@ public class GrAisAdvertiser {
     private class Msg21TxInfo {
         GrAisMsg21Params params;
         String message21;
-        long txTimestamp;
     }
 
     // Component Variables
@@ -178,6 +177,8 @@ public class GrAisAdvertiser {
 
         // Construct the UDP message for the VDES station
         Msg21TxInfo txinfo = new Msg21TxInfo();
+
+        // Populate the transmission information
         try {
             txinfo.params = new GrAisMsg21Params(s125Node);
             txinfo.message21 = GrAisUtils.encodeMsg21(txinfo.params);
@@ -197,8 +198,6 @@ public class GrAisAdvertiser {
             return null;
         }
 
-        // Note the time of the transmission and return the transmission info
-        txinfo.txTimestamp = System.currentTimeMillis()/1000L;
         return txinfo;
     }
 
@@ -225,7 +224,7 @@ public class GrAisAdvertiser {
         String signatureMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.txTimestamp);
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.params.getUnixTxTimestamp(0));
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), String.valueOf(txInfo.params.getMmsi()), stampedAisMessage);

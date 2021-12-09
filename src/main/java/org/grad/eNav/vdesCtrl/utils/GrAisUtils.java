@@ -26,9 +26,8 @@ import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.*;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.InvalidKeySpecException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 /**
@@ -135,8 +134,8 @@ public class GrAisUtils {
                 .append(StringBinUtils.convertStringToBinary(String.format("%" + (-20) + "s", name),120, true)) // The AtoN Name
                 .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
                 // Longitude/Latitude
-                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
-                .append(StringBinUtils.convertIntToBinary(new Long(Math.round(msgParams.getLatitude()*600000)).intValue(),27)) // The Latitude
+                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
+                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(msgParams.getLatitude()*600000)).intValue(),27)) // The Latitude
                 // Dimension/Reference of position
                 .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
                 .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
@@ -144,7 +143,7 @@ public class GrAisUtils {
                 .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
                 // Additional info/flags
                 .append(StringBinUtils.convertIntToBinary(0,4)) // The Fix Field
-                .append(StringBinUtils.convertIntToBinary(60,6)) // The Time Field
+                .append(StringBinUtils.convertIntToBinary(msgParams.getTxTimestamp().getSecond(),6)) // The Time Field
                 .append(StringBinUtils.convertIntToBinary(0,1)) // Off Position Indicator
                 .append(StringBinUtils.convertIntToBinary(0,8)) // AtoN Status
                 .append(StringBinUtils.convertIntToBinary(msgParams.getRaim()?1:0,1)) // RAIM Flag

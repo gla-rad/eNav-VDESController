@@ -27,6 +27,9 @@ import org.grad.eNav.vdesCtrl.utils.S100Utils;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -53,6 +56,7 @@ public class GrAisMsg21Params {
     private Integer width;
     private Boolean raim;
     private Boolean vaton;
+    private LocalDateTime timestamp;
 
     /**
      * Empty Constructor.
@@ -68,6 +72,7 @@ public class GrAisMsg21Params {
         this.width = 0;
         this.raim = Boolean.FALSE;
         this.vaton = Boolean.FALSE;
+        this.timestamp = LocalDateTime.now();
     }
 
     /**
@@ -131,6 +136,7 @@ public class GrAisMsg21Params {
                     this.width = navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getWidth()).orElse(0));
                     this.raim = navAid.isRaimFlag();
                     this.vaton = navAid.isVatonFlag();
+                    this.timestamp = LocalDateTime.now();
                 });
     }
 
@@ -313,4 +319,44 @@ public class GrAisMsg21Params {
     public void setVaton(Boolean vaton) {
         this.vaton = vaton;
     }
+
+    /**
+     * Gets timestamp.
+     *
+     * @return the timestamp
+     */
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Sets timestamp.
+     *
+     * @param timestamp the timestamp
+     */
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    /**
+     * Returns the transmission timestamp, which is truncated to the seconds
+     * level (so no nanos or millis). This is the correct format for gettting
+     * the transmission time.
+     *
+     * @return the transmission timestamp
+     */
+    public LocalDateTime getTxTimestamp() {
+        return this.timestamp.truncatedTo(ChronoUnit.SECONDS);
+    }
+
+    /**
+     * Returns the transmission timestamp value as a UNIX timestamp.
+     *
+     * @param offset the zone offset seconds
+     * @return the transmission UNIX timestamp
+     */
+    public long getUnixTxTimestamp(int offset) {
+        return this.getTxTimestamp().toInstant(ZoneOffset.ofTotalSeconds(offset)).getEpochSecond();
+    }
+
 }

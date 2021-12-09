@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,9 +33,9 @@ public class GrAisUtilsTest {
     // Define the test S125 Messages Expected Encoding
     public static final String AIS_MSG_6_ENCODED = "000110000001110101101111001101000101010011101011011110011010001011000100000000000100000101011000010110000101100000";
     public static final String AIS_MSG_8_ENCODED = "001000000001110101101111001101000101010000000000010000010101100001011000010110000000";
-    public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011000110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_2_ENCODED = "010101000001110101101111001101000101011100001010000010101001101010010000000000101010000111100111010000000111000111110000011001010000010000010000010000010000010000000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000011110000000000001000000";
-    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011001110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000010000000010000010000010000011110000000000000000000";
+    public static final String S125_NO_1_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011000110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000000000000000000000000000000000000000000000001000000";
+    public static final String S125_NO_2_ENCODED = "010101000001110101101111001101000101011100001010000010101001101010010000000000101010000111100111010000000111000111110000011001010000010000010000010000010000010000000001111010101101000001110000000000011101001011111110000000000000000000000000000000000000000000000000000001000000";
+    public static final String S125_NO_3_ENCODED = "010101000001110101101111001101000101011111001010000010101001101010010000000000101010000111100111010000000111000111110000011001110000010000010000010000010000010000000000000011101001011111110000001111010101101000001110000000000010000000010000010000010000000000000000000000000000";
 
     /**
      * Add the Bouncy Castle as a security provider for the unit tests.
@@ -109,6 +110,8 @@ public class GrAisUtilsTest {
         msgParams.setLatitude(53.61);
         msgParams.setLongitude(1.594);
         msgParams.setVaton(Boolean.TRUE);
+        LocalDateTime now = LocalDateTime.now();
+        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
         String msg21 = GrAisUtils.encodeMsg21(msgParams);
@@ -136,6 +139,8 @@ public class GrAisUtilsTest {
         msgParams.setLatitude(1.594);
         msgParams.setLongitude(53.61);
         msgParams.setVaton(Boolean.TRUE);
+        LocalDateTime now = LocalDateTime.now();
+        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
         String msg21 = GrAisUtils.encodeMsg21(msgParams);
@@ -164,6 +169,8 @@ public class GrAisUtilsTest {
         msgParams.setLongitude(1.594);
         msgParams.setLength(4);
         msgParams.setWidth(4);
+        LocalDateTime now = LocalDateTime.now();
+        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
         String msg21 = GrAisUtils.encodeMsg21(msgParams);
@@ -180,15 +187,15 @@ public class GrAisUtilsTest {
     public void testGenerateNMEASentence() {
         assertEquals("", GrAisUtils.generateNMEASentence(null, true, NMEAChannel.A));
         assertEquals("", GrAisUtils.generateNMEASentence("", true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100,2*02", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>000000N0100,2*01", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100,2*06", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v000000N0100,2*05", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000,2*70", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@N0000,2*73", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7C", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7F", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*78", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*7B", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0E", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0D", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
     }
 
     /**
