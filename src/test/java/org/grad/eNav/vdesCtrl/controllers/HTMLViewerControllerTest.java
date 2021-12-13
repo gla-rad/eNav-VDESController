@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.controllers;
 
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -39,7 +39,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -78,7 +77,7 @@ class HTMLViewerControllerTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(NMEAChannel.A);
+            station.setChannel(AISChannel.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);

@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -133,6 +133,28 @@ public class StringBinUtilsTest {
     }
 
     /**
+     * Test that we can convert a whole string into binary data correctly. For
+     * this operation we are going to use the 6bit character representation.
+     */
+    @Test
+    public void testConvertStringToBinary6bit() {
+        assertEquals("0000000000", StringBinUtils.convertStringToBinary(null, 10, true));
+        assertEquals("0000000000", StringBinUtils.convertStringToBinary("", 10, true));
+        assertEquals("001000 000101 001100 001100 001111 100000 010111 001111 010010 001100 000100".replace(" ", ""), StringBinUtils.convertStringToBinary("Hello World", 10, true));
+    }
+
+    /**
+     * Test that we can convert a whole string into binary data correctly. For
+     * this operation we are going to use the 8bit character representation.
+     */
+    @Test
+    public void testConvertStringToBinary8bit() {
+        assertEquals("0000000000", StringBinUtils.convertStringToBinary(null, 10, false));
+        assertEquals("0000000000", StringBinUtils.convertStringToBinary("", 10, false));
+        assertEquals("01001000 01100101 01101100 01101100 01101111 00100000 01010111 01101111 01110010 01101100 01100100".replace(" ", ""), StringBinUtils.convertStringToBinary("Hello World", 10, false));
+    }
+
+    /**
      * Test that we can correctly retrieve the ASCII character from its binary
      * value. Note that we are using 6bit ASCII so only uppercase characters
      * will be shown. Also the resulting char is not the same as the one used
@@ -178,67 +200,45 @@ public class StringBinUtilsTest {
     }
 
     /**
-     * Test that we can convert a whole string into binary data correctly. For
-     * this operation we are going to use the 6bit character representation.
-     */
-    @Test
-    public void testConvertStringToBinary6bit() {
-        assertEquals("0000000000", StringBinUtils.convertStringToBinary(null, 10, true));
-        assertEquals("0000000000", StringBinUtils.convertStringToBinary("", 10, true));
-        assertEquals("001000 000101 001100 001100 001111 100000 010111 001111 010010 001100 000100".replace(" ", ""), StringBinUtils.convertStringToBinary("Hello World", 10, true));
-    }
-
-    /**
-     * Test that we can convert a whole string into binary data correctly. For
-     * this operation we are going to use the 8bit character representation.
-     */
-    @Test
-    public void testConvertStringToBinary8bit() {
-        assertEquals("0000000000", StringBinUtils.convertStringToBinary(null, 10, false));
-        assertEquals("0000000000", StringBinUtils.convertStringToBinary("", 10, false));
-        assertEquals("01001000 01100101 01101100 01101100 01101111 00100000 01010111 01101111 01110010 01101100 01100100".replace(" ", ""), StringBinUtils.convertStringToBinary("Hello World", 10, false));
-    }
-
-    /**
      * Test that we can correctly convert a binary string of zeros and ones
-     * into its byte representation.
+     * into its 8bit byte representation.
      */
     @Test
-    public void testConvertBinaryStringToBytes() {
+    public void testConvertBinaryStringToBytes8bit() {
         // Sanity Assertions
-        assertNull(StringBinUtils.convertBinaryStringToBytes(null));
-        assertNull(StringBinUtils.convertBinaryStringToBytes(""));
-        assertNull(StringBinUtils.convertBinaryStringToBytes("ThisIsNotValid"));
+        assertNull(StringBinUtils.convertBinaryStringToBytes(null, false));
+        assertNull(StringBinUtils.convertBinaryStringToBytes("", false));
+        assertNull(StringBinUtils.convertBinaryStringToBytes("ThisIsNotValid", false));
 
         // Single bytes
-        byte[] result1 = StringBinUtils.convertBinaryStringToBytes("00000000");
+        byte[] result1 = StringBinUtils.convertBinaryStringToBytes("00000000", false);
         assertEquals(1, result1.length);
         assertEquals((byte)0x00, result1[0]);
-        byte[] result2 = StringBinUtils.convertBinaryStringToBytes("00000001");
+        byte[] result2 = StringBinUtils.convertBinaryStringToBytes("00000001", false);
         assertEquals(1, result2.length);
         assertEquals((byte)0x01, result2[0]);
-        byte[] result3 = StringBinUtils.convertBinaryStringToBytes("00001001");
+        byte[] result3 = StringBinUtils.convertBinaryStringToBytes("00001001", false);
         assertEquals(1, result3.length);
         assertEquals((byte)0x09, result3[0]);
-        byte[] result4 = StringBinUtils.convertBinaryStringToBytes("00001010");
+        byte[] result4 = StringBinUtils.convertBinaryStringToBytes("00001010", false);
         assertEquals(1, result4.length);
         assertEquals((byte)0x0A, result4[0]);
 
         // Multiple bytes
-        byte[] result5 = StringBinUtils.convertBinaryStringToBytes("0000000100000001");
+        byte[] result5 = StringBinUtils.convertBinaryStringToBytes("0000000100000001", false);
         assertEquals(2, result5.length);
         assertEquals((byte)0x01, result5[0]);
         assertEquals((byte)0x01, result5[1]);
-        byte[] result6 = StringBinUtils.convertBinaryStringToBytes("0000101100000001");
+        byte[] result6 = StringBinUtils.convertBinaryStringToBytes("0000101100000001", false);
         assertEquals(2, result6.length);
         assertEquals((byte)0x0B, result6[0]);
         assertEquals((byte)0x01, result6[1]);
-        byte[] result7 = StringBinUtils.convertBinaryStringToBytes("111111110000101100000001");
+        byte[] result7 = StringBinUtils.convertBinaryStringToBytes("111111110000101100000001", false);
         assertEquals(3, result7.length);
         assertEquals((byte)0xFF, result7[0]);
         assertEquals((byte)0x0B, result7[1]);
         assertEquals((byte)0x01, result7[2]);
-        byte[] result8 = StringBinUtils.convertBinaryStringToBytes("10000001111111110000101100000001");
+        byte[] result8 = StringBinUtils.convertBinaryStringToBytes("10000001111111110000101100000001", false);
         assertEquals(4, result8.length);
         assertEquals((byte)0x81, result8[0]);
         assertEquals((byte)0xFF, result8[1]);
@@ -246,12 +246,65 @@ public class StringBinUtilsTest {
         assertEquals((byte)0x01, result8[3]);
 
         // Also test a string is not a complete 8bit byte string
-        byte[] resultx = StringBinUtils.convertBinaryStringToBytes("0101010000011101001");
+        byte[] resultx = StringBinUtils.convertBinaryStringToBytes("0101010000011101001", false);
         assertEquals(3, resultx.length);
         assertEquals((byte)0x54, resultx[0]);
         assertEquals((byte)0x1D, resultx[1]);
         assertEquals((byte)0x20, resultx[2]);
+    }
 
+    /**
+     * Test that we can correctly convert a binary string of zeros and ones
+     * into its 6bit byte representation.
+     */
+    @Test
+    public void testConvertBinaryStringToBytes6bit() {
+        // Sanity Assertions
+        assertNull(StringBinUtils.convertBinaryStringToBytes(null, true));
+        assertNull(StringBinUtils.convertBinaryStringToBytes("", true));
+        assertNull(StringBinUtils.convertBinaryStringToBytes("ThisIsNotValid", true));
+
+        // Single bytes
+        byte[] result1 = StringBinUtils.convertBinaryStringToBytes("000000", true);
+        assertEquals(1, result1.length);
+        assertEquals('0', result1[0]);
+        byte[] result2 = StringBinUtils.convertBinaryStringToBytes("000001", true);
+        assertEquals(1, result2.length);
+        assertEquals('1', result2[0]);
+        byte[] result3 = StringBinUtils.convertBinaryStringToBytes("001001", true);
+        assertEquals(1, result3.length);
+        assertEquals('9', result3[0]);
+        byte[] result4 = StringBinUtils.convertBinaryStringToBytes("001010", true);
+        assertEquals(1, result4.length);
+        assertEquals(':', result4[0]);
+
+        // Multiple bytes
+        byte[] result5 = StringBinUtils.convertBinaryStringToBytes("000001000001", true);
+        assertEquals(2, result5.length);
+        assertEquals('1', result5[0]);
+        assertEquals('1', result5[1]);
+        byte[] result6 = StringBinUtils.convertBinaryStringToBytes("001011000001", true);
+        assertEquals(2, result6.length);
+        assertEquals(';', result6[0]);
+        assertEquals('1', result6[1]);
+        byte[] result7 = StringBinUtils.convertBinaryStringToBytes("111111001011000001", true);
+        assertEquals(3, result7.length);
+        assertEquals('w', result7[0]);
+        assertEquals(';', result7[1]);
+        assertEquals('1', result7[2]);
+        byte[] result8 = StringBinUtils.convertBinaryStringToBytes("100001111111001011000001", true);
+        assertEquals(4, result8.length);
+        assertEquals('Q', result8[0]);
+        assertEquals('w', result8[1]);
+        assertEquals(';', result8[2]);
+        assertEquals('1', result8[3]);
+
+        // Also test a string is not a complete 6bit byte string
+        byte[] resultx = StringBinUtils.convertBinaryStringToBytes("0101010000011", true);
+        assertEquals(3, resultx.length);
+        assertEquals('E', resultx[0]);
+        assertEquals('1', resultx[1]);
+        assertEquals('P', resultx[2]);
     }
 
 }

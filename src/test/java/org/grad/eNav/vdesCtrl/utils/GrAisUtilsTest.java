@@ -185,17 +185,17 @@ public class GrAisUtilsTest {
      */
     @Test
     public void testGenerateNMEASentence() {
-        assertEquals("", GrAisUtils.generateNMEASentence(null, true, NMEAChannel.A));
-        assertEquals("", GrAisUtils.generateNMEASentence("", true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7C", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7F", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*78", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*7B", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, NMEAChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0E", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, NMEAChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0D", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, NMEAChannel.B));
+        assertEquals("", GrAisUtils.generateNMEASentence(null, true, AISChannel.A));
+        assertEquals("", GrAisUtils.generateNMEASentence("", true, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7C", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7F", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, AISChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*78", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*7B", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, AISChannel.B));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0E", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, AISChannel.A));
+        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0D", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, AISChannel.B));
     }
 
     /**

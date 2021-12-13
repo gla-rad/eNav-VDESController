@@ -17,13 +17,13 @@
 package org.grad.eNav.vdesCtrl.models.domain;
 
 /**
- * The NMEA Channel Enum.
+ * The AIS Channel Enum.
  *
- * NMEA sentences supports two channels, A and B.
+ * AIS sentences supports two channels, A and B.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public enum  NMEAChannel {
+public enum AISChannel {
     A("A"),
     B("B");
 
@@ -35,7 +35,7 @@ public enum  NMEAChannel {
      *
      * @param channel the NMEA channel
      */
-    NMEAChannel(String channel) {
+    AISChannel(String channel) {
         this.channel = channel;
     }
 

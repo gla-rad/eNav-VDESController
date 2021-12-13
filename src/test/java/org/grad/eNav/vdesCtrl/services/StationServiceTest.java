@@ -109,7 +109,7 @@ class StationServiceTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(NMEAChannel.A);
+            station.setChannel(AISChannel.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);
@@ -127,7 +127,7 @@ class StationServiceTest {
         // Create a new station
         this.newStation = new Station();
         this.newStation.setName("New Station Name");
-        this.newStation.setChannel(NMEAChannel.A);
+        this.newStation.setChannel(AISChannel.A);
         this.newStation.setMmsi("111111111");
         this.newStation.setIpAddress("10.0.0.1");
         this.newStation.setPiSeqNo(1L);
@@ -139,7 +139,7 @@ class StationServiceTest {
         this.existingStation = new Station();
         this.existingStation.setId(BigInteger.ONE);
         this.existingStation.setName("Existing Station Name");
-        this.existingStation.setChannel(NMEAChannel.B);
+        this.existingStation.setChannel(AISChannel.B);
         this.existingStation.setMmsi("222222222");
         this.existingStation.setIpAddress("10.0.0.2");
         this.existingStation.setPiSeqNo(2L);

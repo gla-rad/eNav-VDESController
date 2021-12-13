@@ -16,19 +16,20 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Longs;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
 import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * The GNURadio AIS Utility Class.
@@ -98,7 +99,7 @@ public class GrAisUtils {
             aisBuilder.append(StringBinUtils.convertByteToBinary(b, 8));
         }
 
-        // Finally pad to the multiple of 6 requirement
+        // Finally, pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();
         return StringBinUtils.padRight(aisSentence, aisSentence.length() + (6 - (aisSentence.length()%6))%6);
     }
@@ -152,7 +153,7 @@ public class GrAisUtils {
                 // Add the name extension is required
                 .append(StringBinUtils.convertStringToBinary(nameExt, nameExt.length() % 6, true));
 
-        // Finally pad to the multiple of 6 requirement
+        // Finally, pad to the multiple of 6 requirement
         String aisSentence = aisBuilder.toString();
         return StringBinUtils.padRight(aisSentence, aisSentence.length() + (6 - (aisSentence.length()%6))%6);
     }
@@ -164,10 +165,10 @@ public class GrAisUtils {
      *
      * @param binaryMsg the binary message to be translated
      * @param enableNMEA whether to enable the NMEA
-     * @param nmeaChannel the NMEA channel to be used
+     * @param aisChannel the NMEA channel to be used
      * @return the generated NMEA sentence for the binary message
      */
-    public static String generateNMEASentence(String binaryMsg, boolean enableNMEA, NMEAChannel nmeaChannel) {
+    public static String generateNMEASentence(String binaryMsg, boolean enableNMEA, AISChannel aisChannel) {
         //Sanity Check
         if(Objects.isNull(binaryMsg) || binaryMsg.isEmpty()) {
             return "";
@@ -176,19 +177,16 @@ public class GrAisUtils {
         // Create a string builder to start with
         StringBuilder aisBuilder = new StringBuilder()
                 .append("!AIVDM,1,1,,")
-                .append(nmeaChannel.getChannel())
+                .append(aisChannel.getChannel())
                 .append(",");
 
         // Pad the payload to match an 8bit boundary
         String paddedBinaryMsg = StringBinUtils.padRight(binaryMsg, binaryMsg.length() + (binaryMsg.length()%8));
-
-        // Split the input binary message every 6 bits
-        Splitter.fixedLength(6)
-                .split(paddedBinaryMsg)
-                .iterator()
-                .forEachRemaining(piece ->
-                        aisBuilder.append(StringBinUtils.convertBinaryToChar(piece, true))
-                );
+        ByteBuffer byteBuffer = ByteBuffer.wrap(StringBinUtils.convertBinaryStringToBytes(paddedBinaryMsg, true));
+        Stream.generate(byteBuffer::get)
+                .limit(byteBuffer.capacity())
+                .map(b -> (char) b.intValue())
+                .forEach(aisBuilder::append);
 
         // Append the checksum and close the sentence
         if(enableNMEA) {
@@ -196,7 +194,7 @@ public class GrAisUtils {
             aisBuilder.append((6 - paddedBinaryMsg.length()%6)%6);
             String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
             aisBuilder.append("*");
-            aisBuilder.append(calculateNMEAChecksum(tempSentence));
+            aisBuilder.append(calculateIECChecksum(tempSentence));
         }
 
         // Return the generated NMEA sentence
@@ -216,7 +214,7 @@ public class GrAisUtils {
     public static byte[] getStampedAISMessageHash(String aisBinaryMessage, long timestamp) throws IOException, NoSuchAlgorithmException {
         // Combine the AIS message and the timestamp
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage));
+        outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage, false));
         outputStream.write(Longs.toByteArray(timestamp));
         byte[] stampedAisMessage = outputStream.toByteArray();
 
@@ -225,15 +223,16 @@ public class GrAisUtils {
     }
 
     /**
-     * This utility function generate the NMEA sentence checksum as a string.
-     * The NMEA checksum is computed on the entire sentence including the
-     * AIVDM/AIVDO tag but excluding the leading "!".
+     * This utility function generate the NMEA/IEC 61162-1 style checksum as a
+     * string. The NMEA/IEC 61162-1 styl checksum is computed on the entire
+     * sentence including the AIVDM/AIVDO tag but excluding the leading "!".
+     *
      * The checksum is merely a byte-by-byte XOR of the sentence.
      *
      * @param nmeaSentence the NMEA sentence to generate the checksum for
      * @return the generated NMEA sentence checksum
      */
-    public static String calculateNMEAChecksum(String nmeaSentence) {
+    public static String calculateIECChecksum(String nmeaSentence) {
         // Remove the initial "!" character if found
         String sentence =  Strings.nullToEmpty(nmeaSentence).replaceAll("^!", "");
         int sum = 0;

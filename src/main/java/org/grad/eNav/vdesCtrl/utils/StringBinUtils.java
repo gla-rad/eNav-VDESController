@@ -106,6 +106,25 @@ public class StringBinUtils {
     }
 
     /**
+     * Converts a string to its binary representation. This function supports
+     * both 6bit and 8bit character representations. The padding only affects
+     * additional left-hand side 0s if required.
+     *
+     * @param input The input to be converted
+     * @param padding the left padding with zeros required
+     * @return the binary representation of the string
+     */
+    public static String convertStringToBinary(String input, int padding, Boolean ascii_6bit) {
+
+        StringBuilder result = new StringBuilder();
+        char[] chars = Strings.nullToEmpty(input).toCharArray();
+        for (char c : chars) {
+            result.append(convertCharToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
+        }
+        return padLeft(result.toString(), padding);
+    }
+
+    /**
      * Converts a binary string into the matching ASCII character.
      *
      * @param binaryString the binary string to be translated
@@ -127,49 +146,35 @@ public class StringBinUtils {
     }
 
     /**
-     * Converts a string to it's binary representation. This function supports
-     * both 6bit and 8bit character representations. The padding only affects
-     * additional left hand side 0s if required.
-     *
-     * @param input The input to be converted
-     * @param padding the left padding with zeros required
-     * @return the binary representation of the string
-     */
-    public static String convertStringToBinary(String input, int padding, Boolean ascii_6bit) {
-
-        StringBuilder result = new StringBuilder();
-        char[] chars = Strings.nullToEmpty(input).toCharArray();
-        for (char c : chars) {
-            result.append(convertCharToBinary(c, ascii_6bit ? 6 : 8, ascii_6bit));
-        }
-        return padLeft(result.toString(), padding);
-    }
-
-    /**
-     * Converts a binary string o zeros and ones into its byte representation.
+     * Converts a binary string of zeros and ones into its byte representation.
      *
      * Note that we translate the bits onto bytes from left to right, so keeping
      * in line with how the python bitarray library works.
      *
      * https://pypi.org/project/bitarray/
      *
-     * If the string does not represent a full 8bit byte array, the additional
-     * zeros will be appended in the end of the string, hence the last byte
-     * of the returned array.
+     * If the string does not represent a full 6nit/8bit byte array, the
+     * additional zeros will be appended in the end of the string, hence the
+     * last byte of the returned array.
      *
      * @param binaryString The binary string provided
+     * @param use6bit Use the 6bit representation instead of the standard 8bit
      * @return the byte representation of the input binary string
      */
-    public static byte[] convertBinaryStringToBytes(String binaryString) {
+    public static byte[] convertBinaryStringToBytes(String binaryString, boolean use6bit) {
         // Sanity Check
         if(StringUtils.isEmpty(binaryString) || !binaryString.matches("[01]+")) {
             return null;
         }
 
+        // Choices per 6bit/8bit operation
+        String splitExpression = String.format("(?<=\\G.{%d})", use6bit ? 6 : 8);
+        int bitSize = use6bit ? 6 : 8;
+
         // Break into bit octets and translate to bytes
-       return ArrayUtils.toPrimitive(Stream.of(binaryString.split("(?<=\\G.{8})"))
-                .map(bits -> StringUtils.rightPad(bits, 8, '0'))
-                .map(bits ->(Integer.parseInt(bits, 2)))
+        return ArrayUtils.toPrimitive(Stream.of(binaryString.split(splitExpression))
+                .map(bits -> StringUtils.rightPad(bits, bitSize, '0'))
+                .map(bits -> (int) convertBinaryToChar(bits, use6bit))
                 .map(i -> i.byteValue())
                 .collect(Collectors.toList())
                 .toArray(new  Byte[]{}));

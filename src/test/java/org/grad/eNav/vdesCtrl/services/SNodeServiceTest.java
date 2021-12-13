@@ -117,7 +117,7 @@ class SNodeServiceTest {
         this.station = new Station();
         this.station.setId(BigInteger.ONE);
         this.station.setName("New Station Name");
-        this.station.setChannel(NMEAChannel.A);
+        this.station.setChannel(AISChannel.A);
         this.station.setMmsi("111111111");
         this.station.setIpAddress("10.0.0.1");
         this.station.setPiSeqNo(1L);

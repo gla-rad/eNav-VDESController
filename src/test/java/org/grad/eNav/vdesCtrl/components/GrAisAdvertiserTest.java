@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.components;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
@@ -90,7 +90,7 @@ class GrAisAdvertiserTest {
         this.station = new Station();
         this.station.setId(BigInteger.ONE);
         this.station.setName("Existing Station Name");
-        this.station.setChannel(NMEAChannel.B);
+        this.station.setChannel(AISChannel.B);
         this.station.setMmsi("222222222");
         this.station.setIpAddress("10.0.0.2");
         this.station.setPiSeqNo(2L);

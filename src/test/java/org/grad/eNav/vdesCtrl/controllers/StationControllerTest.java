@@ -24,7 +24,6 @@ import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -38,7 +37,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -112,7 +110,7 @@ class StationControllerTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(NMEAChannel.A);
+            station.setChannel(AISChannel.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);
@@ -130,7 +128,7 @@ class StationControllerTest {
         // Create a new instance
         this.newStation = new Station();
         this.newStation.setName("New Station Name");
-        this.newStation.setChannel(NMEAChannel.A);
+        this.newStation.setChannel(AISChannel.A);
         this.newStation.setMmsi("111111111");
         this.newStation.setIpAddress("10.0.0.1");
         this.newStation.setPiSeqNo(1L);
@@ -142,7 +140,7 @@ class StationControllerTest {
         this.existingStation = new Station();
         this.existingStation.setId(BigInteger.ONE);
         this.existingStation.setName("Existing Station Name");
-        this.existingStation.setChannel(NMEAChannel.B);
+        this.existingStation.setChannel(AISChannel.B);
         this.existingStation.setMmsi("222222222");
         this.existingStation.setIpAddress("10.0.0.2");
         this.existingStation.setPiSeqNo(2L);

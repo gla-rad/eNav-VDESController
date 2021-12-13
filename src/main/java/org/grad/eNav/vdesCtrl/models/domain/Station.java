@@ -86,7 +86,7 @@ public class Station implements Serializable {
     @Enumerated(EnumType.STRING)
     @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "channel", columnDefinition = "varchar(1) default 'A'")
-    private NMEAChannel channel;
+    private AISChannel channel;
 
     @JsonSerialize(using = GeometryJSONSerializer.class)
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
@@ -195,7 +195,7 @@ public class Station implements Serializable {
      *
      * @return the channel
      */
-    public NMEAChannel getChannel() {
+    public AISChannel getChannel() {
         return channel;
     }
 
@@ -204,7 +204,7 @@ public class Station implements Serializable {
      *
      * @param channel the channel
      */
-    public void setChannel(NMEAChannel channel) {
+    public void setChannel(AISChannel channel) {
         this.channel = channel;
     }
 

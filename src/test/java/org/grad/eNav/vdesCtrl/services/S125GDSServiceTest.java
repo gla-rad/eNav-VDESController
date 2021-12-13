@@ -17,10 +17,9 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import org.geotools.data.DataStore;
-import org.geotools.data.FeatureStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.grad.eNav.vdesCtrl.components.S125GDSListener;
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,7 +96,7 @@ class S125GDSServiceTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(NMEAChannel.A);
+            station.setChannel(AISChannel.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);

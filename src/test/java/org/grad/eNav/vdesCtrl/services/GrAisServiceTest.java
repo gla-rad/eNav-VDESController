@@ -17,7 +17,7 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
-import org.grad.eNav.vdesCtrl.models.domain.NMEAChannel;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +81,7 @@ class GrAisServiceTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(NMEAChannel.A);
+            station.setChannel(AISChannel.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);
