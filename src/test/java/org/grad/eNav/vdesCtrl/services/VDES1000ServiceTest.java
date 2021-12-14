@@ -16,38 +16,31 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.io.IOUtils;
-import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
+import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
+import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.integration.channel.PublishSubscribeChannel;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
+import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,161 +54,89 @@ class VDES1000ServiceTest {
     VDES1000Service vdes1000Service;
 
     /**
-     * The AtoN Publish Subscribe Channel mock.
+     * The Application Context mock.
      */
     @Mock
-    PublishSubscribeChannel atonPublishChannel;
+    ApplicationContext applicationContext;
 
     /**
-     * The VDES-100 UDP Socket mock.
+     * The Station Service mock.
      */
     @Mock
-    DatagramSocket vdesSocket;
+    StationService stationService;
 
     // Test Variables
-    private S125Node s125Node;
+    private List<Station> stations;
 
     /**
      * Common setup for all the tests.
      */
     @BeforeEach
     void setup() throws IOException {
-        // First read a valid S125 content to generate the publish-subscribe
-        // message for.
-        InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
-        String xml = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+        // Create a temp geometry factory to get a test geometries
+        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
-        // Also create a GeoJSON point geometry for our S125 message
-        JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
-
-        // Now create the S125 node object
-        this.s125Node = new S125Node("test_aton", point, xml);
+        // Initialise the stations list
+        this.stations = new ArrayList<>();
+        for(long i=0; i<10; i++) {
+            Station station = new Station();
+            station.setId(BigInteger.valueOf(i));
+            station.setName("Station Name");
+            station.setChannel(AISChannel.A);
+            station.setMmsi("12345678" + i);
+            station.setIpAddress("10.0.0." + i);
+            station.setPiSeqNo(i);
+            station.setType(StationType.VDES_1000);
+            station.setPort(8000 + (int)i);
+            station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
+            station.setNodes(new HashSet<>());
+            this.stations.add(station);
+        }
     }
 
     /**
-     * Test that the VDES-1000 controlling service gets initialised correctly,
-     * and it subscribes to the AtoN publish subscribe channel.
+     * Test that the VDES-1000 service can initialise correctly and register
+     * the VDES-1000 advertisers for each of the stations present in the
+     * database.
      */
     @Test
-    void testInit() throws SocketException {
+    void testInit() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.VDES_1000);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
+
         // Perform the service call
         this.vdes1000Service.init();
 
-        verify(this.atonPublishChannel, times(1)).subscribe(this.vdes1000Service);
+        // Assert all the GNURadio Advertisers were created as expected
+        List<Station> advertisers = this.stations.stream()
+                .filter(s -> s.getType() == StationType.VDES_1000)
+                .collect(Collectors.toList());
+        assertEquals(stations.size(), this.vdes1000Service.vdes1000Advertisers.size());
     }
 
     /**
-     * Test that the VDES-1000 controlling service gets destroyed correctly,
-     * and it un-subscribes from the AtoN publish subscribe channel.
+     * Test that the VDES-1000 service can be destroyed gracefully, and it
+     * destroys all the running GNURadio AIS advertisers.
      */
     @Test
     void testDestroy() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.VDES_1000);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
+
+        // First initialise the service to pick up the advertisers
+        this.vdes1000Service.init();
+
         // Perform the service call
         this.vdes1000Service.destroy();
 
-        verify(this.atonPublishChannel, times(1)).destroy();
-    }
-
-    /**
-     * Test that the VDES-1000 controlling service can process correctly the
-     * AtoN messages published in the AtoN publish-subscribe channel.
-     */
-    @Test
-    void testHandleMessage() throws IOException {
-        // Create a message to be handled
-        Message message = Optional.of(this.s125Node).map(MessageBuilder::withPayload)
-                .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
-                .map(MessageBuilder::build)
-                .orElse(null);
-
-        // Perform the service call
-        this.vdes1000Service.handleMessage(message);
-
-        // Verify that we send a packet to the VDES port and get that packet
-        ArgumentCaptor<DatagramPacket> argument = ArgumentCaptor.forClass(DatagramPacket.class);
-        verify(this.vdesSocket, times(1)).send(argument.capture());
-
-        // Verify the packet
-        assertEquals(InetAddress.getByName("127.0.0.1"), argument.getValue().getAddress());
-        assertEquals(8000, argument.getValue().getPort());
-
-        // And make sure we are sending a VDES sentence
-        assertTrue(new String(argument.getValue().getData()).startsWith("$AI"));
-    }
-
-    /**
-     * Test that if the received message from the publish-subscribe channel is
-     * NOT for our VDES station, then it will not be sent.
-     */
-    @Test
-    void testHandleMessageNotVDESMessage() throws IOException {
-        // Change the message content type to something else
-        Message message = Optional.of(this.s125Node).map(MessageBuilder::withPayload)
-                .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.GNU_RADIO))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
-                .map(MessageBuilder::build)
-                .orElse(null);
-
-        // Perform the service call
-        this.vdes1000Service.handleMessage(message);
-
-        // Verify that we didn't send any packets to the VDES port
-        verify(this.vdesSocket, never()).send(any());
-    }
-
-    /**
-     * Test that we can only send S125 messages down to the VDES-1000 station
-     * port.
-     */
-    @Test
-    void testHandleMessageWrongPayload() throws IOException {
-        // Change the message content type to something else
-        Message message = Optional.of("this is just a string").map(MessageBuilder::withPayload)
-                .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
-                .map(MessageBuilder::build)
-                .orElse(null);
-
-        // Perform the service call
-        this.vdes1000Service.handleMessage(message);
-
-        // Verify that we didn't send any packets to the VDES port
-        verify(this.vdesSocket, never()).send(any());
-    }
-
-    /**
-     * Test that for any issues while sending the packet, the service will
-     * not stop it's execution, just a log should be OK.
-     */
-    @Test
-    void testHandleMessageSendingError() throws IOException {
-        // Create a message to be handled
-        Message message = Optional.of(this.s125Node).map(MessageBuilder::withPayload)
-                .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
-                .map(MessageBuilder::build)
-                .orElse(null);
-
-        doThrow(IOException.class).when(this.vdesSocket).send(any());
-
-        // Perform the service call
-        this.vdes1000Service.handleMessage(message);
-
-        // Verify that we didn't send any packets to the VDES port
-        verify(this.vdesSocket, times(1)).send(any());
+        // Make sure the advertisers got destroyed
+        verify(mockAdvertiser, times(this.stations.size())).destroy();
     }
 
 }

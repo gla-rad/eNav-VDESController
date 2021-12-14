@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package org.grad.eNav.vdesCtrl.components;
@@ -47,37 +48,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * The GNURadio AIS Advertiser Component Class
- *
- * This component is responsible for scheduling the advertisements published
- * from a GNURadio AIS transmitter. This is initialised by a service like the
- * GrAIsService but after that each GrAisAdvertiser schedules its own
- * operation.
- *
- * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
- */
 @Slf4j
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
-public class GrAisAdvertiser {
-
-    /**
-     * The interval between the node advertisements
-     */
-    @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.ais-interval:500}")
-    Long aisInterval;
+public class Vdes1000Advertiser {
 
     /**
      * Whether to enable signature messages
      */
-    @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.enableSignatures:false}")
+    @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.enableSignatures:false}")
     Boolean enableSignatures;
 
     /**
      * The sSignature Message Destination MMSI
      */
-    @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.destMmsi:}")
+    @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.destMmsi:}")
     Integer signatureDestMmmsi;
 
     /**
@@ -94,7 +79,7 @@ public class GrAisAdvertiser {
 
     // Component Variables
     protected Station station;
-    protected DatagramSocket gnuRadioSocket;
+    protected DatagramSocket vdes1000Socket;
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -107,7 +92,7 @@ public class GrAisAdvertiser {
         this.station = station;
 
         // Create the UDP Connection to the GNURadio stations
-        this.gnuRadioSocket = new DatagramSocket();
+        this.vdes1000Socket = new DatagramSocket();
 
         // Add the Bouncy castle as a security provider to make signatures
         Security.addProvider(new BouncyCastleProvider());
@@ -119,15 +104,15 @@ public class GrAisAdvertiser {
      */
     @PreDestroy
     public void destroy() {
-        log.info("GNURadio Advertiser is shutting down...");
-        this.gnuRadioSocket.close();
+        log.info("VDES-1000 Advertiser is shutting down...");
+        this.vdes1000Socket.close();
     }
 
     /**
      * This is a scheduled task performed by the service. The fixed delay
      * scheduler is used to execute the tasks at a specific time. It should wait
-     * for the previous task completion. Since the GNURadio transmission are
-     * quite primitive we should control the periodic transmissions manually.
+     * for the previous task completion. Since the VDES-1000 basic operation
+     * is used, we should control the periodic transmissions manually.
      */
     @Scheduled(fixedDelay = 60000, initialDelay = 1000)
     public void advertiseAtons() throws InterruptedException {
@@ -156,14 +141,11 @@ public class GrAisAdvertiser {
             if(this.enableSignatures) {
                 this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
             }
-
-            // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(this.aisInterval);
         }
     }
 
     /**
-     * The main function that sends the UDP package to the GNURadio station.
+     * The main function that sends the UDP package to the VDES-1000 station.
      *
      * @param address the address to send the datagram to
      * @param port the port to send the datagram to
@@ -179,11 +161,11 @@ public class GrAisAdvertiser {
         log.info("Station {} Sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
 
         // Create and send the UDP datagram packet
-        byte[] buffer = (aisMessage21.getBinaryMessageString() +'\n').getBytes();
+        byte[] buffer = aisMessage21.getBinaryMessage();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
-            this.gnuRadioSocket.send(packet);
+            this.vdes1000Socket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -192,7 +174,7 @@ public class GrAisAdvertiser {
     /**
      * This function will generate a signature message for the S125Node combined
      * with the transmission UNIX timestamp and send this as an AIS message 6/8
-     * to the GNURadio UDP port as well.
+     * to the VDES-1000 UDP port as well.
      *
      * @param address the address to send the datagram to
      * @param port the port to send the datagram to
@@ -227,11 +209,11 @@ public class GrAisAdvertiser {
         }
 
         // Create and send the UDP datagram packet
-        byte[] buffer = (abstractMessage.getBinaryMessageString() + '\n').getBytes();
+        byte[] buffer = abstractMessage.getBinaryMessage();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
-            this.gnuRadioSocket.send(packet);
+            this.vdes1000Socket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
