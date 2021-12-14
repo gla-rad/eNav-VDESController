@@ -18,6 +18,9 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -56,7 +59,7 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg6() {
         // First construct the parameters
-        GrAisMsg6Params msgParams = new GrAisMsg6Params();
+        AISMessage6 msgParams = new AISMessage6();
         msgParams.setMmsi(123456789);
         msgParams.setDestMmsi(987654321);
         msgParams.setMessage("XXX".getBytes());
@@ -80,7 +83,7 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg8() {
         // First construct the parameters
-        GrAisMsg8Params msgParams = new GrAisMsg8Params();
+        AISMessage8 msgParams = new AISMessage8();
         msgParams.setMmsi(123456789);
         msgParams.setMessage("XXX".getBytes());
 
@@ -102,7 +105,7 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21VAtoN() {
         // Create an GrAisMsg21Params parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        AISMessage21 msgParams = new AISMessage21();
         msgParams.setMmsi(123456789);
         msgParams.setUid("test_aton_no_1");
         msgParams.setName("Test AtoN No 1");
@@ -131,7 +134,7 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21VAtoNNo2()  {
         // Create an GrAisMsg21Params parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        AISMessage21 msgParams = new AISMessage21();
         msgParams.setMmsi(123456789);
         msgParams.setUid("test_aton_no_2");
         msgParams.setName("Test AtoN No 2");
@@ -160,7 +163,7 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21RealAtoN() {
         // Create an GrAisMsg21Params parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        AISMessage21 msgParams = new AISMessage21();
         msgParams.setMmsi(123456789);
         msgParams.setUid("test_aton_no_3");
         msgParams.setName("Test AtoN No 3");
@@ -211,23 +214,23 @@ public class GrAisUtilsTest {
         long timestamp = System.currentTimeMillis()/1000L;
 
         // Generate the stamped message for AIS Msg 6
-        byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageHash(AIS_MSG_6_ENCODED, timestamp);
+        byte[] stampedMessage1 = GrAisUtils.getStampedAISMessageHash(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_6_ENCODED, false), timestamp);
         assertEquals(256/8, stampedMessage1.length);
 
         // Generate the stamped message for AIS Msg 8
-        byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageHash(AIS_MSG_8_ENCODED, timestamp);
+        byte[] stampedMessage2 = GrAisUtils.getStampedAISMessageHash(StringBinUtils.convertBinaryStringToBytes(AIS_MSG_8_ENCODED, false), timestamp);
         assertEquals(256/8, stampedMessage2.length);
 
         // Generate the stamped message for S125 No1
-        byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageHash(S125_NO_1_ENCODED, timestamp);
+        byte[] stampedMessage3 = GrAisUtils.getStampedAISMessageHash(StringBinUtils.convertBinaryStringToBytes(S125_NO_1_ENCODED, false), timestamp);
         assertEquals(256/8, stampedMessage3.length);
 
         // Generate the stamped message for S125 No2
-        byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageHash(S125_NO_2_ENCODED, timestamp);
+        byte[] stampedMessage4 = GrAisUtils.getStampedAISMessageHash(StringBinUtils.convertBinaryStringToBytes(S125_NO_2_ENCODED, false), timestamp);
         assertEquals(256/8, stampedMessage4.length);
 
         // Generate the stamped message for S125 No3
-        byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageHash(S125_NO_3_ENCODED, timestamp);
+        byte[] stampedMessage5 = GrAisUtils.getStampedAISMessageHash(StringBinUtils.convertBinaryStringToBytes(S125_NO_3_ENCODED, false), timestamp);
         assertEquals(256/8, stampedMessage5.length);
     }
 

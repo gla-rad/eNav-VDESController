@@ -15,9 +15,10 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.sentences;
+package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
+import org.grad.eNav.vdesCtrl.models.txrx.AbstractSentence;
 
 /**
  * The VDM Sentence Class.

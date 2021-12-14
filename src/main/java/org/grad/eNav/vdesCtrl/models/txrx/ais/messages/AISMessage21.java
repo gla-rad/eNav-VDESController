@@ -12,9 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.grad.eNav.vdesCtrl.models.domain;
+package org.grad.eNav.vdesCtrl.models.txrx.ais.messages;
 
 import _int.iho.s100gml._1.PointProperty;
 import _int.iho.s125.gml._0.*;
@@ -22,7 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.opengis.gml._3.AbstractFeatureMemberType;
 import net.opengis.gml._3.PointType;
 import net.opengis.gml._3.Pos;
+import org.grad.eNav.vdesCtrl.models.domain.AtonType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
+import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 
 import javax.xml.bind.JAXBElement;
@@ -43,11 +47,10 @@ import java.util.function.Predicate;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Slf4j
-public class GrAisMsg21Params {
+public class AISMessage21 extends AbstractMessage {
 
     // Class Variables
     private String uid;
-    private Integer mmsi;
     private AtonType atonType;
     private String name;
     private Double latitude;
@@ -61,9 +64,9 @@ public class GrAisMsg21Params {
     /**
      * Empty Constructor.
      */
-    public GrAisMsg21Params() {
+    public AISMessage21() {
+        super();
         this.uid = null;
-        this.mmsi = null;
         this.atonType = AtonType.DEFAULT;
         this.name = "";
         this.latitude = 0.0;
@@ -81,7 +84,7 @@ public class GrAisMsg21Params {
      * @param s125Node the S125Node object
      * @throws JAXBException when the S125Node XML content cannot be parsed
      */
-    public GrAisMsg21Params(S125Node s125Node) throws JAXBException {
+    public AISMessage21(S125Node s125Node) throws JAXBException {
         // Default at first
         this();
 
@@ -156,24 +159,6 @@ public class GrAisMsg21Params {
      */
     public void setUid(String uid) {
         this.uid = uid;
-    }
-
-    /**
-     * Gets mmsi.
-     *
-     * @return the mmsi
-     */
-    public Integer getMmsi() {
-        return mmsi;
-    }
-
-    /**
-     * Sets mmsi.
-     *
-     * @param mmsi the mmsi
-     */
-    public void setMmsi(Integer mmsi) {
-        this.mmsi = mmsi;
     }
 
     /**
@@ -359,4 +344,13 @@ public class GrAisMsg21Params {
         return this.getTxTimestamp().toInstant(ZoneOffset.ofTotalSeconds(offset)).getEpochSecond();
     }
 
+    /**
+     * Gets binary message.
+     *
+     * @return the binary message
+     */
+    @Override
+    public String getBinaryMessageString() {
+        return GrAisUtils.encodeMsg21(this);
+    }
 }

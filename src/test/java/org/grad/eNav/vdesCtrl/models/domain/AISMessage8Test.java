@@ -16,11 +16,12 @@
 
 package org.grad.eNav.vdesCtrl.models.domain;
 
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GrAisMsg8ParamsTest {
+public class AISMessage8Test {
 
     /**
      * Test that the GR-AIS Message 8 will be constructed by default with
@@ -28,7 +29,7 @@ public class GrAisMsg8ParamsTest {
      */
     @Test
     public void testEmptyConstructor() {
-        GrAisMsg8Params msgParams = new GrAisMsg8Params();
+        AISMessage8 msgParams = new AISMessage8();
         assertNull(msgParams.getMmsi());
         assertEquals(0, msgParams.getMessage().length);
     }
@@ -39,7 +40,7 @@ public class GrAisMsg8ParamsTest {
      */
     @Test
     public void testConstructor() {
-        GrAisMsg8Params msgParams = new GrAisMsg8Params(123456789, new byte[]{0b0, 0b1, 0b0, 0b1});
+        AISMessage8 msgParams = new AISMessage8(123456789, new byte[]{0b0, 0b1, 0b0, 0b1});
         assertEquals(123456789, msgParams.getMmsi());
         assertEquals(4, msgParams.getMessage().length);
     }

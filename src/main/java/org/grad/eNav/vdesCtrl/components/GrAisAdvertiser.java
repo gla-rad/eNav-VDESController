@@ -19,11 +19,11 @@ package org.grad.eNav.vdesCtrl.components;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +45,7 @@ import java.security.Security;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * The GNURadio AIS Advertiser Component Class
@@ -91,15 +92,6 @@ public class GrAisAdvertiser {
     @Autowired
     SNodeService sNodeService;
 
-    /**
-     * A helper class definition to keep info on the Msg21 transmission
-     * information.
-     */
-    private class Msg21TxInfo {
-        GrAisMsg21Params params;
-        String message21;
-    }
-
     // Component Variables
     protected Station station;
     protected DatagramSocket gnuRadioSocket;
@@ -139,17 +131,30 @@ public class GrAisAdvertiser {
      */
     @Scheduled(fixedDelay = 60000, initialDelay = 1000)
     public void advertiseAtons() throws InterruptedException {
-        // Get all the nodes applicable for the station
-        List<S125Node> nodes = this.sNodeService.findAllForStationDto(station.getId());
+        // Get all the nodes applicable for the station and build the messages
+        List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(s125 -> {
+                    try {
+                        return new AISMessage21(s125);
+                    }
+                    catch (JAXBException ex) {
+                        log.error(ex.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         // Now create the AIS advertisements - wait in between
-        for(S125Node node: nodes) {
-            // Keep a reference to when the message was send to create a signature for it
-            Msg21TxInfo txInfo = this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), node);
+        for(AISMessage21 message: messages) {
+            // First send the message right away and then check if to create a signature for it
+            this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), message);
 
             // If signature messages are enabled, send one
             if(this.enableSignatures) {
-                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), txInfo);
+                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
             }
 
             // Wait to give enough time for the AIS TDMA slot
@@ -158,47 +163,32 @@ public class GrAisAdvertiser {
     }
 
     /**
-     * The main function that sends the UDP package to the VDES station. To
+     * The main function that sends the UDP package to the GNURadio station. To
      * make the streaming operation easier, we are actually returning the
      * provided message for each successful transmission.
      *
      * @param address the address to send the datagram to
      * @param port the port to send the datagram to
-     * @param s125Node the S125 message to be transmitted
+     * @param aisMessage21 the AIS message 21 to be transmitted
      */
-    private Msg21TxInfo sendMsg21Datagram(String address, int port, S125Node s125Node) {
+    private void sendMsg21Datagram(String address, int port, AISMessage21 aisMessage21) {
         // Sanity check
-        if(Objects.isNull(s125Node)) {
-            return null;
+        if(Objects.isNull(aisMessage21)) {
+            return;
         }
 
-        // Send the UDP packet
-        log.info("Station {} Sending an advertisement AtoN {}", station.getName(), s125Node.getAtonUID());
-
-        // Construct the UDP message for the VDES station
-        Msg21TxInfo txinfo = new Msg21TxInfo();
-
-        // Populate the transmission information
-        try {
-            txinfo.params = new GrAisMsg21Params(s125Node);
-            txinfo.message21 = GrAisUtils.encodeMsg21(txinfo.params);
-        } catch (JAXBException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
+        // Log the operation
+        log.info("Station {} Sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
 
         // Create and send the UDP datagram packet
-        byte[] buffer = (txinfo.message21+'\n').getBytes();
+        byte[] buffer = (aisMessage21.getBinaryMessageString() +'\n').getBytes();
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
             this.gnuRadioSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
-            return null;
         }
-
-        return txinfo;
     }
 
     /**
@@ -208,32 +198,32 @@ public class GrAisAdvertiser {
      *
      * @param address the address to send the datagram to
      * @param port the port to send the datagram to
-     * @param txInfo the AIS message 21 transmission information
+     * @param aisMessage21 the AIS message 21 that was transmitted
      */
-    private void sendSignatureDatagram(String address, int port, Msg21TxInfo txInfo) {
+    private void sendSignatureDatagram(String address, int port, AISMessage21 aisMessage21) {
         // Sanity check
-        if(Objects.isNull(txInfo)) {
+        if(Objects.isNull(aisMessage21)) {
             return;
         }
 
         // Construct the NMEA sentence of message 21 to be signed
-        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(txInfo.message21, true, this.station.getChannel());
+        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(aisMessage21.getBinaryMessageString(), true, this.station.getChannel());
         log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", msg21NmeaSentence));
 
         // Construct the UDP message for the VDES station
         String signatureMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(txInfo.message21, txInfo.params.getUnixTxTimestamp(0));
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateAtoNSignature(txInfo.params.getUid(), String.valueOf(txInfo.params.getMmsi()), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
 
             // And generate the signature message
             signatureMessage = Optional.ofNullable(this.signatureDestMmmsi)
-                    .map(destMmsi -> new GrAisMsg6Params(txInfo.params.getMmsi(), destMmsi, signature))
-                    .map(GrAisUtils::encodeMsg6)
-                    .orElseGet(() -> GrAisUtils.encodeMsg8(new GrAisMsg8Params(txInfo.params.getMmsi(), signature)));
+                    .map(destMmsi -> (AbstractMessage) new AISMessage6(aisMessage21.getMmsi(), destMmsi, signature))
+                    .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature))
+                    .getBinaryMessageString();
         } catch (NoSuchAlgorithmException | IOException ex) {
             log.error(ex.getMessage());
             return;

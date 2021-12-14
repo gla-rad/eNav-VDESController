@@ -15,18 +15,18 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.sentences;
+package org.grad.eNav.vdesCtrl.models.txrx;
 
 /**
- * The abstract Sentence Class.
+ * The Abstract Sentence Class.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public abstract class AbstractSentence {
 
     // The Sentence Formatter code
-    private final String formatterCode;
-    private final String talkerId;
+    protected final String formatterCode;
+    protected final String talkerId;
 
     /**
      * Instantiates a new Sentence.

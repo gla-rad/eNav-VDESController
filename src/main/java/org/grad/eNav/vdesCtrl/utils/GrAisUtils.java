@@ -19,9 +19,9 @@ package org.grad.eNav.vdesCtrl.utils;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Longs;
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg21Params;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg6Params;
-import org.grad.eNav.vdesCtrl.models.domain.GrAisMsg8Params;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,26 +46,26 @@ public class GrAisUtils {
      * generates the AIS binary message 6 to be send as a broadcast from the
      * defined MMSI source to the specified destination MMSI.
      *
-     * @param msgParams the GR-AIS Message 6 parameters to construct the AIS binary message from
+     * @param aisMessage6 the GR-AIS Message 6 parameters to construct the AIS binary message from
      * @return the encoded AIS message 6
      */
-    public static String encodeMsg6(GrAisMsg6Params msgParams) {
+    public static String encodeMsg6(AISMessage6 aisMessage6) {
         // Create a string builder to start with
         StringBuilder aisBuilder = new StringBuilder();
 
         // Build the AIS message string
         aisBuilder.append(StringBinUtils.convertIntToBinary(6,6)) // AIS Message 6
                 .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(aisMessage6.getMmsi(), 30)) // MMSI
                 .append(StringBinUtils.convertIntToBinary(0, 2)) // Sequence
-                .append(StringBinUtils.convertIntToBinary(msgParams.getDestMmsi(), 30)) // Destination MMSI
+                .append(StringBinUtils.convertIntToBinary(aisMessage6.getDestMmsi(), 30)) // Destination MMSI
                 .append(StringBinUtils.convertIntToBinary(0, 1)) // Re-Transmit
                 .append(StringBinUtils.convertIntToBinary(0, 1)) // Spare
                 .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
                 .append(StringBinUtils.convertIntToBinary(1, 6)); // Functional ID
 
         // Add the message binary content
-        for(byte b: msgParams.getMessage()) {
+        for(byte b: aisMessage6.getMessage()) {
             aisBuilder.append(StringBinUtils.convertByteToBinary(b, 8));
         }
 
@@ -79,23 +79,23 @@ public class GrAisUtils {
      * generates the AIS binary message 8 to be send as a broadcast from the
      * defined MMSI source.
      *
-     * @param msgParams the GR-AIS Message 8 parameters to construct the AIS binary message from
+     * @param aisMessage8 the GR-AIS Message 8 parameters to construct the AIS binary message from
      * @return the encoded AIS message 8
      */
-    public static String encodeMsg8(GrAisMsg8Params msgParams) {
+    public static String encodeMsg8(AISMessage8 aisMessage8) {
         // Create a string builder to start with
         StringBuilder aisBuilder = new StringBuilder();
 
         // Build the AIS message string
         aisBuilder.append(StringBinUtils.convertIntToBinary(8,6)) // AIS Message 8
                 .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(aisMessage8.getMmsi(), 30)) // MMSI
                 .append(StringBinUtils.convertIntToBinary(0, 2)) // Spare
                 .append(StringBinUtils.convertIntToBinary(1, 10)) // Designated area code
                 .append(StringBinUtils.convertIntToBinary(1, 6)); // Functional ID
 
         // Add the message binary content
-        for(byte b: msgParams.getMessage()) {
+        for(byte b: aisMessage8.getMessage()) {
             aisBuilder.append(StringBinUtils.convertByteToBinary(b, 8));
         }
 
@@ -110,33 +110,33 @@ public class GrAisUtils {
      * the AIS binary message 21 as a string, so that is can by passed on to the
      * UDP socket GNURadio is listening to.
      *
-     * @param msgParams the GR-AIS Message 21 parameters to construct the AIS binary message from
+     * @param aisMessage21 the GR-AIS Message 21 parameters to construct the AIS binary message from
      * @return The AIS binary message to be transmitted through GNURadio
      */
-    public static String encodeMsg21(GrAisMsg21Params msgParams) {
+    public static String encodeMsg21(AISMessage21 aisMessage21) {
         // Create a string builder to start with
         StringBuilder aisBuilder = new StringBuilder();
 
         // Quickly calculate the extra specific message 21 information required
-        String name = msgParams.getName();
+        String name = aisMessage21.getName();
         String nameExt = "";
-        if(msgParams.getName().length() > 20) {
-            name = msgParams.getName().substring(0, 20);
-            nameExt = msgParams.getName().substring(20);
+        if(aisMessage21.getName().length() > 20) {
+            name = aisMessage21.getName().substring(0, 20);
+            nameExt = aisMessage21.getName().substring(20);
         }
-        int halfLength = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getLength()/2));
-        int halfWidth = msgParams.getVaton() ? 0 : Math.round((float)(msgParams.getWidth()/2));
+        int halfLength = aisMessage21.getVaton() ? 0 : Math.round((float)(aisMessage21.getLength()/2));
+        int halfWidth = aisMessage21.getVaton() ? 0 : Math.round((float)(aisMessage21.getWidth()/2));
 
         // Build the string
         aisBuilder.append(StringBinUtils.convertIntToBinary(21,6)) // AIS Message 21
                 .append(StringBinUtils.convertIntToBinary(0,2)) // Repeat Indicator
-                .append(StringBinUtils.convertIntToBinary(msgParams.getMmsi(), 30)) // MMSI
-                .append(StringBinUtils.convertIntToBinary(msgParams.getAtonType().getCode(),5)) // The AtoN Type
+                .append(StringBinUtils.convertIntToBinary(aisMessage21.getMmsi(), 30)) // MMSI
+                .append(StringBinUtils.convertIntToBinary(aisMessage21.getAtonType().getCode(),5)) // The AtoN Type
                 .append(StringBinUtils.convertStringToBinary(String.format("%" + (-20) + "s", name),120, true)) // The AtoN Name
                 .append(StringBinUtils.convertIntToBinary(0,1)) // The Accuracy
                 // Longitude/Latitude
-                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(msgParams.getLongitude()*600000)).intValue(),28)) // The Longitude
-                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(msgParams.getLatitude()*600000)).intValue(),27)) // The Latitude
+                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(aisMessage21.getLongitude()*600000)).intValue(),28)) // The Longitude
+                .append(StringBinUtils.convertIntToBinary(Long.valueOf(Math.round(aisMessage21.getLatitude()*600000)).intValue(),27)) // The Latitude
                 // Dimension/Reference of position
                 .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
                 .append(StringBinUtils.convertIntToBinary(halfLength,9)) // The Half Length
@@ -144,11 +144,11 @@ public class GrAisUtils {
                 .append(StringBinUtils.convertIntToBinary(halfWidth,6)) // The Half Width
                 // Additional info/flags
                 .append(StringBinUtils.convertIntToBinary(0,4)) // The Fix Field
-                .append(StringBinUtils.convertIntToBinary(msgParams.getTxTimestamp().getSecond(),6)) // The Time Field
+                .append(StringBinUtils.convertIntToBinary(aisMessage21.getTxTimestamp().getSecond(),6)) // The Time Field
                 .append(StringBinUtils.convertIntToBinary(0,1)) // Off Position Indicator
                 .append(StringBinUtils.convertIntToBinary(0,8)) // AtoN Status
-                .append(StringBinUtils.convertIntToBinary(msgParams.getRaim()?1:0,1)) // RAIM Flag
-                .append(StringBinUtils.convertIntToBinary(msgParams.getVaton()?1:0,1)) // The Virtual AtoN Flag
+                .append(StringBinUtils.convertIntToBinary(aisMessage21.getRaim()?1:0,1)) // RAIM Flag
+                .append(StringBinUtils.convertIntToBinary(aisMessage21.getVaton()?1:0,1)) // The Virtual AtoN Flag
                 .append(StringBinUtils.convertIntToBinary(0,2)) // ?
                 // Add the name extension is required
                 .append(StringBinUtils.convertStringToBinary(nameExt, nameExt.length() % 6, true));
@@ -211,10 +211,10 @@ public class GrAisUtils {
      * @return the NMEA sentence signature
      * @throws IOException when the message content operation fails
      */
-    public static byte[] getStampedAISMessageHash(String aisBinaryMessage, long timestamp) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getStampedAISMessageHash(byte[] aisBinaryMessage, long timestamp) throws IOException, NoSuchAlgorithmException {
         // Combine the AIS message and the timestamp
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-        outputStream.write(StringBinUtils.convertBinaryStringToBytes(aisBinaryMessage, false));
+        outputStream.write(aisBinaryMessage);
         outputStream.write(Longs.toByteArray(timestamp));
         byte[] stampedAisMessage = outputStream.toByteArray();
 

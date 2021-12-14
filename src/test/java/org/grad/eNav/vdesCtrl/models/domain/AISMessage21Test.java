@@ -17,13 +17,14 @@
 package org.grad.eNav.vdesCtrl.models.domain;
 
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GrAisMsg21ParamsTest {
+public class AISMessage21Test {
 
     // Define the test S125 Messages Content
     public static final String S125_NO_1_CONTENT = "<S125:DataSet xmlns:S125=\"http://www.iho.int/S125/gml/0.1\" xmlns:S100=\"http://www.iho.int/s100gml/1.0\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" gml:id=\"aton.uk.test_aton_no_1\" xsi:schemaLocation=\"http://www.iho.int/S125/gml/1.0 S125.xsd\"><gml:boundedBy><gml:Envelope srsName=\"EPSG:4326\"><gml:lowerCorner>53.61 1.594</gml:lowerCorner><gml:upperCorner>53.61 1.594</gml:upperCorner></gml:Envelope></gml:boundedBy><member><S125:S125_NavAidStructure><featureName><displayName>true</displayName><language>eng</language><name>Test AtoN No 1</name></featureName><geometry><S100:pointProperty><S100:Point gml:id=\"G.aton.uk.test_aton_no_1.1\" srsName=\"EPSG:4326\"><gml:pos>53.61 1.594</gml:pos></S100:Point></S100:pointProperty></geometry><mmsi>123456789</mmsi><atonType>Special Mark</atonType><deploymentType>Mobile</deploymentType><raimFlag>false</raimFlag><vatonFlag>true</vatonFlag></S125:S125_NavAidStructure></member></S125:DataSet>";
@@ -36,7 +37,7 @@ public class GrAisMsg21ParamsTest {
      */
     @Test
     public void testEmptyConstructor() {
-        GrAisMsg21Params msgParams = new GrAisMsg21Params();
+        AISMessage21 msgParams = new AISMessage21();
         assertNull(msgParams.getMmsi());
         assertEquals(AtonType.DEFAULT, msgParams.getAtonType());
         assertEquals("", msgParams.getName());
@@ -58,7 +59,7 @@ public class GrAisMsg21ParamsTest {
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, S125_NO_1_CONTENT);
 
         // Create the GR-AIS Message 21 Parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params(node);
+        AISMessage21 msgParams = new AISMessage21(node);
 
         // Assert that all variables have been initialised correctly
         assertEquals(123456789, msgParams.getMmsi());
@@ -82,7 +83,7 @@ public class GrAisMsg21ParamsTest {
         S125Node node = new S125Node("aton.uk.test_aton_no_2", null, S125_NO_2_CONTENT);
 
         // Create the GR-AIS Message 21 Parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params(node);
+        AISMessage21 msgParams = new AISMessage21(node);
 
         // Assert that all variables have been initialised correctly
         assertEquals(111111111, msgParams.getMmsi());
@@ -106,7 +107,7 @@ public class GrAisMsg21ParamsTest {
         S125Node node = new S125Node("aton.uk.test_aton_no_3", null, S125_NO_3_CONTENT);
 
         // Create the GR-AIS Message 21 Parameters
-        GrAisMsg21Params msgParams = new GrAisMsg21Params(node);
+        AISMessage21 msgParams = new AISMessage21(node);
 
         // Assert that all variables have been initialised correctly
         assertEquals(123456789, msgParams.getMmsi());
@@ -130,7 +131,7 @@ public class GrAisMsg21ParamsTest {
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, "Erroneous Content");
 
         // Create the GR-AIS Message 21 Parameters and see it fail
-        assertThrows(JAXBException.class, () -> new GrAisMsg21Params(node));
+        assertThrows(JAXBException.class, () -> new AISMessage21(node));
     }
 
 }

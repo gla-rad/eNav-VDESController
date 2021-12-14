@@ -12,41 +12,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.grad.eNav.vdesCtrl.models.domain;
+package org.grad.eNav.vdesCtrl.models.txrx;
+
+import org.grad.eNav.vdesCtrl.utils.StringBinUtils;
 
 /**
- * The GR-AIS Message 8 Parameters Class.
- * <p>
- * This class contains all the required parameters for generating an AIS binary
- * message through the GrAisUtils class function.
+ * The Abstract Message Class.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class GrAisMsg8Params {
+public abstract class AbstractMessage {
 
     // Class Variables
-    private Integer mmsi;
-    private byte[] message;
+    protected Integer mmsi;
 
     /**
-     * Empty Constructor.
+     * Instantiates a new Abstract message.
      */
-    public GrAisMsg8Params() {
+    public AbstractMessage() {
         this.mmsi = null;
-        this.message = new byte[0];
-    }
-
-    /**
-     * Instantiates a  new GR-AIS Message 8 Parameters with arguments.
-     *
-     * @param mmsi    the mmsi
-     * @param message the message
-     */
-    public GrAisMsg8Params(Integer mmsi, byte[] message) {
-        this.mmsi = mmsi;
-        this.message = message;
     }
 
     /**
@@ -68,20 +55,18 @@ public class GrAisMsg8Params {
     }
 
     /**
-     * Gets message.
+     * Get binary message byte array.
      *
-     * @return the message
+     * @return the binary message byte array
      */
-    public byte[] getMessage() {
-        return message;
+    public byte[] getBinaryMessage() {
+        return StringBinUtils.convertBinaryStringToBytes(this.getBinaryMessageString(), false);
     }
 
     /**
-     * Sets message.
+     * Gets binary message string.
      *
-     * @param message the message
+     * @return the binary message string
      */
-    public void setMessage(byte[] message) {
-        this.message = message;
-    }
+    public abstract String getBinaryMessageString();
 }
