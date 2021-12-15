@@ -20,10 +20,52 @@ package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.txrx.AbstractSentence;
 
+import java.util.Optional;
+
 /**
  * The BBM Sentence Class.
  * <p>
  * Implements the AIS binary broadcast message.
+ * </p>
+ * <p>
+ * The Message Definition contains the following fields:
+ * </p>
+ * <ul>
+ *     TalkerId : str, optional
+ *     <br/> Talker ID. The default is "AI".
+ * </ul>
+ * <ul>
+ *     sentencesTotal : int
+ *     <br/> Total number of sentences needed to transfer the message (1-99).
+ * </ul>
+ * <ul>
+ *     sentenceNum : int, optional
+ *     <br/> Sentence number (1-99).
+ * </ul>
+ * <ul>
+ *     sequenceId : int
+ *     <br/> Sequential message identifier (0-9).
+ * </ul>
+ * <ul>
+ *     channel : int
+ *     <br/> AIS channel for broadcast of the message:
+ *     <li>0: No preference
+ *     <li>1: Channel A / AIS 1</li>
+ *     <li>2: Channel B / AIS 2</li>
+ *     <li>3: Both channels.</li>
+ * </ul>
+ * <ul>
+ *     messageId : int
+ *     <br/> Message ID as per Rec. ITU-R M.1371.
+ * </ul>
+ * <ul>
+ *     payload : str
+ *     <br/> ASM payload (the Binary Data portion of the message).
+ * </ul>
+ * <ul>
+ *     noFillBits : int
+ *     <br/> Number of fill bits (0-5).
+ * </ul>
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -37,26 +79,47 @@ public class BBMSentence extends AbstractSentence {
     // Class Variables
     private int sentencesTotal;
     private int  sentenceNum;
-    private int  sequenceId;
+    private Optional<Integer>  sequenceId;
     private AISChannel channel;
     private String messageId;
     private byte[] payload;
-    private int  noFillBits;
 
     /**
-     * Instantiates a new Bbm sentence.
+     * Instantiates a new BBM sentence.
+     *
+     * @param sentencesTotal the sentences total
+     * @param sentenceNum    the sentence num
+     * @param channel        the channel
+     * @param messageId      the message id
+     * @param payload        the payload
      */
-    public BBMSentence() {
-        super("AI", FORMATTER_CODE);
+    public BBMSentence(int sentencesTotal, int sentenceNum, AISChannel channel, String messageId, byte[] payload) {
+        this("AI", sentencesTotal, sentenceNum, channel, messageId, payload);
     }
 
     /**
-     * Instantiates a new Bbm sentence.
+     * Instantiates a new BBM sentence.
      *
-     * @param talkerId the talker id
+     * @param talkerId       the talker id
+     * @param sentencesTotal the sentences total
+     * @param sentenceNum    the sentence num
+     * @param channel        the channel
+     * @param messageId      the message id
+     * @param payload        the payload
      */
-    public BBMSentence(String talkerId) {
+    public BBMSentence(String talkerId,
+                       int sentencesTotal,
+                       int sentenceNum,
+                       AISChannel channel,
+                       String messageId,
+                       byte[] payload) {
         super(talkerId, FORMATTER_CODE);
+        this.sentencesTotal = sentencesTotal;
+        this.sentenceNum = sentenceNum;
+        this.sequenceId = Optional.empty();
+        this.channel = channel;
+        this.messageId = messageId;
+        this.payload = payload;
     }
 
     /**
@@ -100,7 +163,7 @@ public class BBMSentence extends AbstractSentence {
      *
      * @return the sequence id
      */
-    public int getSequenceId() {
+    public Optional<Integer> getSequenceId() {
         return sequenceId;
     }
 
@@ -109,7 +172,7 @@ public class BBMSentence extends AbstractSentence {
      *
      * @param sequenceId the sequence id
      */
-    public void setSequenceId(int sequenceId) {
+    public void setSequenceId(Optional<Integer> sequenceId) {
         this.sequenceId = sequenceId;
     }
 
@@ -173,15 +236,35 @@ public class BBMSentence extends AbstractSentence {
      * @return the no fill bits
      */
     public int getNoFillBits() {
-        return noFillBits;
+        return Optional.ofNullable(this.payload).map(p-> p.length*8).map(l -> (6 - l%6)%6).orElse(0);
     }
 
     /**
-     * Sets no fill bits.
+     * Returns the string representation of the sentence, formatted as per
+     * IEC 62320-1.
      *
-     * @param noFillBits the no fill bits
+     * @return the string representation of the sentence
      */
-    public void setNoFillBits(int noFillBits) {
-        this.noFillBits = noFillBits;
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("!")
+                .append(this.talkerId)
+                .append(this.formatterCode)
+                .append(",")
+                .append(this.sentencesTotal)
+                .append(",")
+                .append(this.sentenceNum)
+                .append(",")
+                .append(this.sequenceId.map(String::valueOf).orElse(""))
+                .append(",")
+                .append(Optional.ofNullable(this.channel).map(AISChannel::getIndex).orElse(0))
+                .append(",")
+                .append(this.messageId)
+                .append(",")
+                .append(Optional.ofNullable(this.payload).map(String::new).orElse(""))
+                .append(",")
+                .append(this.getNoFillBits())
+                .toString();
     }
 }

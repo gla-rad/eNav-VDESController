@@ -161,7 +161,7 @@ public class Vdes1000Advertiser {
         log.info("Station {} Sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
 
         // Create and send the UDP datagram packet
-        byte[] buffer = aisMessage21.getBinaryMessage();
+        byte[] buffer = aisMessage21.getBinaryMessage(false);
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
@@ -187,14 +187,13 @@ public class Vdes1000Advertiser {
         }
 
         // Construct the NMEA sentence of message 21 to be signed
-        String msg21NmeaSentence = GrAisUtils.generateNMEASentence(aisMessage21.getBinaryMessageString(), true, this.station.getChannel());
-        log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", msg21NmeaSentence));
+        log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", new String(aisMessage21.getBinaryMessage(true))));
 
         // Construct the UDP message for the VDES station
         final AbstractMessage abstractMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(), aisMessage21.getUnixTxTimestamp(0));
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
@@ -209,7 +208,7 @@ public class Vdes1000Advertiser {
         }
 
         // Create and send the UDP datagram packet
-        byte[] buffer = abstractMessage.getBinaryMessage();
+        byte[] buffer = abstractMessage.getBinaryMessage(false);
         try {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName(address), port);
@@ -219,8 +218,7 @@ public class Vdes1000Advertiser {
         }
 
         // Generate some debug information
-        String signatureNmeaSentence = GrAisUtils.generateNMEASentence(abstractMessage.getBinaryMessageString(), true, this.station.getChannel());
-        log.debug(String.format("Signature NMEA sentence sent: %s", signatureNmeaSentence));
+        log.debug(String.format("Signature NMEA sentence sent: %s", new String(abstractMessage.getBinaryMessage(true))));
     }
 
 }

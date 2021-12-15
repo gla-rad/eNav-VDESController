@@ -17,6 +17,8 @@
 
 package org.grad.eNav.vdesCtrl.models.txrx;
 
+import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
+
 /**
  * The Abstract Sentence Class.
  *
@@ -54,5 +56,31 @@ public abstract class AbstractSentence {
      */
     public String getFormatterCode() {
         return formatterCode;
+    }
+
+    /**
+     * Returns the string representation of the sentence, formatted as per
+     * IEC 62320-1.
+     *
+     * @return the string representation of the sentence
+     */
+    public abstract String toString();
+
+    /**
+     * Returns the string representation of the sentence formatted as per
+     * IEC 62320-1, inclusing the calculated checksum.
+     *
+     * @return the string representation with the checksum
+     */
+    public String toStringWithChecksum() {
+        // Check out the sentence temporarily
+        String tempSentence = this.toString();
+
+        // Append the checksum to the string value
+        return new StringBuilder()
+                .append(tempSentence)
+                .append("*")
+                .append(GrAisUtils.calculateIECChecksum(tempSentence))
+                .toString();
     }
 }

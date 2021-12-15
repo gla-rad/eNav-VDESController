@@ -153,7 +153,7 @@ public class StringBinUtils {
      *
      * https://pypi.org/project/bitarray/
      *
-     * If the string does not represent a full 6nit/8bit byte array, the
+     * If the string does not represent a full 6bit/8bit byte array, the
      * additional zeros will be appended in the end of the string, hence the
      * last byte of the returned array.
      *
@@ -174,7 +174,8 @@ public class StringBinUtils {
         // Break into bit octets and translate to bytes
         return ArrayUtils.toPrimitive(Stream.of(binaryString.split(splitExpression))
                 .map(bits -> StringUtils.rightPad(bits, bitSize, '0'))
-                .map(bits -> (int) convertBinaryToChar(bits, use6bit))
+                .map(bits -> convertBinaryToChar(bits, use6bit))
+                .map(i -> (int) i.charValue())
                 .map(i -> i.byteValue())
                 .collect(Collectors.toList())
                 .toArray(new  Byte[]{}));

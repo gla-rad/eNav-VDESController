@@ -21,11 +21,43 @@ import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.txrx.AbstractSentence;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The TSA Sentence Class.
  * <p>
  * Implements the AIS TSA Sentence: Transmit slot assignment.
+ * </p>
+ * <p>
+ * The Message Definition contains the following fields:
+ * </p>
+ * <ul>
+ *     TalkerId : str, optional
+ *     <br/> Talker ID. The default is "AI".
+ * </ul>
+ * <ul>
+ *     uniqueId : str, optional
+ *     <br/> Base station's unique ID. Maximum of 15 characters. The default is
+ *     "".
+ * </ul>
+ * <ul>
+ *     vdmLink : int
+ *     <br/> VDM link.
+ * </ul>
+ * <ul>
+ *     utcHHMM : str, optional
+ *     <br/> UTC frame hour and minute of the requested transmission. The
+ *     default is "".
+ * </ul>
+ * <ul>
+ *     startSlot : str, optional
+ *     <br/> Start slot number of the requested transmission. The default is "".
+ * </ul>
+ * <ul>
+ *     priority
+ *     <br/> Transmission priority (0-2). Lower number corresponds to higher
+ *     priority. The default is 2.
+ * </ul>
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
@@ -37,28 +69,42 @@ public class TSASentence extends AbstractSentence {
     public static final String FORMATTER_CODE = "TSA";
 
     // Class Variables
-    private String uniqueId;
+    private Optional<String> uniqueId;
     private int vdmLink;
     private AISChannel channel;
-    private String utcHHMM;
-    private String startSlot;
-    private int priority;
+    private Optional<String> utcHHMM;
+    private Optional<String> startSlot;
+    private Optional<Integer> priority;
     private List<AbstractSentence> sentences;
 
     /**
-     * Instantiates a new Tsa sentence.
+     * Instantiates a new TSA sentence.
+     *
+     * @param vdmLink  the vdm link
+     * @param channel  the channel
      */
-    public TSASentence() {
-        super("AI", FORMATTER_CODE);
+    public TSASentence(int vdmLink,
+                       AISChannel channel) {
+        this("AI", vdmLink, channel);
     }
 
     /**
-     * Instantiates a new Tsa sentence.
+     * Instantiates a new TSA sentence.
      *
      * @param talkerId the talker id
+     * @param vdmLink  the vdm link
+     * @param channel  the channel
      */
-    public TSASentence(String talkerId) {
+    public TSASentence(String talkerId,
+                       int vdmLink,
+                       AISChannel channel) {
         super(talkerId, FORMATTER_CODE);
+        this.uniqueId = Optional.empty();
+        this.vdmLink = vdmLink;
+        this.channel = channel;
+        this.utcHHMM = Optional.empty();
+        this.startSlot = Optional.empty();
+        this.priority = Optional.empty();
     }
 
     /**
@@ -66,7 +112,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @return the unique id
      */
-    public String getUniqueId() {
+    public Optional<String> getUniqueId() {
         return uniqueId;
     }
 
@@ -75,7 +121,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @param uniqueId the unique id
      */
-    public void setUniqueId(String uniqueId) {
+    public void setUniqueId(Optional<String> uniqueId) {
         this.uniqueId = uniqueId;
     }
 
@@ -120,7 +166,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @return the utc hhmm
      */
-    public String getUtcHHMM() {
+    public Optional<String> getUtcHHMM() {
         return utcHHMM;
     }
 
@@ -129,7 +175,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @param utcHHMM the utc hhmm
      */
-    public void setUtcHHMM(String utcHHMM) {
+    public void setUtcHHMM(Optional<String> utcHHMM) {
         this.utcHHMM = utcHHMM;
     }
 
@@ -138,7 +184,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @return the start slot
      */
-    public String getStartSlot() {
+    public Optional<String> getStartSlot() {
         return startSlot;
     }
 
@@ -147,7 +193,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @param startSlot the start slot
      */
-    public void setStartSlot(String startSlot) {
+    public void setStartSlot(Optional<String> startSlot) {
         this.startSlot = startSlot;
     }
 
@@ -156,7 +202,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @return the priority
      */
-    public int getPriority() {
+    public Optional<Integer> getPriority() {
         return priority;
     }
 
@@ -165,7 +211,7 @@ public class TSASentence extends AbstractSentence {
      *
      * @param priority the priority
      */
-    public void setPriority(int priority) {
+    public void setPriority(Optional<Integer> priority) {
         this.priority = priority;
     }
 
@@ -185,5 +231,32 @@ public class TSASentence extends AbstractSentence {
      */
     public void setSentences(List<AbstractSentence> sentences) {
         this.sentences = sentences;
+    }
+
+    /**
+     * Returns the string representation of the sentence, formatted as per
+     * IEC 62320-1.
+     *
+     * @return the string representation of the sentence
+     */
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append("!")
+                .append(this.talkerId)
+                .append(this.formatterCode)
+                .append(",")
+                .append(this.uniqueId.orElse(""))
+                .append(",")
+                .append(Optional.ofNullable(this.vdmLink).map(String::valueOf).orElse(""))
+                .append(",")
+                .append(Optional.ofNullable(this.channel).map(AISChannel::getChannel).orElse("A"))
+                .append(",")
+                .append(this.utcHHMM.orElse(""))
+                .append(",")
+                .append(this.startSlot.orElse(""))
+                .append(",")
+                .append(this.priority.orElse(2))
+                .toString();
     }
 }

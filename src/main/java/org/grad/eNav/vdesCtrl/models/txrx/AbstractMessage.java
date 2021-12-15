@@ -57,10 +57,11 @@ public abstract class AbstractMessage {
     /**
      * Get binary message byte array.
      *
+     * @param convertTo6Bit whether to generate the binary message using 6bit encoding
      * @return the binary message byte array
      */
-    public byte[] getBinaryMessage() {
-        return StringBinUtils.convertBinaryStringToBytes(this.getBinaryMessageString(), false);
+    public byte[] getBinaryMessage(boolean convertTo6Bit) {
+        return StringBinUtils.convertBinaryStringToBytes(this.getBinaryMessageString(), convertTo6Bit);
     }
 
     /**

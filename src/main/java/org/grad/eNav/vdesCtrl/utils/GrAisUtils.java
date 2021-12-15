@@ -22,14 +22,13 @@ import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.sentences.VDMSentence;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
  * The GNURadio AIS Utility Class.
@@ -159,49 +158,6 @@ public class GrAisUtils {
     }
 
     /**
-     * Based on the provided binary message it will generate the NMEA sentence
-     * for it by splitting it every 6 bits and translating it to the respective
-     * ASCII character.
-     *
-     * @param binaryMsg the binary message to be translated
-     * @param enableNMEA whether to enable the NMEA
-     * @param aisChannel the NMEA channel to be used
-     * @return the generated NMEA sentence for the binary message
-     */
-    public static String generateNMEASentence(String binaryMsg, boolean enableNMEA, AISChannel aisChannel) {
-        //Sanity Check
-        if(Objects.isNull(binaryMsg) || binaryMsg.isEmpty()) {
-            return "";
-        }
-
-        // Create a string builder to start with
-        StringBuilder aisBuilder = new StringBuilder()
-                .append("!AIVDM,1,1,,")
-                .append(aisChannel.getChannel())
-                .append(",");
-
-        // Pad the payload to match an 8bit boundary
-        String paddedBinaryMsg = StringBinUtils.padRight(binaryMsg, binaryMsg.length() + (binaryMsg.length()%8));
-        ByteBuffer byteBuffer = ByteBuffer.wrap(StringBinUtils.convertBinaryStringToBytes(paddedBinaryMsg, true));
-        Stream.generate(byteBuffer::get)
-                .limit(byteBuffer.capacity())
-                .map(b -> (char) b.intValue())
-                .forEach(aisBuilder::append);
-
-        // Append the checksum and close the sentence
-        if(enableNMEA) {
-            aisBuilder.append(",");
-            aisBuilder.append((6 - paddedBinaryMsg.length()%6)%6);
-            String tempSentence = aisBuilder.toString(); // Check out the sentence temporarily
-            aisBuilder.append("*");
-            aisBuilder.append(calculateIECChecksum(tempSentence));
-        }
-
-        // Return the generated NMEA sentence
-        return aisBuilder.toString();
-    }
-
-    /**
      * This function translates the AIS message binary content string
      * to a byte array and stamps it with the provided timestamp. This
      * can be used to easily generate am SHA-256 hash for signing.
@@ -223,20 +179,20 @@ public class GrAisUtils {
     }
 
     /**
-     * This utility function generate the NMEA/IEC 61162-1 style checksum as a
-     * string. The NMEA/IEC 61162-1 styl checksum is computed on the entire
+     * This utility function generate the IEC 61162-1 style checksum as a
+     * string. The IEC 61162-1 style checksum is computed on the entire
      * sentence including the AIVDM/AIVDO tag but excluding the leading "!".
      *
      * The checksum is merely a byte-by-byte XOR of the sentence.
      *
-     * @param nmeaSentence the NMEA sentence to generate the checksum for
-     * @return the generated NMEA sentence checksum
+     * @param sentence the sentence to generate the checksum for
+     * @return the generated sentence checksum
      */
-    public static String calculateIECChecksum(String nmeaSentence) {
+    public static String calculateIECChecksum(String sentence) {
         // Remove the initial "!" character if found
-        String sentence =  Strings.nullToEmpty(nmeaSentence).replaceAll("^!", "");
+        String clearedSentence =  Strings.nullToEmpty(sentence).replaceAll("^!", "");
         int sum = 0;
-        char[] chars = sentence.toCharArray();
+        char[] chars = clearedSentence.toCharArray();
         for(char c : chars) {
             sum ^= c;
         }

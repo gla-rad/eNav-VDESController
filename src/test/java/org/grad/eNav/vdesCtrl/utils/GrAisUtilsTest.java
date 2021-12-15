@@ -21,6 +21,7 @@ import org.grad.eNav.vdesCtrl.models.domain.*;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.txrx.ais.sentences.VDMSentence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +29,8 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,13 +62,13 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg6() {
         // First construct the parameters
-        AISMessage6 msgParams = new AISMessage6();
-        msgParams.setMmsi(123456789);
-        msgParams.setDestMmsi(987654321);
-        msgParams.setMessage("XXX".getBytes());
+        AISMessage6 aisMessage6 = new AISMessage6();
+        aisMessage6.setMmsi(123456789);
+        aisMessage6.setDestMmsi(987654321);
+        aisMessage6.setMessage("XXX".getBytes());
 
         // Encode the message
-        String msg6 = GrAisUtils.encodeMsg6(msgParams);
+        String msg6 = GrAisUtils.encodeMsg6(aisMessage6);
 
         // Assert that everything seems correct
         assertFalse(msg6.isEmpty());
@@ -83,12 +86,12 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg8() {
         // First construct the parameters
-        AISMessage8 msgParams = new AISMessage8();
-        msgParams.setMmsi(123456789);
-        msgParams.setMessage("XXX".getBytes());
+        AISMessage8 aisMessage8 = new AISMessage8();
+        aisMessage8.setMmsi(123456789);
+        aisMessage8.setMessage("XXX".getBytes());
 
         // Encode the message
-        String msg8 = GrAisUtils.encodeMsg8(msgParams);
+        String msg8 = GrAisUtils.encodeMsg8(aisMessage8);
 
         // Assert that everything seems correct
         assertFalse(msg8.isEmpty());
@@ -105,19 +108,19 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21VAtoN() {
         // Create an GrAisMsg21Params parameters
-        AISMessage21 msgParams = new AISMessage21();
-        msgParams.setMmsi(123456789);
-        msgParams.setUid("test_aton_no_1");
-        msgParams.setName("Test AtoN No 1");
-        msgParams.setAtonType(AtonType.SPECIAL_MARK);
-        msgParams.setLatitude(53.61);
-        msgParams.setLongitude(1.594);
-        msgParams.setVaton(Boolean.TRUE);
+        AISMessage21 aisMessage21 = new AISMessage21();
+        aisMessage21.setMmsi(123456789);
+        aisMessage21.setUid("test_aton_no_1");
+        aisMessage21.setName("Test AtoN No 1");
+        aisMessage21.setAtonType(AtonType.SPECIAL_MARK);
+        aisMessage21.setLatitude(53.61);
+        aisMessage21.setLongitude(1.594);
+        aisMessage21.setVaton(Boolean.TRUE);
         LocalDateTime now = LocalDateTime.now();
-        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
+        aisMessage21.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(msgParams);
+        String msg21 = GrAisUtils.encodeMsg21(aisMessage21);
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
@@ -134,19 +137,19 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21VAtoNNo2()  {
         // Create an GrAisMsg21Params parameters
-        AISMessage21 msgParams = new AISMessage21();
-        msgParams.setMmsi(123456789);
-        msgParams.setUid("test_aton_no_2");
-        msgParams.setName("Test AtoN No 2");
-        msgParams.setAtonType(AtonType.PORT_HAND_MARK);
-        msgParams.setLatitude(1.594);
-        msgParams.setLongitude(53.61);
-        msgParams.setVaton(Boolean.TRUE);
+        AISMessage21 aisMessage21 = new AISMessage21();
+        aisMessage21.setMmsi(123456789);
+        aisMessage21.setUid("test_aton_no_2");
+        aisMessage21.setName("Test AtoN No 2");
+        aisMessage21.setAtonType(AtonType.PORT_HAND_MARK);
+        aisMessage21.setLatitude(1.594);
+        aisMessage21.setLongitude(53.61);
+        aisMessage21.setVaton(Boolean.TRUE);
         LocalDateTime now = LocalDateTime.now();
-        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
+        aisMessage21.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(msgParams);
+        String msg21 = GrAisUtils.encodeMsg21(aisMessage21);
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
@@ -163,42 +166,24 @@ public class GrAisUtilsTest {
     @Test
     public void testEncodeMsg21RealAtoN() {
         // Create an GrAisMsg21Params parameters
-        AISMessage21 msgParams = new AISMessage21();
-        msgParams.setMmsi(123456789);
-        msgParams.setUid("test_aton_no_3");
-        msgParams.setName("Test AtoN No 3");
-        msgParams.setAtonType(AtonType.SPECIAL_MARK);
-        msgParams.setLatitude(53.61);
-        msgParams.setLongitude(1.594);
-        msgParams.setLength(4);
-        msgParams.setWidth(4);
+        AISMessage21 aisMessage21 = new AISMessage21();
+        aisMessage21.setMmsi(123456789);
+        aisMessage21.setUid("test_aton_no_3");
+        aisMessage21.setName("Test AtoN No 3");
+        aisMessage21.setAtonType(AtonType.SPECIAL_MARK);
+        aisMessage21.setLatitude(53.61);
+        aisMessage21.setLongitude(1.594);
+        aisMessage21.setLength(4);
+        aisMessage21.setWidth(4);
         LocalDateTime now = LocalDateTime.now();
-        msgParams.setTimestamp(now.minusSeconds(now.getSecond()));
+        aisMessage21.setTimestamp(now.minusSeconds(now.getSecond()));
 
         // Encode the message
-        String msg21 = GrAisUtils.encodeMsg21(msgParams);
+        String msg21 = aisMessage21.getBinaryMessageString();
 
         // Assert that everything seems correct
         assertFalse(msg21.isEmpty());
         assertEquals(S125_NO_3_ENCODED, msg21);
-    }
-
-    /**
-     * Test that we can generate correct NMEA sentences.
-     */
-    @Test
-    public void testGenerateNMEASentence() {
-        assertEquals("", GrAisUtils.generateNMEASentence(null, true, AISChannel.A));
-        assertEquals("", GrAisUtils.generateNMEASentence("", true, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7C", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, false, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hHh@@@@@03aOh?E`>00000000100,2*7F", GrAisUtils.generateNMEASentence(S125_NO_1_ENCODED, true, AISChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*78", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, false, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5L:2ab@0b7W@77hI@@@@@@1re1h0M;v00000000100,2*7B", GrAisUtils.generateNMEASentence(S125_NO_2_ENCODED, true, AISChannel.B));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0E", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,A,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, false, AISChannel.A));
-        assertEquals("!AIVDM,1,1,,B,E1mg=5O:2ab@0b7W@77hIh@@@@@03aOh?E`>020@@@00000,2*0D", GrAisUtils.generateNMEASentence(S125_NO_3_ENCODED, true, AISChannel.B));
     }
 
     /**

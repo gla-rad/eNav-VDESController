@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.models.domain;
 
 import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.utils.StringBinUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,27 +25,65 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AISMessage6Test {
 
     /**
-     * Test that the GR-AIS Message 6 will be constructed by default with
+     * Test that the AIS Message 6 will be constructed by default with
      * empty parameters.
      */
     @Test
     public void testEmptyConstructor() {
-        AISMessage6 msgParams = new AISMessage6();
-        assertNull(msgParams.getMmsi());
-        assertNull(msgParams.getDestMmsi());
-        assertEquals(0, msgParams.getMessage().length);
+        AISMessage6 aisMessage6 = new AISMessage6();
+        assertNull(aisMessage6.getMmsi());
+        assertNull(aisMessage6.getDestMmsi());
+        assertEquals(0, aisMessage6.getMessage().length);
     }
 
     /**
-     * Test that the GR-AIS Message 6 can be constructed with initialised
+     * Test that the AIS Message 6 can be constructed with initialised
      * parameters.
      */
     @Test
     public void testConstructor() {
-        AISMessage6 msgParams = new AISMessage6(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
-        assertEquals(123456789, msgParams.getMmsi());
-        assertEquals(987654321, msgParams.getDestMmsi());
-        assertEquals(4, msgParams.getMessage().length);
+        AISMessage6 aisMessage6 = new AISMessage6(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
+        assertEquals(123456789, aisMessage6.getMmsi());
+        assertEquals(987654321, aisMessage6.getDestMmsi());
+        assertEquals(4, aisMessage6.getMessage().length);
+    }
+
+    /**
+     * Test that we can correctly construct the NMEA message representation.
+     * Note that we need to use the 6bit conversion to do so.
+     */
+    @Test
+    public void testGetBinaryMessage6bit() {
+        AISMessage6 aisMessage6 = new AISMessage6(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
+        assertEquals("61mg=5CcNJ;404400@01", new String(aisMessage6.getBinaryMessage(true)));
+    }
+
+    /**
+     * Test that we can correctly construct the NMEA message representation.
+     * Note that when using the normal 8 bit conversion, the result should
+     * is not the correct string representation but can be used anywhere else.
+     */
+    @Test
+    public void testGetBinaryMessage8bit() {
+        AISMessage6 aisMessage6 = new AISMessage6(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
+        byte[] bin = StringBinUtils.convertBinaryStringToBytes("000110000001110101101111001101000101010011101011011110011010001011000100000000000100000100000000000000010000000000000001", false);
+        byte[] result = aisMessage6.getBinaryMessage(false);
+        assertEquals(bin.length, result.length);
+        // Check each byte separately
+        for(int b=0; b<result.length; b++) {
+            assertEquals(bin[b], result[b]);
+        }
+    }
+
+    /**
+     * Test that we can correctly construct the NMEA message binary
+     * representation.
+     */
+    @Test
+    public void testGetBinaryMessageString() {
+        AISMessage6 aisMessage6 = new AISMessage6(123456789, 987654321, new byte[]{0b0, 0b1, 0b0, 0b1});
+        String binString = "000110000001110101101111001101000101010011101011011110011010001011000100000000000100000100000000000000010000000000000001";
+        assertEquals(binString, aisMessage6.getBinaryMessageString());
     }
 
 }
