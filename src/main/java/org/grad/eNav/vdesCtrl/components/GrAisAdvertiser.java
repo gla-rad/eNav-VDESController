@@ -20,10 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,7 +176,7 @@ public class GrAisAdvertiser {
         }
 
         // Log the operation
-        log.info("Station {} Sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
+        log.info("Station {} sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
 
         // Create and send the UDP datagram packet
         byte[] buffer = (aisMessage21.getBinaryMessageString() +'\n').getBytes();

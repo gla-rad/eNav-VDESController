@@ -15,10 +15,9 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.grad.eNav.vdesCtrl.utils.StringBinUtils;
 import org.junit.jupiter.api.Test;
 

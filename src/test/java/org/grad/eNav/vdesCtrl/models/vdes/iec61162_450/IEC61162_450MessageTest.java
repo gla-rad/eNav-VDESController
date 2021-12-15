@@ -15,7 +15,7 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.iec61162_450;
+package org.grad.eNav.vdesCtrl.models.vdes.iec61162_450;
 
 import org.junit.jupiter.api.Test;
 

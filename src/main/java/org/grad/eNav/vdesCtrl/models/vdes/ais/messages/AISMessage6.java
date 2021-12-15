@@ -15,60 +15,64 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.messages;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.messages;
 
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 
 /**
- * The GR-AIS Message 8 Parameters Class.
+ * The GR-AIS Message 6 Parameters Class.
  * <p>
  * This class contains all the required parameters for generating an AIS binary
  * message through the GrAisUtils class function.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class AISMessage8 extends AbstractMessage  {
+public class AISMessage6 extends AbstractMessage {
 
     // Class Variables
+    private Integer destMmsi;
     private byte[] message;
 
     /**
      * Empty Constructor.
      */
-    public AISMessage8() {
+    public AISMessage6() {
         super();
+        this.destMmsi = null;
         this.message = new byte[0];
     }
 
     /**
-     * Instantiates a  new GR-AIS Message 8 Parameters with arguments.
+     * Instantiates a new GGR-AIS Message 6 Parameters class with arguments.
      *
-     * @param mmsi    the mmsi
-     * @param message the message
+     * @param mmsi     the mmsi
+     * @param destMmsi the dest mmsi
+     * @param message  the message
      */
-    public AISMessage8(Integer mmsi, byte[] message) {
+    public AISMessage6(Integer mmsi, Integer destMmsi, byte[] message) {
         super();
         this.mmsi = mmsi;
+        this.destMmsi = destMmsi;
         this.message = message;
     }
 
     /**
-     * Gets mmsi.
+     * Gets dest mmsi.
      *
-     * @return the mmsi
+     * @return the dest mmsi
      */
-    public Integer getMmsi() {
-        return mmsi;
+    public Integer getDestMmsi() {
+        return destMmsi;
     }
 
     /**
-     * Sets mmsi.
+     * Sets dest mmsi.
      *
-     * @param mmsi the mmsi
+     * @param destMmsi the dest mmsi
      */
-    public void setMmsi(Integer mmsi) {
-        this.mmsi = mmsi;
+    public void setDestMmsi(Integer destMmsi) {
+        this.destMmsi = destMmsi;
     }
 
     /**
@@ -96,6 +100,6 @@ public class AISMessage8 extends AbstractMessage  {
      */
     @Override
     public String getBinaryMessageString() {
-        return GrAisUtils.encodeMsg8(this);
+        return GrAisUtils.encodeMsg6(this);
     }
 }

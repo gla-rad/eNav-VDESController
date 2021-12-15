@@ -15,7 +15,7 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.messages;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.messages;
 
 import _int.iho.s100gml._1.PointProperty;
 import _int.iho.s125.gml._0.*;
@@ -25,7 +25,7 @@ import net.opengis.gml._3.PointType;
 import net.opengis.gml._3.Pos;
 import org.grad.eNav.vdesCtrl.models.domain.AtonType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 

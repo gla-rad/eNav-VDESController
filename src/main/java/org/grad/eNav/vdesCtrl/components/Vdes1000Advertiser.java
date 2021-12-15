@@ -21,10 +21,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractSentence;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.sentences.TSASentence;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.sentences.TSASentenceBuilder;
+import org.grad.eNav.vdesCtrl.models.vdes.comm.VDES1000Conn;
+import org.grad.eNav.vdesCtrl.models.vdes.comm.VDESBroadcastMethod;
+import org.grad.eNav.vdesCtrl.models.vdes.iec61162_450.IEC61162_450Message;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +49,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -79,7 +86,7 @@ public class Vdes1000Advertiser {
 
     // Component Variables
     protected Station station;
-    protected DatagramSocket vdes1000Socket;
+    protected VDES1000Conn vdes1000Conn;
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -91,8 +98,11 @@ public class Vdes1000Advertiser {
     public void init(Station station) throws SocketException {
         this.station = station;
 
-        // Create the UDP Connection to the GNURadio stations
-        this.vdes1000Socket = new DatagramSocket();
+        // Create the VDES-1000 Connection
+        this.vdes1000Conn = new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
+                this.station.getId().toString(),
+                this.station.getIpAddress(),
+                this.station.getPort());
 
         // Add the Bouncy castle as a security provider to make signatures
         Security.addProvider(new BouncyCastleProvider());
@@ -105,7 +115,7 @@ public class Vdes1000Advertiser {
     @PreDestroy
     public void destroy() {
         log.info("VDES-1000 Advertiser is shutting down...");
-        this.vdes1000Socket.close();
+        this.vdes1000Conn.close();
     }
 
     /**
@@ -135,39 +145,18 @@ public class Vdes1000Advertiser {
         // Now create the AIS advertisements - wait in between
         for(AISMessage21 message: messages) {
             // First send the message right away and then check if to create a signature for it
-            this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), message);
+            this.vdes1000Conn.sendMessage(message);
+            log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
 
             // If signature messages are enabled, send one
             if(this.enableSignatures) {
-                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
+                Optional.of(message)
+                        .map(this::getSignature)
+                        .ifPresent(signature -> {
+                            this.vdes1000Conn.sendMessage(signature);
+                            log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
+                        });
             }
-        }
-    }
-
-    /**
-     * The main function that sends the UDP package to the VDES-1000 station.
-     *
-     * @param address the address to send the datagram to
-     * @param port the port to send the datagram to
-     * @param aisMessage21 the AIS message 21 to be transmitted
-     */
-    private void sendMsg21Datagram(String address, int port, AISMessage21 aisMessage21) {
-        // Sanity check
-        if(Objects.isNull(aisMessage21)) {
-            return;
-        }
-
-        // Log the operation
-        log.info("Station {} Sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
-
-        // Create and send the UDP datagram packet
-        byte[] buffer = aisMessage21.getBinaryMessage(false);
-        try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.vdes1000Socket.send(packet);
-        } catch (IOException e) {
-            log.error(e.getMessage());
         }
     }
 
@@ -176,20 +165,15 @@ public class Vdes1000Advertiser {
      * with the transmission UNIX timestamp and send this as an AIS message 6/8
      * to the VDES-1000 UDP port as well.
      *
-     * @param address the address to send the datagram to
-     * @param port the port to send the datagram to
      * @param aisMessage21 the AIS message 21 that was transmitted
      */
-    private void sendSignatureDatagram(String address, int port, AISMessage21 aisMessage21) {
+    private AbstractMessage getSignature(AISMessage21 aisMessage21) {
         // Sanity check
         if(Objects.isNull(aisMessage21)) {
-            return;
+            return null;
         }
 
-        // Construct the NMEA sentence of message 21 to be signed
-        log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", new String(aisMessage21.getBinaryMessage(true))));
-
-        // Construct the UDP message for the VDES station
+        // Construct the signature message for the VDES station
         final AbstractMessage abstractMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
@@ -204,21 +188,11 @@ public class Vdes1000Advertiser {
                     .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature));
         } catch (NoSuchAlgorithmException | IOException ex) {
             log.error(ex.getMessage());
-            return;
+            return null;
         }
 
-        // Create and send the UDP datagram packet
-        byte[] buffer = abstractMessage.getBinaryMessage(false);
-        try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.vdes1000Socket.send(packet);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-
-        // Generate some debug information
-        log.debug(String.format("Signature NMEA sentence sent: %s", new String(abstractMessage.getBinaryMessage(true))));
+        // Return the constructed message
+        return abstractMessage;
     }
 
 }

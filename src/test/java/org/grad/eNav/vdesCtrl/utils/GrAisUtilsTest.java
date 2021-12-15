@@ -18,10 +18,9 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.models.domain.*;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.sentences.VDMSentence;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +28,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 

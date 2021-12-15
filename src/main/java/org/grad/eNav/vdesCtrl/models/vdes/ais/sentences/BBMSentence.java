@@ -15,17 +15,17 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractSentence;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractSentence;
 
 import java.util.Optional;
 
 /**
- * The VDM Sentence Class.
+ * The BBM Sentence Class.
  * <p>
- * Implements sentences for the AIS VHF data-link messages.
+ * Implements the AIS binary broadcast message.
  * </p>
  * <p>
  * The Message Definition contains the following fields:
@@ -39,17 +39,26 @@ import java.util.Optional;
  *     <br/> Total number of sentences needed to transfer the message (1-99).
  * </ul>
  * <ul>
- *     sentenceNum : int
+ *     sentenceNum : int, optional
  *     <br/> Sentence number (1-99).
  * </ul>
  * <ul>
- *     sequenceId : int, optional
+ *     sequenceId : int
  *     <br/> Sequential message identifier (0-9).
  * </ul>
  * <ul>
  *     channel : int
- *     <br/> AIS channel ('A' or 'B').
+ *     <br/> AIS channel for broadcast of the message:
+ *     <li>0: No preference
+ *     <li>1: Channel A / AIS 1</li>
+ *     <li>2: Channel B / AIS 2</li>
+ *     <li>3: Both channels.</li>
  * </ul>
+ * <ul>
+ *     messageId : int
+ *     <br/> Message ID as per Rec. ITU-R M.1371.
+ * </ul>
+ * <ul>
  *     payload : str
  *     <br/> ASM payload (the Binary Data portion of the message).
  * </ul>
@@ -60,54 +69,56 @@ import java.util.Optional;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class VDMSentence extends AbstractSentence {
+public class BBMSentence extends AbstractSentence {
 
     /**
      * The constant FORMATTER_CODE.
      */
-    public static final String FORMATTER_CODE = "VDM";
+    public static final String FORMATTER_CODE = "BBM";
 
     // Class Variables
     private int sentencesTotal;
     private int  sentenceNum;
     private Optional<Integer>  sequenceId;
     private AISChannel channel;
+    private int messageId;
     private byte[] payload;
 
     /**
-     * Instantiates a new VDM sentence.
+     * Instantiates a new BBM sentence.
      *
      * @param sentencesTotal the sentences total
      * @param sentenceNum    the sentence num
      * @param channel        the channel
+     * @param messageId      the message id
      * @param payload        the payload
      */
-    public VDMSentence(int sentencesTotal,
-                       int sentenceNum,
-                       AISChannel channel,
-                       byte[] payload) {
-        this("AI", sentencesTotal, sentenceNum, channel, payload);
+    public BBMSentence(int sentencesTotal, int sentenceNum, AISChannel channel, int messageId, byte[] payload) {
+        this("AI", sentencesTotal, sentenceNum, channel, messageId, payload);
     }
 
     /**
-     * Instantiates a new VDM sentence.
+     * Instantiates a new BBM sentence.
      *
      * @param talkerId       the talker id
      * @param sentencesTotal the sentences total
      * @param sentenceNum    the sentence num
      * @param channel        the channel
+     * @param messageId      the message id
      * @param payload        the payload
      */
-    public VDMSentence(String talkerId,
+    public BBMSentence(String talkerId,
                        int sentencesTotal,
                        int sentenceNum,
                        AISChannel channel,
+                       int messageId,
                        byte[] payload) {
         super(talkerId, FORMATTER_CODE);
         this.sentencesTotal = sentencesTotal;
         this.sentenceNum = sentenceNum;
         this.sequenceId = Optional.empty();
         this.channel = channel;
+        this.messageId = messageId;
         this.payload = payload;
     }
 
@@ -184,9 +195,27 @@ public class VDMSentence extends AbstractSentence {
     }
 
     /**
-     * Get payload byte [ ].
+     * Gets message id.
      *
-     * @return the byte [ ]
+     * @return the message id
+     */
+    public int getMessageId() {
+        return messageId;
+    }
+
+    /**
+     * Sets message id.
+     *
+     * @param messageId the message id
+     */
+    public void setMessageId(int messageId) {
+        this.messageId = messageId;
+    }
+
+    /**
+     * Gets payload.
+     *
+     * @return the payload
      */
     public byte[] getPayload() {
         return payload;
@@ -223,13 +252,15 @@ public class VDMSentence extends AbstractSentence {
                 .append(this.talkerId)
                 .append(this.formatterCode)
                 .append(",")
-                .append(Optional.ofNullable(this.sentencesTotal).map(String::valueOf).orElse(""))
+                .append(this.sentencesTotal)
                 .append(",")
-                .append(Optional.ofNullable(this.sentenceNum).map(String::valueOf).orElse(""))
+                .append(this.sentenceNum)
                 .append(",")
                 .append(this.sequenceId.map(String::valueOf).orElse(""))
                 .append(",")
-                .append(Optional.ofNullable(this.channel).map(AISChannel::getChannel).orElse(""))
+                .append(Optional.ofNullable(this.channel).map(AISChannel::getIndex).orElse(0))
+                .append(",")
+                .append(this.messageId)
                 .append(",")
                 .append(Optional.ofNullable(this.payload).map(String::new).orElse(""))
                 .append(",")

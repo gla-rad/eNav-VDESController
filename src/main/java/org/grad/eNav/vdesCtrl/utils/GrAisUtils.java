@@ -18,17 +18,14 @@ package org.grad.eNav.vdesCtrl.utils;
 
 import com.google.common.base.Strings;
 import com.google.common.primitives.Longs;
-import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
-import org.grad.eNav.vdesCtrl.models.txrx.ais.sentences.VDMSentence;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
 /**
  * The GNURadio AIS Utility Class.

@@ -15,7 +15,7 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx;
+package org.grad.eNav.vdesCtrl.models.vdes;
 
 import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
 

@@ -15,7 +15,7 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.junit.jupiter.api.Test;
@@ -30,14 +30,14 @@ class BBMSentenceTest {
      */
     @Test
     public void testConstructor() {
-        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, "msgId", new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
+        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, 8, new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
         assertEquals("AI", bbmSentence.getTalkerId());
         assertEquals("BBM", bbmSentence.getFormatterCode());
         assertEquals(10, bbmSentence.getSentencesTotal());
         assertEquals(1, bbmSentence.getSentenceNum());
         assertTrue(bbmSentence.getSequenceId().isEmpty());
         assertEquals(AISChannel.A, bbmSentence.getChannel());
-        assertEquals("msgId", bbmSentence.getMessageId());
+        assertEquals(8, bbmSentence.getMessageId());
         assertEquals(5, bbmSentence.getPayload().length);
         assertEquals(2, bbmSentence.getNoFillBits());
     }
@@ -48,14 +48,14 @@ class BBMSentenceTest {
      */
     @Test
     public void testConstructorWithTalkerId() {
-        BBMSentence bbmSentence = new BBMSentence("CUSTOM", 10, 1, AISChannel.A, "msgId", new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
+        BBMSentence bbmSentence = new BBMSentence("CUSTOM", 10, 1, AISChannel.A, 8, new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
         assertEquals("CUSTOM", bbmSentence.getTalkerId());
         assertEquals("BBM", bbmSentence.getFormatterCode());
         assertEquals(10, bbmSentence.getSentencesTotal());
         assertEquals(1, bbmSentence.getSentenceNum());
         assertTrue(bbmSentence.getSequenceId().isEmpty());
         assertEquals(AISChannel.A, bbmSentence.getChannel());
-        assertEquals("msgId", bbmSentence.getMessageId());
+        assertEquals(8, bbmSentence.getMessageId());
         assertEquals(5, bbmSentence.getPayload().length);
         assertEquals(2, bbmSentence.getNoFillBits());
     }
@@ -66,8 +66,8 @@ class BBMSentenceTest {
      */
     @Test
     public void testSentenceToString() {
-        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, "msgId", new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
-        assertEquals("!AIBBM,10,1,,1,msgId,abcde,2", bbmSentence.toString());
+        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, 8, new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
+        assertEquals("!AIBBM,10,1,,1,8,abcde,2", bbmSentence.toString());
     }
 
     /**
@@ -76,8 +76,8 @@ class BBMSentenceTest {
      */
     @Test
     public void testSentenceToStringWithChecksum() {
-        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, "msgId", new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
-        assertEquals("!AIBBM,10,1,,1,msgId,abcde,2*6F", bbmSentence.toStringWithChecksum());
+        BBMSentence bbmSentence = new BBMSentence(10, 1, AISChannel.A, 8, new byte[]{0x61, 0x62, 0x63, 0x64, 0x65});
+        assertEquals("!AIBBM,10,1,,1,8,abcde,2*03", bbmSentence.toStringWithChecksum());
     }
 
 }

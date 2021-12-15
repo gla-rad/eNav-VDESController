@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.models.domain;
 
-import org.grad.eNav.vdesCtrl.models.txrx.ais.messages.AISMessage8;
+import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
 import org.grad.eNav.vdesCtrl.utils.StringBinUtils;
 import org.junit.jupiter.api.Test;
 

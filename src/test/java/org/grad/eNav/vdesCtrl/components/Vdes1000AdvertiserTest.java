@@ -24,6 +24,7 @@ import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.vdes.comm.VDES1000Conn;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,14 +42,14 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -78,7 +79,7 @@ class Vdes1000AdvertiserTest {
     private Station station;
     private S125Node s125Node;
     private byte[] signature;
-    private DatagramSocket vdes1000Socket;
+    private VDES1000Conn vdes1000Conn;
 
     /**
      * Common setup for all the tests.
@@ -114,7 +115,7 @@ class Vdes1000AdvertiserTest {
         this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
 
         // Also mock a UDP socket that does nothing, to be used in the tests
-        this.vdes1000Socket = mock(DatagramSocket.class);
+        this.vdes1000Conn = mock(VDES1000Conn.class);
     }
 
     /**
@@ -126,7 +127,7 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.init(this.station);
 
         assertEquals(this.station, this.vdes1000Advertiser.station);
-        assertNotNull(this.vdes1000Advertiser.vdes1000Socket);
+        assertNotNull(this.vdes1000Advertiser.vdes1000Conn);
     }
 
     /**
@@ -136,13 +137,13 @@ class Vdes1000AdvertiserTest {
     @Test
     void testDestroy() {
         // Initialise the advertiser
-        this.vdes1000Advertiser.vdes1000Socket = this.vdes1000Socket;
+        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
 
         // Perform the service class
         this.vdes1000Advertiser.destroy();
 
         // Assert that the UDP socket was closed
-        verify(this.vdes1000Socket, times(1)).close();
+        verify(this.vdes1000Conn, times(1)).close();
     }
 
     /**
@@ -156,13 +157,13 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Socket = this.vdes1000Socket;
+        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = false;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Socket, times(1)).send(any());
+        verify(this.vdes1000Conn, times(1)).sendMessage(any());
     }
 
     /**
@@ -178,13 +179,13 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Socket = this.vdes1000Socket;
+        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Socket, times(2)).send(any());
+        verify(this.vdes1000Conn, times(2)).sendMessage(any());
     }
 
     /**
@@ -198,7 +199,7 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Socket = this.vdes1000Socket;
+        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
 
@@ -206,7 +207,7 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure no UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Socket, never()).send(any());
+        verify(this.vdes1000Conn, never()).sendMessage(any());
     }
 
 }

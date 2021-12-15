@@ -15,24 +15,24 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.asm.sentences;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractSentence;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractSentence;
 
 import java.util.Optional;
 
 /**
- * The type ABB Sentence Class.
+ * The VDM Sentence Class.
  * <p>
- * Implements the ASM broadcast message.
+ * Implements sentences for the AIS VHF data-link messages.
  * </p>
  * <p>
  * The Message Definition contains the following fields:
  * </p>
  * <ul>
  *     TalkerId : str, optional
- *     <<br/> Talker ID. The default is "AI".
+ *     <br/> Talker ID. The default is "AI".
  * </ul>
  * <ul>
  *     sentencesTotal : int
@@ -43,36 +43,13 @@ import java.util.Optional;
  *     <br/> Sentence number (1-99).
  * </ul>
  * <ul>
- *     sequenceId : int
+ *     sequenceId : int, optional
  *     <br/> Sequential message identifier (0-9).
  * </ul>
  * <ul>
- *     sourceId : int
- *     <br/> Source ID (10 digits as per the draft IEC VDES-ASM PAS; VDES1000
- *     <br/> Currently only supports 9 digits).
- * </ul>
- * <ul>
  *     channel : int
- *     <br/> AIS channel for broadcast of the message:
- *     <li>0: No preference
- *     <li>1: ASM 1</li>
- *     <li>2: ASM 2</li>
- *     <li>3: Both channels.</li>
+ *     <br/> AIS channel ('A' or 'B').
  * </ul>
- * <ul>
- *     asmId : str, optional
- *     <br/> ASM message ID as per Rec. ITU-R M.2092. Reserved for future use;
- *     <br/> shall be set to null (""). The default is "".
- * </ul>
- * <ul>
- *     transmissionFormat : int
- *     <br/> Transmission format:
- *     <li>0: No error coding</li>
- *     <li>1: 3/4 FEC</li>
- *     <li>2: ASM SAT uplink message</li>
- *     <li>3-9: Reserved for future use.</li>
- * </ul>
- * <ul>
  *     payload : str
  *     <br/> ASM payload (the Binary Data portion of the message).
  * </ul>
@@ -83,68 +60,54 @@ import java.util.Optional;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class ABBSentence extends AbstractSentence {
+public class VDMSentence extends AbstractSentence {
 
     /**
      * The constant FORMATTER_CODE.
      */
-    public static final String FORMATTER_CODE = "ABB";
+    public static final String FORMATTER_CODE = "VDM";
 
     // Class Variables
     private int sentencesTotal;
     private int  sentenceNum;
-    private int  sequenceId;
-    private Optional<Integer> sourceId;
+    private Optional<Integer>  sequenceId;
     private AISChannel channel;
-    private Optional<String> asmId;
-    private int transmissionFormat;
     private byte[] payload;
 
     /**
-     * Instantiates a new ABB sentence.
+     * Instantiates a new VDM sentence.
      *
-     * @param sentencesTotal     the sentences total
-     * @param sentenceNum        the sentence num
-     * @param sequenceId         the sequence id
-     * @param channel            the channel
-     * @param transmissionFormat the transmission format
-     * @param payload            the payload
+     * @param sentencesTotal the sentences total
+     * @param sentenceNum    the sentence num
+     * @param channel        the channel
+     * @param payload        the payload
      */
-    public ABBSentence(int sentencesTotal,
+    public VDMSentence(int sentencesTotal,
                        int sentenceNum,
-                       int sequenceId,
                        AISChannel channel,
-                       int transmissionFormat,
                        byte[] payload) {
-        this("AI", sentencesTotal, sentenceNum, sequenceId, channel, transmissionFormat, payload);
+        this("AI", sentencesTotal, sentenceNum, channel, payload);
     }
 
     /**
-     * Instantiates a new ABB sentence.
+     * Instantiates a new VDM sentence.
      *
-     * @param talkerId           the talker id
-     * @param sentencesTotal     the sentences total
-     * @param sentenceNum        the sentence num
-     * @param sequenceId         the sequence id
-     * @param channel            the channel
-     * @param transmissionFormat the transmission format
-     * @param payload            the payload
+     * @param talkerId       the talker id
+     * @param sentencesTotal the sentences total
+     * @param sentenceNum    the sentence num
+     * @param channel        the channel
+     * @param payload        the payload
      */
-    public ABBSentence(String talkerId,
+    public VDMSentence(String talkerId,
                        int sentencesTotal,
                        int sentenceNum,
-                       int sequenceId,
                        AISChannel channel,
-                       int transmissionFormat,
                        byte[] payload) {
         super(talkerId, FORMATTER_CODE);
         this.sentencesTotal = sentencesTotal;
         this.sentenceNum = sentenceNum;
-        this.sequenceId = sequenceId;
-        this.sourceId = Optional.empty();
+        this.sequenceId = Optional.empty();
         this.channel = channel;
-        this.asmId = Optional.empty();
-        this.transmissionFormat = transmissionFormat;
         this.payload = payload;
     }
 
@@ -189,7 +152,7 @@ public class ABBSentence extends AbstractSentence {
      *
      * @return the sequence id
      */
-    public int getSequenceId() {
+    public Optional<Integer> getSequenceId() {
         return sequenceId;
     }
 
@@ -198,26 +161,8 @@ public class ABBSentence extends AbstractSentence {
      *
      * @param sequenceId the sequence id
      */
-    public void setSequenceId(int sequenceId) {
+    public void setSequenceId(Optional<Integer> sequenceId) {
         this.sequenceId = sequenceId;
-    }
-
-    /**
-     * Gets source id.
-     *
-     * @return the source id
-     */
-    public Optional<Integer> getSourceId() {
-        return sourceId;
-    }
-
-    /**
-     * Sets source id.
-     *
-     * @param sourceId the source id
-     */
-    public void setSourceId(Optional<Integer> sourceId) {
-        this.sourceId = sourceId;
     }
 
     /**
@@ -236,24 +181,6 @@ public class ABBSentence extends AbstractSentence {
      */
     public void setChannel(AISChannel channel) {
         this.channel = channel;
-    }
-
-    /**
-     * Gets transmission format.
-     *
-     * @return the transmission format
-     */
-    public int getTransmissionFormat() {
-        return transmissionFormat;
-    }
-
-    /**
-     * Sets transmission format.
-     *
-     * @param transmissionFormat the transmission format
-     */
-    public void setTransmissionFormat(int transmissionFormat) {
-        this.transmissionFormat = transmissionFormat;
     }
 
     /**
@@ -284,26 +211,8 @@ public class ABBSentence extends AbstractSentence {
     }
 
     /**
-     * Gets asm id.
-     *
-     * @return the asm id
-     */
-    public Optional<String> getAsmId() {
-        return asmId;
-    }
-
-    /**
-     * Sets asm id.
-     *
-     * @param asmId the asm id
-     */
-    public void setAsmId(Optional<String> asmId) {
-        this.asmId = asmId;
-    }
-
-    /**
      * Returns the string representation of the sentence, formatted as per
-     * Sentence string, formatted as per the draft IEC VDES ASM PAS, Oct. 2020.
+     * IEC 62320-1.
      *
      * @return the string representation of the sentence
      */
@@ -314,19 +223,13 @@ public class ABBSentence extends AbstractSentence {
                 .append(this.talkerId)
                 .append(this.formatterCode)
                 .append(",")
-                .append(String.format("%02d", this.sentencesTotal))
+                .append(Optional.ofNullable(this.sentencesTotal).map(String::valueOf).orElse(""))
                 .append(",")
-                .append(String.format("%02d", this.sentenceNum))
+                .append(Optional.ofNullable(this.sentenceNum).map(String::valueOf).orElse(""))
                 .append(",")
-                .append(this.sequenceId)
+                .append(this.sequenceId.map(String::valueOf).orElse(""))
                 .append(",")
-                .append(this.sourceId.map(String::valueOf).orElse(""))
-                .append(",")
-                .append(Optional.ofNullable(this.channel).map(AISChannel::getIndex).orElse(0))
-                .append(",")
-                .append(this.asmId.orElse(""))
-                .append(",")
-                .append(this.transmissionFormat)
+                .append(Optional.ofNullable(this.channel).map(AISChannel::getChannel).orElse(""))
                 .append(",")
                 .append(Optional.ofNullable(this.payload).map(String::new).orElse(""))
                 .append(",")

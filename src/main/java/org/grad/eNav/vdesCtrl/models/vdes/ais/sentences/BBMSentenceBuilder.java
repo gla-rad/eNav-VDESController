@@ -15,66 +15,76 @@
  *
  */
 
-package org.grad.eNav.vdesCtrl.models.txrx.ais.sentences;
+package org.grad.eNav.vdesCtrl.models.vdes.ais.sentences;
 
 import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
-import org.grad.eNav.vdesCtrl.models.txrx.AbstractMessage;
+import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * The VDM Sentence Builder Class.
- *
- * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
- */
-public class VDMSentenceBuilder {
+public class BBMSentenceBuilder {
 
     /**
-     * Maximum number of characters in a payload for the VDM sentence;
+     * Maximum number of characters per payload for the BBM sentence;
      * Assuming the max number of characters per sentence is 82 (as per
      * IEC 61162-1) and that all sentence fields are populated (no null
      * fields).
-     * Can be up to 62 under certain circumstances.
+     * Can be up to 60 if the follow-on sentences if fields 4 and 5 are
+     * set to null.
+     * Note: IEC 61162-1 states (apparently mistakenly) that this should be
+     * 8, not 57.
      */
-    public static final int MAX_PAYLOAD_CHAR = 60;
+    public static final int MAX_PAYLOAD_CHAR = 57;
 
     // Class Variables
     private Integer sequenceId;
     private AISChannel channel;
+    private int messageId;
     private AbstractMessage message;
 
     /**
-     * The sequence ID of the VDM sentence builder.
+     * The sequence ID of the BBM sentence builder.
      *
      * @param sequenceId the sequence id
-     * @return the vdm sentence builder
+     * @return the bbm sentence builder
      */
-    public VDMSentenceBuilder sequenceId(Integer sequenceId) {
+    public BBMSentenceBuilder sequenceId(Integer sequenceId) {
         this.sequenceId = sequenceId;
         return this;
     }
 
     /**
-     * The channel of the VDM sentence builder.
+     * The channel of the BBM sentence builder.
      *
      * @param channel the channel
-     * @return the vdm sentence builder
+     * @return the bbm sentence builder
      */
-    public VDMSentenceBuilder channel(AISChannel channel) {
+    public BBMSentenceBuilder channel(AISChannel channel) {
         this.channel = channel;
         return this;
     }
 
     /**
-     * The message of the VDM sentence builder.
+     * The messageId of the BBM sentence builder.
+     *
+     * @param messageId the message Id
+     * @return the bbm sentence builder
+     */
+    public BBMSentenceBuilder channel(int messageId) {
+        this.messageId = messageId;
+        return this;
+    }
+
+    /**
+     * The message of the BBM sentence builder.
      *
      * @param message the message
-     * @return the vdm sentence builder
+     * @return the bbm sentence builder
      */
-    public VDMSentenceBuilder message(AbstractMessage message) {
+    public BBMSentenceBuilder message(AbstractMessage message) {
         this.message = message;
         return this;
     }
@@ -84,22 +94,23 @@ public class VDMSentenceBuilder {
      *
      * @return the list
      */
-    public List<VDMSentence> build() {
+    public List<BBMSentence> build() {
         // Initial calculations
         byte[] payload = this.message.getBinaryMessage(true);
         int sentencesTotal = (int) Math.ceil(payload.length / MAX_PAYLOAD_CHAR);
 
         // Initialise the output list
-        List<VDMSentence> sentences = new ArrayList<>();
+        List<BBMSentence> sentences = new ArrayList<>();
         for(int sentenceNum=0; sentenceNum<sentencesTotal; sentenceNum++) {
             int start = sentenceNum*MAX_PAYLOAD_CHAR;
             int stop = Math.min(start + MAX_PAYLOAD_CHAR, payload.length);
-            VDMSentence vdmSentence = new VDMSentence(sentencesTotal, sentenceNum, this.channel, Arrays.copyOfRange(payload,start, stop));
-            vdmSentence.setSequenceId(Optional.ofNullable(this.sequenceId));
-            sentences.add(vdmSentence);
+            BBMSentence bbmSentence = new BBMSentence(sentencesTotal, sentenceNum, this.channel, this.messageId, Arrays.copyOfRange(payload,start, stop));
+            bbmSentence.setSequenceId(Optional.ofNullable(this.sequenceId));
+            sentences.add(bbmSentence);
         }
 
         // Returns the constructed sentences
         return sentences;
     }
+
 }
