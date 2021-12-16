@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 /**
  * The GNURadio AIS Utility Class.
@@ -187,7 +188,7 @@ public class GrAisUtils {
      */
     public static String calculateIECChecksum(String sentence) {
         // Remove the initial "!" character if found
-        String clearedSentence =  Strings.nullToEmpty(sentence).replaceAll("^!", "");
+        String clearedSentence = Optional.ofNullable(sentence).orElse("").replaceAll("^!", "");
         int sum = 0;
         char[] chars = clearedSentence.toCharArray();
         for(char c : chars) {

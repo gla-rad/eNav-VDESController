@@ -100,7 +100,7 @@ public class Vdes1000Advertiser {
 
         // Create the VDES-1000 Connection
         this.vdes1000Conn = new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
-                this.station.getId().toString(),
+                "AI"+String.format("%04d", this.station.getId()),
                 this.station.getIpAddress(),
                 this.station.getPort());
 
@@ -145,7 +145,7 @@ public class Vdes1000Advertiser {
         // Now create the AIS advertisements - wait in between
         for(AISMessage21 message: messages) {
             // First send the message right away and then check if to create a signature for it
-            this.vdes1000Conn.sendMessage(message);
+            this.vdes1000Conn.sendMessage(message, this.station.getChannel());
             log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
 
             // If signature messages are enabled, send one
@@ -153,7 +153,7 @@ public class Vdes1000Advertiser {
                 Optional.of(message)
                         .map(this::getSignature)
                         .ifPresent(signature -> {
-                            this.vdes1000Conn.sendMessage(signature);
+                            this.vdes1000Conn.sendMessage(signature, this.station.getChannel());
                             log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
                         });
             }

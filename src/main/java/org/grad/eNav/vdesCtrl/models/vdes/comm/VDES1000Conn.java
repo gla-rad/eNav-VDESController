@@ -18,6 +18,7 @@
 package org.grad.eNav.vdesCtrl.models.vdes.comm;
 
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
 import org.grad.eNav.vdesCtrl.models.vdes.AbstractSentence;
 import org.grad.eNav.vdesCtrl.models.vdes.ais.sentences.BBMSentence;
@@ -65,7 +66,7 @@ public class VDES1000Conn {
     public VDES1000Conn(VDESBroadcastMethod broadcastMethod, String sourceId, String address, int port) throws SocketException {
         // Initialise the connections
         this.vdes1000Socket = new DatagramSocket();
-        this.groupId = 0;
+        this.groupId = 1;
         this.vdmSequentialId = 0;
         this.bbmSequentialId = 0;
 
@@ -124,12 +125,12 @@ public class VDES1000Conn {
      *
      * @param message the message to be sent
      */
-    public void sendMessage(AbstractMessage message) {
+    public void sendMessage(AbstractMessage message, AISChannel channel) {
         if(this.broadcastMethod == VDESBroadcastMethod.TSA_VDM) {
-            this.sendMessageWithTSAVDM(message);
+            this.sendMessageWithTSAVDM(message, channel);
         }
         else if(this.broadcastMethod == VDESBroadcastMethod.BBM) {
-            this.sendMessageWithBBM(message);
+            this.sendMessageWithBBM(message, channel);
         } else {
             throw new RuntimeException("An invalid VDES-1000 broadcast type was detected!");
         }
@@ -141,7 +142,7 @@ public class VDES1000Conn {
      *
      * @param message the message to be sent
      */
-    protected void sendMessageWithTSAVDM(AbstractMessage message) {
+    protected void sendMessageWithTSAVDM(AbstractMessage message, AISChannel channel) {
         // Sanity check
         if(Objects.isNull(message)) {
             return;
@@ -150,6 +151,7 @@ public class VDES1000Conn {
         // First build the TSA sentence, that contains all the associated VDMs
         TSASentence tsaSentence = new TSASentenceBuilder()
                 .vdmLink(this.vdmSequentialId)
+                .channel(channel)
                 .message(message)
                 .build();
 
@@ -171,7 +173,7 @@ public class VDES1000Conn {
      *
      * @param message the message to be sent
      */
-    protected void sendMessageWithBBM(AbstractMessage message) {
+    protected void sendMessageWithBBM(AbstractMessage message, AISChannel channel) {
         // Sanity check
         if(Objects.isNull(message)) {
             return;
@@ -179,13 +181,14 @@ public class VDES1000Conn {
 
         // First build the BBM sentences
         List<BBMSentence> bbmSentences = new BBMSentenceBuilder()
-                .sequenceId(this.vdmSequentialId)
+                .sequenceId(this.bbmSequentialId)
+                .channel(channel)
                 .message(message)
                 .build();
 
         // If this is a multi-sequence message increase the sequential ID
         if(bbmSentences.size() > 0) {
-            this.vdmSequentialId = (this.vdmSequentialId++)%10;
+            this.bbmSequentialId = (this.bbmSequentialId++)%10;
         }
 
         // And the all the associated BBMs
@@ -207,13 +210,13 @@ public class VDES1000Conn {
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(sentence -> new IEC61162_450Message(sentences.size(),
-                        sentences.indexOf(sentence),
+                        sentences.indexOf(sentence)+1,
                         this.groupId,
                         this.sourceId,
                         sentence.toStringWithChecksum())
                 )
                 .forEach(this::sendIEC61162_450);
-        this.groupId = (this.groupId++)%99;
+        this.groupId = (this.groupId+1)%99;
     }
 
     /**
@@ -228,10 +231,12 @@ public class VDES1000Conn {
         }
 
         // Create and send the UDP datagram packet
-        byte[] buffer = iec61162_450Message.toString().getBytes();
         try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
+            DatagramPacket packet = new DatagramPacket(
+                    iec61162_450Message.toString().getBytes(),
+                    iec61162_450Message.toString().length(),
+                    InetAddress.getByName(address),
+                    port);
             this.vdes1000Socket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());

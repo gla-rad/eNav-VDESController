@@ -229,7 +229,7 @@ public class VDMSentence extends AbstractSentence {
                 .append(",")
                 .append(this.sequenceId.map(String::valueOf).orElse(""))
                 .append(",")
-                .append(Optional.ofNullable(this.channel).map(AISChannel::getChannel).orElse(""))
+                .append(Optional.ofNullable(this.channel).map(AISChannel::getChannel).orElse("A"))
                 .append(",")
                 .append(Optional.ofNullable(this.payload).map(String::new).orElse(""))
                 .append(",")

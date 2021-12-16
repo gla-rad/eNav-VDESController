@@ -44,7 +44,7 @@ class IEC61162_450MessageTest {
     @Test
     public void testMessageToString() {
         IEC61162_450Message message = new IEC61162_450Message(1, 2,3 , "source", "sentence");
-        assertEquals("\\g:1-2-3,s:source*15\\sentence", message.toString());
+        assertEquals("\\g:1-2-3,s:source*15\\sentence\r\n", message.toString());
     }
 
 }

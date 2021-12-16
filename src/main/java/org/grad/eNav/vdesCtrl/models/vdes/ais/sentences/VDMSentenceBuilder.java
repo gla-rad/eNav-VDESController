@@ -87,14 +87,14 @@ public class VDMSentenceBuilder {
     public List<VDMSentence> build() {
         // Initial calculations
         byte[] payload = this.message.getBinaryMessage(true);
-        int sentencesTotal = (int) Math.ceil(payload.length / MAX_PAYLOAD_CHAR);
+        int sentencesTotal = (int) Math.ceil((double)payload.length / (double)MAX_PAYLOAD_CHAR);
 
         // Initialise the output list
         List<VDMSentence> sentences = new ArrayList<>();
         for(int sentenceNum=0; sentenceNum<sentencesTotal; sentenceNum++) {
             int start = sentenceNum*MAX_PAYLOAD_CHAR;
             int stop = Math.min(start + MAX_PAYLOAD_CHAR, payload.length);
-            VDMSentence vdmSentence = new VDMSentence(sentencesTotal, sentenceNum, this.channel, Arrays.copyOfRange(payload,start, stop));
+            VDMSentence vdmSentence = new VDMSentence(sentencesTotal, sentenceNum+1, this.channel, Arrays.copyOfRange(payload,start, stop));
             vdmSentence.setSequenceId(Optional.ofNullable(this.sequenceId));
             sentences.add(vdmSentence);
         }

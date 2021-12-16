@@ -163,7 +163,7 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Conn, times(1)).sendMessage(any());
+        verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
     }
 
     /**
@@ -185,7 +185,7 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Conn, times(2)).sendMessage(any());
+        verify(this.vdes1000Conn, times(2)).sendMessage(any(), eq(this.station.getChannel()));
     }
 
     /**
@@ -207,7 +207,7 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure no UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Conn, never()).sendMessage(any());
+        verify(this.vdes1000Conn, never()).sendMessage(any(), eq(this.station.getChannel()));
     }
 
 }

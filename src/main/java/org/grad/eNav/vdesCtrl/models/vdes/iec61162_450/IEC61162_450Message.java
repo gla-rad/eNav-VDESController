@@ -178,6 +178,7 @@ public class IEC61162_450Message {
                 .append(tagChecksum)
                 .append("\\")
                 .append(this.sentence)
+                .append("\r\n")
                 .toString();
     }
 }
