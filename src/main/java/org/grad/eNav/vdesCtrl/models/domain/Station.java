@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
+import org.grad.vdes1000.generic.AISChannel;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.search.engine.backend.types.Sortable;

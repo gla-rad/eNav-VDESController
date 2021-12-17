@@ -20,12 +20,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
-import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
+import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.grad.vdes1000.ais.messages.AISMessage21;
+import org.grad.vdes1000.ais.messages.AISMessage6;
+import org.grad.vdes1000.ais.messages.AISMessage8;
+import org.grad.vdes1000.generic.AbstractMessage;
+import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -137,7 +138,7 @@ public class GrAisAdvertiser {
                 .filter(Objects::nonNull)
                 .map(s125 -> {
                     try {
-                        return new AISMessage21(s125);
+                        return S100Utils.s125ToAisMessage21(s125);
                     }
                     catch (JAXBException ex) {
                         log.error(ex.getMessage());

@@ -20,13 +20,13 @@ package org.grad.eNav.vdesCtrl.components;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
-import org.grad.eNav.vdesCtrl.models.domain.AISChannel;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.models.vdes.comm.VDES1000Conn;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.grad.vdes1000.comm.VDES1000Conn;
+import org.grad.vdes1000.generic.AISChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -122,7 +123,7 @@ class Vdes1000AdvertiserTest {
      * Test that the GNURadio AIS advertiser can initialise correctly.
      */
     @Test
-    void testInit() throws SocketException {
+    void testInit() throws SocketException, UnknownHostException {
         // Perform the component call
         this.vdes1000Advertiser.init(this.station);
 

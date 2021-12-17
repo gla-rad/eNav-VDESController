@@ -21,18 +21,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.vdes.AbstractMessage;
-import org.grad.eNav.vdesCtrl.models.vdes.AbstractSentence;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage21;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage6;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.messages.AISMessage8;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.sentences.TSASentence;
-import org.grad.eNav.vdesCtrl.models.vdes.ais.sentences.TSASentenceBuilder;
-import org.grad.eNav.vdesCtrl.models.vdes.comm.VDES1000Conn;
-import org.grad.eNav.vdesCtrl.models.vdes.comm.VDESBroadcastMethod;
-import org.grad.eNav.vdesCtrl.models.vdes.iec61162_450.IEC61162_450Message;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
-import org.grad.eNav.vdesCtrl.utils.GrAisUtils;
+import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.grad.vdes1000.ais.messages.AISMessage21;
+import org.grad.vdes1000.ais.messages.AISMessage6;
+import org.grad.vdes1000.ais.messages.AISMessage8;
+import org.grad.vdes1000.comm.VDES1000Conn;
+import org.grad.vdes1000.comm.VDESBroadcastMethod;
+import org.grad.vdes1000.generic.AbstractMessage;
+import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -43,13 +40,11 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,13 +90,13 @@ public class Vdes1000Advertiser {
      *
      * @param station the station to send the advertisements from
      */
-    public void init(Station station) throws SocketException {
+    public void init(Station station) throws SocketException, UnknownHostException {
         this.station = station;
 
         // Create the VDES-1000 Connection
         this.vdes1000Conn = new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
                 "AI"+String.format("%04d", this.station.getId()),
-                this.station.getIpAddress(),
+                InetAddress.getByName(this.station.getIpAddress()),
                 this.station.getPort());
 
         // Add the Bouncy castle as a security provider to make signatures
@@ -132,7 +127,7 @@ public class Vdes1000Advertiser {
                 .filter(Objects::nonNull)
                 .map(s125 -> {
                     try {
-                        return new AISMessage21(s125);
+                        return S100Utils.s125ToAisMessage21(s125);
                     }
                     catch (JAXBException ex) {
                         log.error(ex.getMessage());

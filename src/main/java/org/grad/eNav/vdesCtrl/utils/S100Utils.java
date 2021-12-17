@@ -16,11 +16,23 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iho.s125.gml._0.DataSet;
+import _int.iho.s100.gml.base._1_0.PointProperty;
+import _int.iho.s100.gml.base._1_0.PointType;
+import _int.iho.s100.gml.base._1_0_Ext.PointCurveSurfaceProperty;
+import _int.iho.s125.gml._0.*;
+import _net.opengis.gml.profiles.AbstractFeatureMemberType;
+import _net.opengis.gml.profiles.Pos;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.vdes1000.ais.messages.AISMessage21;
+import org.grad.vdes1000.generic.AtonType;
 
 import javax.xml.bind.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * The S-100 Utility Class.
@@ -72,6 +84,71 @@ public class S100Utils {
 
         // And translate
         return (DataSet) JAXBIntrospector.getValue(jaxbUnmarshaller.unmarshal(is));
+    }
+
+    /**
+     * Constructors from an S125Node object.
+     *
+     * @param s125Node the S125Node object
+     * @throws JAXBException when the S125Node XML content cannot be parsed
+     */
+    public static AISMessage21 s125ToAisMessage21(S125Node s125Node) throws JAXBException {
+        // Default at first
+        AISMessage21 aisMessage21 = new AISMessage21();
+
+        // Try to unmarshall the S125Node object
+        DataSet dataset = S100Utils.unmarshallS125(s125Node.getContent());
+
+        // Extract the S125 Member NavAid Information
+        Optional.ofNullable(dataset)
+                .map(DataSet::getMembersAndImembers)
+                .filter(((Predicate<List<AbstractFeatureMemberType>>) List::isEmpty).negate())
+                .map(l -> l.get(0))
+                .filter(MemberType.class::isInstance)
+                .map(MemberType.class::cast)
+                .map(MemberType::getAbstractFeature)
+                .map(JAXBElement::getValue)
+                .filter(S125NavAidStructureType.class::isInstance)
+                .map(S125NavAidStructureType.class::cast)
+                .ifPresent(navAid -> {
+                    Optional.of(dataset)
+                            .map(DataSet::getId)
+                            .ifPresent(aisMessage21::setUid);
+                    Optional.of(navAid)
+                            .map(S125NavAidStructureType::getFeatureName)
+                            .map(S125FeatureNameType::getName)
+                            .ifPresent(aisMessage21::setName);
+                    Optional.of(navAid).
+                            map(S125NavAidStructureType::getAtonType)
+                            .map(S125AtonType::value)
+                            .map(AtonType::fromString)
+                            .ifPresent(aisMessage21::setAtonType);
+                    Optional.of(navAid)
+                            .map(S125NavAidStructureType::getGeometry)
+                            .map(PointCurveSurfaceProperty::getPointProperty)
+                            .map(PointProperty::getPoint)
+                            .map(PointType::getPos)
+                            .map(Pos::getValues)
+                            .map(list -> list.get(0))
+                            .ifPresent(aisMessage21::setLatitude);
+                    Optional.of(navAid)
+                            .map(S125NavAidStructureType::getGeometry)
+                            .map(PointCurveSurfaceProperty::getPointProperty)
+                            .map(PointProperty::getPoint)
+                            .map(PointType::getPos)
+                            .map(Pos::getValues)
+                            .map(list -> list.get(1))
+                            .ifPresent(aisMessage21::setLongitude);
+                    aisMessage21.setMmsi(navAid.getMmsi());
+                    aisMessage21.setLength(navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getLength()).orElse(0)));
+                    aisMessage21.setWidth(navAid.isVatonFlag() ? 0 : Math.round(Optional.ofNullable(navAid.getWidth()).orElse(0)));
+                    aisMessage21.setRaim(navAid.isRaimFlag());
+                    aisMessage21.setVaton(navAid.isVatonFlag());
+                    aisMessage21.setTimestamp(LocalDateTime.now());
+                });
+
+        //Return the populated AIS message
+        return aisMessage21;
     }
 
 }

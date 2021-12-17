@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +79,7 @@ public class VDES1000Service {
                     Vdes1000Advertiser vdes1000Advertiser = this.applicationContext.getBean(Vdes1000Advertiser.class);
                     try {
                         vdes1000Advertiser.init(station);
-                    } catch (SocketException ex) {
+                    } catch (SocketException | UnknownHostException ex) {
                         log.error(ex.getMessage());
                         return null;
                     }

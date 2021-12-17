@@ -241,8 +241,14 @@
 		<dependency>
 			<groupId>org.grad.eNav</groupId>
 			<artifactId>S125</artifactId>
-			<version>0.1.3</version>
-			<classifier>jdk8</classifier>
+			<version>0.1.4</version>
+		</dependency>
+
+		<!-- VDES-1000 -->
+		<dependency>
+			<groupId>org.grad.vdes1000</groupId>
+			<artifactId>vdes1000lib</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 
 		<!-- Bouncy Castle -->
