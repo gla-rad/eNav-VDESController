@@ -26,7 +26,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.comm.VDES1000Conn;
-import org.grad.vdes1000.generic.AISChannel;
+import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -94,7 +94,7 @@ class Vdes1000AdvertiserTest {
         this.station = new Station();
         this.station.setId(BigInteger.ONE);
         this.station.setName("Existing Station Name");
-        this.station.setChannel(AISChannel.B);
+        this.station.setChannel(AISChannelPref.B);
         this.station.setMmsi("222222222");
         this.station.setIpAddress("10.0.0.2");
         this.station.setPiSeqNo(2L);

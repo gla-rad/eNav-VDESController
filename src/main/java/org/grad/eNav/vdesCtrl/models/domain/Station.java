@@ -20,11 +20,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
-import org.grad.vdes1000.generic.AISChannel;
+import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.*;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ScaledNumberField;
 import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.*;
@@ -86,8 +89,8 @@ public class Station implements Serializable {
     @NotNull
     @Enumerated(EnumType.STRING)
     @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
-    @Column(name = "channel", columnDefinition = "varchar(1) default 'A'")
-    private AISChannel channel;
+    @Column(name = "channel", columnDefinition = "varchar(4) default 'A'")
+    private AISChannelPref channel;
 
     @JsonSerialize(using = GeometryJSONSerializer.class)
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
@@ -196,7 +199,7 @@ public class Station implements Serializable {
      *
      * @return the channel
      */
-    public AISChannel getChannel() {
+    public AISChannelPref getChannel() {
         return channel;
     }
 
@@ -205,7 +208,7 @@ public class Station implements Serializable {
      *
      * @param channel the channel
      */
-    public void setChannel(AISChannel channel) {
+    public void setChannel(AISChannelPref channel) {
         this.channel = channel;
     }
 

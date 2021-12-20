@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.services;
 import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
-import org.grad.vdes1000.generic.AISChannel;
+import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,7 +81,7 @@ class VDES1000ServiceTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(AISChannel.A);
+            station.setChannel(AISChannelPref.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);

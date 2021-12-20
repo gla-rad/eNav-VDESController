@@ -47,9 +47,9 @@ var stationsColumnDefs = [{
     data: "channel",
     title: "Channel",
     type: "select",
-    options: ["A","B"],
-    hoverMsg: "AIS Channel of the station",
-    placeholder: "AIS Channel of the station",
+    options: ["A","B", "NONE", "BOTH"],
+    hoverMsg: "AIS Channel preference of the station",
+    placeholder: "AIS Channel preference of the station",
     required: true
 }, {
     data: "port",

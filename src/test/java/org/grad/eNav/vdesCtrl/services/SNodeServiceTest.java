@@ -18,10 +18,13 @@ package org.grad.eNav.vdesCtrl.services;
 
 import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
-import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
-import org.grad.vdes1000.generic.AISChannel;
+import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -118,7 +121,7 @@ class SNodeServiceTest {
         this.station = new Station();
         this.station.setId(BigInteger.ONE);
         this.station.setName("New Station Name");
-        this.station.setChannel(AISChannel.A);
+        this.station.setChannel(AISChannelPref.A);
         this.station.setMmsi("111111111");
         this.station.setIpAddress("10.0.0.1");
         this.station.setPiSeqNo(1L);

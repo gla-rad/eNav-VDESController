@@ -18,11 +18,14 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
-import org.grad.eNav.vdesCtrl.models.domain.*;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
+import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.vdes1000.generic.AISChannel;
+import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -111,7 +114,7 @@ class StationControllerTest {
             Station station = new Station();
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
-            station.setChannel(AISChannel.A);
+            station.setChannel(AISChannelPref.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setPiSeqNo(i);
@@ -129,7 +132,7 @@ class StationControllerTest {
         // Create a new instance
         this.newStation = new Station();
         this.newStation.setName("New Station Name");
-        this.newStation.setChannel(AISChannel.A);
+        this.newStation.setChannel(AISChannelPref.A);
         this.newStation.setMmsi("111111111");
         this.newStation.setIpAddress("10.0.0.1");
         this.newStation.setPiSeqNo(1L);
@@ -141,7 +144,7 @@ class StationControllerTest {
         this.existingStation = new Station();
         this.existingStation.setId(BigInteger.ONE);
         this.existingStation.setName("Existing Station Name");
-        this.existingStation.setChannel(AISChannel.B);
+        this.existingStation.setChannel(AISChannelPref.B);
         this.existingStation.setMmsi("222222222");
         this.existingStation.setIpAddress("10.0.0.2");
         this.existingStation.setPiSeqNo(2L);

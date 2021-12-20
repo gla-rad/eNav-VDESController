@@ -99,6 +99,9 @@ public class Vdes1000Advertiser {
                 InetAddress.getByName(this.station.getIpAddress()),
                 this.station.getPort());
 
+        // For VDES-1000 we currently have to turn multi-line support off
+        this.vdes1000Conn.setMultiLineSupport(false);
+
         // Add the Bouncy castle as a security provider to make signatures
         Security.addProvider(new BouncyCastleProvider());
     }
