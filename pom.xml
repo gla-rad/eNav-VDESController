@@ -32,6 +32,17 @@
 		<log4j2.version>2.15.0</log4j2.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>grad</id>
+			<url>https://gla-rrnav1.dyndns.org:8081/repository/grad/</url>
+		</repository>
+		<repository>
+			<id>grad-snapshots</id>
+			<url>https://gla-rrnav1.dyndns.org:8081/repository/grad-snapshots/</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -43,17 +54,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>grad</id>
-			<url>https://gla-rrnav1.dyndns.org:8081/repository/grad/</url>
-		</repository>
-		<repository>
-			<id>grad-snapshots</id>
-			<url>https://gla-rrnav1.dyndns.org:8081/repository/grad-snapshots/</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -248,7 +248,7 @@
 		<dependency>
 			<groupId>org.grad.vdes1000</groupId>
 			<artifactId>vdes1000lib</artifactId>
-			<version>0.0.1</version>
+			<version>0.0.2</version>
 		</dependency>
 
 		<!-- Bouncy Castle -->
