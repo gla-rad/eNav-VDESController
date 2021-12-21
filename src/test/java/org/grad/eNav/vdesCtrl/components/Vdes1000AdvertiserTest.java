@@ -26,6 +26,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.comm.VDES1000Conn;
+import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -153,7 +154,7 @@ class Vdes1000AdvertiserTest {
      * applicable.
      */
     @Test
-    void testAdvertiseAtons() throws IOException, InterruptedException {
+    void testAdvertiseAtons() throws VDES1000ConnException {
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
 
         // Initialise the advertiser and perform the component call
@@ -174,7 +175,7 @@ class Vdes1000AdvertiserTest {
      * of the first, if that feature is enabled.
      */
     @Test
-    void testAdvertiseAtonsWithSignature() throws IOException, InterruptedException {
+    void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
@@ -194,7 +195,7 @@ class Vdes1000AdvertiserTest {
      * if an empty/null S125 message is received
      */
     @Test
-    void testAdvertiseAtonsEmptyMessage() throws IOException, InterruptedException {
+    void testAdvertiseAtonsEmptyMessage() throws VDES1000ConnException {
         this.s125Node.setContent(null);
         doReturn(Collections.singletonList(null)).when(this.sNodeService).findAllForStationDto(this.station.getId());
 

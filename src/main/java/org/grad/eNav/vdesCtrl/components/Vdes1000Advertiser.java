@@ -28,6 +28,7 @@ import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
+import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,8 +100,8 @@ public class Vdes1000Advertiser {
                 InetAddress.getByName(this.station.getIpAddress()),
                 this.station.getPort());
 
-        // For VDES-1000 we currently have to turn multi-line support off
-        this.vdes1000Conn.setMultiLineSupport(false);
+        // Add logging capability to the VDES-1000 connection
+        this.vdes1000Conn.setLogger(this.log);
 
         // Add the Bouncy castle as a security provider to make signatures
         Security.addProvider(new BouncyCastleProvider());
@@ -123,7 +124,7 @@ public class Vdes1000Advertiser {
      * is used, we should control the periodic transmissions manually.
      */
     @Scheduled(fixedDelay = 60000, initialDelay = 1000)
-    public void advertiseAtons() throws InterruptedException {
+    public void advertiseAtons() throws VDES1000ConnException {
         // Get all the nodes applicable for the station and build the messages
         List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
                 .stream()
@@ -143,17 +144,24 @@ public class Vdes1000Advertiser {
         // Now create the AIS advertisements - wait in between
         for(AISMessage21 message: messages) {
             // First send the message right away and then check if to create a signature for it
-            this.vdes1000Conn.sendMessage(message, this.station.getChannel());
             log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
+            this.vdes1000Conn.sendMessage(message, this.station.getChannel());
 
             // If signature messages are enabled, send one
             if(this.enableSignatures) {
-                Optional.of(message)
-                        .map(this::getSignature)
-                        .ifPresent(signature -> {
-                            this.vdes1000Conn.sendMessage(signature, this.station.getChannel());
-                            log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
-                        });
+                // Get the signature for the sent message
+                AbstractMessage signature = this.getSignature(message);
+
+                // If we have a signature and it's valid
+                if(Objects.nonNull(signature)) {
+                    log.debug(String.format("Signature NMEA sentence generated: %s", new String(signature.getBinaryMessage(true))));
+                    // We need to switch to the BBM broadcast method
+                    this.vdes1000Conn.setBroadcastMethod(VDESBroadcastMethod.BBM);
+                    // Send the message
+                    this.vdes1000Conn.sendMessage(signature, this.station.getChannel());
+                    // And witch back to the TSA-VDM
+                    this.vdes1000Conn.setBroadcastMethod(VDESBroadcastMethod.TSA_VDM);
+                }
             }
         }
     }
