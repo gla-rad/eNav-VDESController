@@ -141,30 +141,21 @@ public class Vdes1000Advertiser {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Now create the AIS advertisements
+        // Now create the AIS advertisements - wait in between
         for(AISMessage21 message: messages) {
-            // We need to switch to the VDM-TSA broadcast method
-            this.vdes1000Conn.setBroadcastMethod(VDESBroadcastMethod.TSA_VDM);
-
             // First send the message right away and then check if to create a signature for it
             log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
             this.vdes1000Conn.sendMessage(message, this.station.getChannel());
-        }
 
-        // If signature messages are enabled, create the AIS advertisement signatures
-        if(this.enableSignatures) {
-            // We need to switch to the BBM broadcast method
-            this.vdes1000Conn.setBroadcastMethod(VDESBroadcastMethod.BBM);
-
-            // Loop again through all the messages
-            for (AISMessage21 message : messages) {
-                // Get the signature for the message sent
+            // If signature messages are enabled, send one
+            if(this.enableSignatures) {
+                // Get the signature for the sent message
                 AbstractMessage signature = this.getSignature(message);
 
-                // If we have a signature and it's valid send it
-                if (Objects.nonNull(signature)) {
+                // If we have a signature and it's valid
+                if(Objects.nonNull(signature)) {
                     log.debug(String.format("Signature NMEA sentence generated: %s", new String(signature.getBinaryMessage(true))));
-                    this.vdes1000Conn.sendMessage(signature, this.station.getChannel());
+                    this.vdes1000Conn.sendMessageWithBBM(signature, this.station.getChannel());
                 }
             }
         }
