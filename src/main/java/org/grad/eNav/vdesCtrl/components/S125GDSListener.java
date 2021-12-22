@@ -162,7 +162,6 @@ public class S125GDSListener implements FeatureListener {
                     .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, this.station.getType()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), station.getIpAddress()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), station.getPort()))
-                    .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), station.getPiSeqNo()))
                     .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), station.getMmsi()))
                     .map(MessageBuilder::build)
                     .forEach(msg -> {

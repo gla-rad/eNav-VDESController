@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
  * The GNURadio AIS Advertiser Component Class
  *
  * This component is responsible for scheduling the advertisements published
- * from a GNURadio AIS transmitter. This is initialised by a service like the
- * GrAIsService but after that each GrAisAdvertiser schedules its own
+ * towards a GNURadio AIS transmitter. This is initialised by a service like
+ * the GrAIsService but after that each GrAisAdvertiser schedules its own
  * operation.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
@@ -109,9 +109,6 @@ public class GrAisAdvertiser {
 
         // Create the UDP Connection to the GNURadio stations
         this.gnuRadioSocket = new DatagramSocket();
-
-        // Add the Bouncy castle as a security provider to make signatures
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**

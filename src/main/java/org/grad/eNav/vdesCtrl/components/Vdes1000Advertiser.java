@@ -18,7 +18,6 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -45,12 +44,19 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * The VDES-1000 Advertiser Component.
+ *
+ * This component is responsible for scheduling the advertisements published
+ * towards a VDES-1000 transmitter. This is initialised by a service like the
+ * VDES1000Service but after that each Vdes1000Advertiser schedules its own
+ * operation.
+ */
 @Slf4j
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
@@ -102,14 +108,11 @@ public class Vdes1000Advertiser {
 
         // Add logging capability to the VDES-1000 connection
         this.vdes1000Conn.setLogger(this.log);
-
-        // Add the Bouncy castle as a security provider to make signatures
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     /**
-     * When shutting down the application we need to make sure that all
-     * threads have been gracefully shutdown as well.
+     * When shutting down the application we need to make sure that the
+     * VDES-1000 connection has been shut down.
      */
     @PreDestroy
     public void destroy() {

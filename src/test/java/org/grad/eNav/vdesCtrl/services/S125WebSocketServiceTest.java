@@ -39,7 +39,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -121,13 +120,12 @@ class S125WebSocketServiceTest {
      * AtoN messages published in the AtoN publish-subscribe channel.
      */
     @Test
-    void testHandleMessage() throws IOException {
+    void testHandleS125Message() throws IOException {
         // Create a message to be handled
         Message message = Optional.of(this.s125Node).map(MessageBuilder::withPayload)
                 .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
                 .map(MessageBuilder::build)
                 .orElse(null);
@@ -146,16 +144,43 @@ class S125WebSocketServiceTest {
     }
 
     /**
+     * Test that the Web-Socket controlling service can process correctly the
+     * simple string messages published in the AtoN publish-subscribe channel.
+     */
+    @Test
+    void testHandleStringMessage() throws IOException {
+        // Create a message to be handled
+        Message message = Optional.of("This is a simple message").map(MessageBuilder::withPayload)
+                .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
+                .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
+                .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
+                .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
+                .map(MessageBuilder::build)
+                .orElse(null);
+
+        // Perform the service call
+        this.s125WebSocketService.handleMessage(message);
+
+        // Verify that we send a packet to the VDES port and get that packet
+        ArgumentCaptor<String> topicArgument = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> payLoadArgument = ArgumentCaptor.forClass(String.class);
+        verify(this.webSocket, times(1)).convertAndSend(topicArgument.capture(), payLoadArgument.capture());
+
+        // Verify the packet
+        assertEquals("/topic/127.0.0.1:8000", topicArgument.getValue());
+        assertEquals("This is a simple message", payLoadArgument.getValue());
+    }
+
+    /**
      * Test that we can only send S125 messages down to the web-socket.
      */
     @Test
     void testHandleMessageWrongPayload() throws IOException {
         // Change the message content type to something else
-        Message message = Optional.of("this is just a string").map(MessageBuilder::withPayload)
+        Message message = Optional.of(Integer.MAX_VALUE).map(MessageBuilder::withPayload)
                 .map(builder -> builder.setHeader(MessageHeaders.CONTENT_TYPE, StationType.VDES_1000))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), "127.0.0.1"))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.PORT.getHeader(), 8000))
-                .map(builder -> builder.setHeader(PubSubMsgHeaders.PI_SEQ_NO.getHeader(), 1234L))
                 .map(builder -> builder.setHeader(PubSubMsgHeaders.MMSI.getHeader(), "111111111"))
                 .map(MessageBuilder::build)
                 .orElse(null);

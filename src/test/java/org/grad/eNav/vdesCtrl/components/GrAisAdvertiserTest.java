@@ -94,7 +94,6 @@ class GrAisAdvertiserTest {
         this.station.setChannel(AISChannelPref.B);
         this.station.setMmsi("222222222");
         this.station.setIpAddress("10.0.0.2");
-        this.station.setPiSeqNo(2L);
         this.station.setType(StationType.GNU_RADIO);
         this.station.setPort(8002);
         this.station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));

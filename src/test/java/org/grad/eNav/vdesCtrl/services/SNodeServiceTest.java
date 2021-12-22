@@ -124,7 +124,6 @@ class SNodeServiceTest {
         this.station.setChannel(AISChannelPref.A);
         this.station.setMmsi("111111111");
         this.station.setIpAddress("10.0.0.1");
-        this.station.setPiSeqNo(1L);
         this.station.setType(StationType.VDES_1000);
         this.station.setPort(8001);
         this.station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));

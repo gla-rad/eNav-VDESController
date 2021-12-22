@@ -24,7 +24,6 @@ package org.grad.eNav.vdesCtrl.models;
 public enum PubSubMsgHeaders {
     ADDRESS("ADDRESS"),
     PORT("PORT"),
-    PI_SEQ_NO("PI_SEQ_NO"),
     MMSI("MMSI");
 
     // Enum Variables

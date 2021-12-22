@@ -84,7 +84,6 @@ class GrAisServiceTest {
             station.setChannel(AISChannelPref.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
-            station.setPiSeqNo(i);
             station.setType(StationType.GNU_RADIO);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));

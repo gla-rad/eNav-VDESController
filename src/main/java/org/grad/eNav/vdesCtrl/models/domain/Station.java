@@ -71,9 +71,17 @@ public class Station implements Serializable {
     @Column(name = "port", nullable = false)
     private Integer port;
 
-    @NotNull
-    @Column(name = "piSeqNo", nullable = false, columnDefinition = "bigint default 0")
-    private Long piSeqNo;
+    @GenericField(sortable = Sortable.YES)
+    @Column(name = "broadcastPort")
+    private Integer broadcastPort;
+
+    @KeywordField(sortable = Sortable.YES)
+    @Column(name = "fwdIpAddress")
+    private String fwdIpAddress;
+
+    @GenericField(sortable = Sortable.YES)
+    @Column(name = "fwdPort")
+    private Integer fwdPort;
 
     @NotNull
     @KeywordField(sortable = Sortable.YES)
@@ -177,6 +185,60 @@ public class Station implements Serializable {
     }
 
     /**
+     * Gets broadcast port.
+     *
+     * @return the broadcast port
+     */
+    public Integer getBroadcastPort() {
+        return broadcastPort;
+    }
+
+    /**
+     * Sets broadcast port.
+     *
+     * @param broadcastPort the broadcast port
+     */
+    public void setBroadcastPort(Integer broadcastPort) {
+        this.broadcastPort = broadcastPort;
+    }
+
+    /**
+     * Gets fwd ip address.
+     *
+     * @return the fwd ip address
+     */
+    public String getFwdIpAddress() {
+        return fwdIpAddress;
+    }
+
+    /**
+     * Sets fwd ip address.
+     *
+     * @param fwdIpAddress the fwd ip address
+     */
+    public void setFwdIpAddress(String fwdIpAddress) {
+        this.fwdIpAddress = fwdIpAddress;
+    }
+
+    /**
+     * Gets fwd port.
+     *
+     * @return the fwd port
+     */
+    public Integer getFwdPort() {
+        return fwdPort;
+    }
+
+    /**
+     * Sets fwd port.
+     *
+     * @param fwdPort the fwd port
+     */
+    public void setFwdPort(Integer fwdPort) {
+        this.fwdPort = fwdPort;
+    }
+
+    /**
      * Gets type.
      *
      * @return the type
@@ -228,24 +290,6 @@ public class Station implements Serializable {
      */
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
-    }
-
-    /**
-     * Gets pi seq no.
-     *
-     * @return the pi seq no
-     */
-    public Long getPiSeqNo() {
-        return piSeqNo;
-    }
-
-    /**
-     * Sets pi seq no.
-     *
-     * @param piSeqNo the pi seq no
-     */
-    public void setPiSeqNo(Long piSeqNo) {
-        this.piSeqNo = piSeqNo;
     }
 
     /**

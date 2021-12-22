@@ -6,6 +6,7 @@ var stationsNodesTable = undefined;
 var stationsMap = undefined;
 var drawControl = undefined;
 var drawnItems = undefined;
+var stompClient = null;
 
 /**
  * The Stations Table Column Definitions
@@ -57,6 +58,21 @@ var stationsColumnDefs = [{
     hoverMsg: "Port of the station",
     placeholder: "Port of the station",
     required: true
+}, {
+     data: "broadcastPort",
+     title: "Broadcast Port",
+     hoverMsg: "Broadcast port of the station",
+     placeholder: "Broadcast port of the station"
+ }, {
+    data: "fwdIpAddress",
+    title: "Forward IP Address",
+    hoverMsg: "Forward IP Address for the station messages",
+    placeholder: "Forward IP Address for the station messages"
+ }, {
+    data: "fwdPort",
+    title: "Forward Port",
+    hoverMsg: "Forward port for the station messages",
+    placeholder: "Forward port for the station messages"
 }, {
     data: "mmsi",
     title: "MMSI",
@@ -143,6 +159,15 @@ $(document).ready( function () {
             action: (e, dt, node, config) => {
                 loadStationNodes(e, dt, node, config);
             }
+        }, {
+            extend: 'selected', // Bind to Selected row
+            text: '<i class="fas fa-terminal"></i>',
+            titleAttr: 'Station Console',
+            name: 'stationConsole', // do not change name
+            className: 'station-console-toggle',
+            action: (e, dt, node, config) => {
+                disconnectConsole();
+            }
         }],
         onAddRow: function (datatable, rowdata, success, error) {
             $.ajax({
@@ -157,9 +182,11 @@ $(document).ready( function () {
                     type: rowdata["type"],
                     channel: rowdata["channel"],
                     port: rowdata["port"],
+                    broadcastPort: rowdata["broadcastPort"],
+                    fwdIpAddress: rowdata["fwdIpAddress"],
+                    fwdPort: rowdata["fwdPort"],
                     mmsi: rowdata["mmsi"],
-                    geometry: null,
-                    piSeqNo: 1
+                    geometry: null
                 }),
                 success: success,
                 error: error
@@ -192,9 +219,11 @@ $(document).ready( function () {
                     type: rowdata["type"],
                     channel: rowdata["channel"],
                     port: rowdata["port"],
+                    broadcastPort: rowdata["broadcastPort"],
+                    fwdIpAddress: rowdata["fwdIpAddress"],
+                    fwdPort: rowdata["fwdPort"],
                     mmsi: rowdata["mmsi"],
-                    geometry: geometry,
-                    piSeqNo: 1
+                    geometry: geometry
                 }),
                 success: success,
                 error: error
@@ -203,8 +232,8 @@ $(document).ready( function () {
     });
 
     // We also need to link the station areas toggle button with the the modal
-    // panel so that by clicking the button the panel pops up. It's easier done with
-    // jQuery.
+    // panel so that by clicking the button the panel pops up. It's easier done
+    // with jQuery.
     stationsTable.buttons('.station-area-toggle')
         .nodes()
         .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationAreasPanel" });
@@ -215,6 +244,13 @@ $(document).ready( function () {
     stationsTable.buttons('.station-nodes-toggle')
         .nodes()
         .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationNodesPanel" });
+
+    // We also need to link the station console toggle button with the the modal
+    // panel so that by clicking the button the panel pops up. It's easier done
+    // with jQuery.
+    stationsTable.buttons('.station-console-toggle')
+        .nodes()
+        .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationConsolePanel" });
 
     // Now also initialise the station map before we need it
     stationsMap = L.map('stationMap').setView([54.910, -3.432], 5);
@@ -281,7 +317,7 @@ function loadStationGeometry(event, table, button, config) {
     if(geometry) {
         var geomLayer = L.geoJson(geometry);
         addNonGroupLayers(geomLayer, drawnItems);
-        instanceMap.setView(geomLayer.getBounds().getCenter(), 5);
+        stationsMap.setView(geomLayer.getBounds().getCenter(), 5);
     }
 }
 
@@ -373,8 +409,7 @@ function saveGeometry() {
 
     // If a selection has been made
     if(idx) {
-        var data = stationsTable.rows(idx.row).data();
-        var station = data[0];
+        var station = table.row({selected : true}).data();
 
         // Convert the feature collection to a geometry collection
         station.geometry = {
@@ -395,4 +430,56 @@ function saveGeometry() {
             error: () => {console.error("error")}
         });
     }
+}
+
+/**
+ * Connects the station console popup dialog textarea with the output from
+ * the respective web-socket.
+ */
+function connectConsole() {
+    // Get the selected station
+    var station = stationsTable.row({selected : true}).data();
+
+    // If a selection has been made
+    if(station) {
+        // Do we need to open a new web-socket?
+        if(stompClient == null) {
+            var socket = new SockJS('/vdes-ctrl-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                setConnected(true);
+                stompClient.subscribe('/topic/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
+                    $('#stationConsoleTextArea').val($('#stationConsoleTextArea').val() + msg.body);
+                });
+            });
+        }
+
+        // Now show only the disconnect button
+        $('#consoleConnectButton').hide();
+        $('#consoleDisconnectButton').show();
+    }
+}
+/**
+ * This function disconnects the station console web-socket and clears out the
+ * currently displayed text area.
+ */
+function disconnectConsole() {
+    // Do we have an open web-socket connection?
+    if (stompClient !== null) {
+        // Try to remove all the previous subscriptions
+        for (const sub in stompClient.subscriptions) {
+            if (this.stompClient.subscriptions.hasOwnProperty(sub)) {
+                this.stompClient.unsubscribe(sub);
+            }
+        }
+        stompClient = null;
+        console.log("Disconnected");
+    }
+
+    // Clear the text area
+    $('#stationConsoleTextArea').val("");
+
+    // Now show only the connect button
+    $('#consoleDisconnectButton').hide();
+    $('#consoleConnectButton').show();
 }

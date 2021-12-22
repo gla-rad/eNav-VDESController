@@ -99,33 +99,46 @@ public class S125WebSocketService implements MessageHandler {
      */
     @Override
     public void handleMessage(Message<?> message) throws MessagingException {
-        // Check that this seems ot be a valid message
-        if(!(message.getPayload() instanceof S125Node)) {
-            log.warn("Radar message handler received a message with erroneous format.");
-            return;
-        }
-
-        // Get the header and payload of the incoming message
+        // Get the headers of the incoming message
         String contentType = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
         String address = Objects.toString(message.getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
         Integer port = (Integer) (message.getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
-        S125Node s125Node = (S125Node) message.getPayload();
 
-        // A simple debug message;
-        log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
+        // Handle only messages that seem valid
+        if(message.getPayload() instanceof S125Node) {
+            // Get the payload of the incoming message
+            S125Node s125Node = (S125Node) message.getPayload();
 
-        // Now push the aton node down the web-socket stream
-        this.pushAton(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
+            // A simple debug message;
+            log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
+
+            // Now push the aton node down the web-socket stream
+            this.publishMessage(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
+        }
+        else if(message.getPayload() instanceof String) {
+            // Get the header and payload of the incoming message
+            String payload = (String) message.getPayload();
+
+            // A simple debug message;
+            log.debug(String.format("Received a simple pub/sub message: %s.", payload));
+
+            // Now push the aton node down the web-socket stream
+            this.publishMessage(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), payload);
+
+        }
+        else {
+            log.warn("Radar message handler received a message with erroneous format.");
+        }
     }
 
     /**
-     * Pushes a new/updated AtoN node into the web-socket messaging template.
+     * Pushes a new/updated message into the web-socket messaging template.
      *
      * @param messagingTemplate     The web-socket messaging template
      * @param topic                 The topic of the web-socket
      * @param payload               The payload to be pushed
      */
-    private void pushAton(SimpMessagingTemplate messagingTemplate, String topic, Object payload) {
+    private void publishMessage(SimpMessagingTemplate messagingTemplate, String topic, Object payload) {
         messagingTemplate.convertAndSend(topic, payload);
     }
 

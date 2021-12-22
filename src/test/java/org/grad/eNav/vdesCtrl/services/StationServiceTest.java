@@ -116,7 +116,6 @@ class StationServiceTest {
             station.setChannel(AISChannelPref.A);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
-            station.setPiSeqNo(i);
             station.setType(StationType.VDES_1000);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
@@ -134,7 +133,6 @@ class StationServiceTest {
         this.newStation.setChannel(AISChannelPref.A);
         this.newStation.setMmsi("111111111");
         this.newStation.setIpAddress("10.0.0.1");
-        this.newStation.setPiSeqNo(1L);
         this.newStation.setType(StationType.VDES_1000);
         this.newStation.setPort(8001);
         this.newStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
@@ -146,7 +144,6 @@ class StationServiceTest {
         this.existingStation.setChannel(AISChannelPref.B);
         this.existingStation.setMmsi("222222222");
         this.existingStation.setIpAddress("10.0.0.2");
-        this.existingStation.setPiSeqNo(2L);
         this.existingStation.setType(StationType.GNU_RADIO);
         this.existingStation.setPort(8002);
         this.existingStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));

@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="stationAreasPanel" tabindex="-1" role="dialog" aria-labelledby="stationAreasPanel"
+            <div class="modal fade" id="stationAreasPanel" tabindex="-1" role="dialog" aria-labelledby="stationAreasPanelHeader"
                  aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
@@ -67,7 +67,40 @@
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="stationNodesPanel" tabindex="-1" role="dialog" aria-labelledby="stationNodesPanel"
+            <div class="modal fade" id="stationConsolePanel" tabindex="-1" role="dialog" aria-labelledby="stationConsolePanelHeader"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="stationConsolePanelHeader">Station Console</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="stationConsoleTextArea" class="form-label">Station Console</label>
+                                <textarea class="form-control form-control-sm" id="stationConsoleTextArea" rows="20" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="float-right">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
+                                    <i class="fas">&times</i>
+                                    <span class="btn-label"> Close</span>
+                                </button>
+                                <button type="button" class="btn btn-primary" id="consoleConnectButton" title="Connect" onclick="connectConsole()">
+                                    <i class="fas fa-plug"></i>
+                                    <span class="btn-label"> Connect</span>
+                                </button>
+                                <button type="button" class="btn btn-warning" id="consoleDisconnectButton" title="Disconnect" onclick="disconnectConsole()" style="display: none">
+                                    <i class="fas fa-door-closed"></i>
+                                    <span class="btn-label"> Disconnect</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="stationNodesPanel" tabindex="-1" role="dialog" aria-labelledby="stationNodesPanelHeader"
                  aria-hidden="true">
                 <div class="modal-dialog modal-dialog-slideout modal-lg" role="document">
                     <div class="modal-content">
@@ -95,6 +128,9 @@
     </div>
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+    <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
+    <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+    <script th:src="@{/src/webSocket.js}"></script>
     <script th:src="@{/webjars/leaflet/dist/leaflet.js}"></script>
     <script th:src="@{/webjars/leaflet-draw/dist/leaflet.draw.js}"></script>
     <script src="https://cdn.datatables.net/1.11.0/js/jquery.dataTables.js" ></script>
