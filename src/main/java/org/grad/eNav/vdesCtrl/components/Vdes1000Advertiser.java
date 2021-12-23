@@ -18,6 +18,7 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -156,8 +157,8 @@ public class Vdes1000Advertiser {
                 AbstractMessage signature = this.getSignature(message);
 
                 // If we have a signature and it's valid
+                // [48, 48, 53, 112, 64, 81, 96, 100, 110, 83, 96, 83, 108, 87, 76, 58, 87, 63, 67, 116, 58, 48, 82, 101, 54, 97, 107, 98, 111, 109, 77, 105, 108, 78, 72, 107, 72, 77, 74, 106, 68, 116, 119, 64, 103, 108, 103, 61, 117, 56, 103, 102, 55, 83, 81, 54, 67]
                 if(Objects.nonNull(signature)) {
-                    log.debug(String.format("Signature NMEA sentence generated: %s", new String(signature.getBinaryMessage(true))));
                     this.vdes1000Conn.sendMessageWithBBM(signature, this.station.getChannel());
                 }
             }
@@ -185,6 +186,7 @@ public class Vdes1000Advertiser {
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
+            log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
 
             // And generate the signature message
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)

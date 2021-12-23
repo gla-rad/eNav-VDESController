@@ -404,13 +404,11 @@ function loadStationNodes(event, table, button, config) {
  * GeoJSON and then be set as the selected station's geometry.
  */
 function saveGeometry() {
-    // Get the selected station geometry
-    var idx = stationsTable.cell('.selected', 0).index();
+    // Get the selected station
+    var station = stationsTable.row({selected : true}).data();
 
     // If a selection has been made
-    if(idx) {
-        var station = table.row({selected : true}).data();
-
+    if(station) {
         // Convert the feature collection to a geometry collection
         station.geometry = {
             type: "GeometryCollection",
