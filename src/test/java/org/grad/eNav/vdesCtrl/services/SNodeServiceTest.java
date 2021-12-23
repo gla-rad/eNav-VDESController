@@ -22,6 +22,7 @@ import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.vdes1000.generic.AISChannelPref;
@@ -348,14 +349,15 @@ class SNodeServiceTest {
         doReturn(this.station).when(this.stationService).findOne(this.station.getId());
 
         // Perform the service call
-        List<S125Node> result = this.sNodeService.findAllForStationDto(this.station.getId());
+        List<S100AbstractNode> result = this.sNodeService.findAllForStationDto(this.station.getId());
 
         assertNotNull(result);
         assertEquals(this.nodes.size(), result.size());
 
         // Test each of the result entries
         for(int i=0; i < result.size(); i++) {
-            S125Node resultNode = result.get(i);
+            assertTrue(S125Node.class.isInstance(result.get(i)));
+            S125Node resultNode = (S125Node) result.get(i);
             SNode matchingNode = this.nodes.stream()
                     .filter(node -> node.getUid().equals(resultNode.getAtonUID()))
                     .findAny()
@@ -365,4 +367,5 @@ class SNodeServiceTest {
             assertEquals(matchingNode.getMessage(), resultNode.getContent());
         }
     }
+
 }

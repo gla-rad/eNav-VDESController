@@ -145,4 +145,67 @@ class VDES1000ServiceTest {
         verify(mockAdvertiser, times(this.stations.size())).destroy();
     }
 
+    /**
+     * Test that we can call the service to reload all the advertisers.
+     */
+    @Test
+    void testReload() {
+        //Perform the service call
+        this.vdes1000Service.reload();
+
+        // Make sure we first destroy and re-init the service
+        verify(this.vdes1000Service, times(1)).destroy();
+        verify(this.vdes1000Service, times(1)).init();
+    }
+
+    /**
+     * Test that we can call all advertisers to publish their advertisements.
+     */
+    @Test
+    void testAdvertise() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.VDES_1000);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
+        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
+        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
+
+        // First initialise the service to pick up the advertisers
+        this.vdes1000Service.init();
+
+        // Perform the service call
+        this.vdes1000Service.advertiseAtons();
+
+        // Make sure all advertisers were called
+        verify(mockAdvertiser, times(this.stations.size())).advertiseAtons();
+    }
+
+    /**
+     * Test that during the reloading operation, the advertisers will be
+     * temporarily disabled so that we don't get any unwanted behaviour.
+     */
+    @Test
+    void testAdvertiseWhileReloading() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.VDES_1000);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
+        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
+        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
+
+        // First initialise the service to pick up the advertisers
+        this.vdes1000Service.init();
+
+        // Mock a reloading operation
+        this.vdes1000Service.reloading = true;
+
+        // Perform the service call
+        this.vdes1000Service.advertiseAtons();
+
+        // Make sure all advertisers were NOT called
+        verify(mockAdvertiser, never()).advertiseAtons();
+    }
+
 }

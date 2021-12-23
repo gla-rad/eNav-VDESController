@@ -21,7 +21,13 @@ import _int.iho.s100.gml.base._1_0.PointType;
 import _int.iho.s100.gml.base._1_0_Ext.PointCurveSurfaceProperty;
 import _int.iho.s125.gml._0.*;
 import _net.opengis.gml.profiles.AbstractFeatureMemberType;
+import _net.opengis.gml.profiles.AbstractFeatureType;
 import _net.opengis.gml.profiles.Pos;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.generic.AtonType;
@@ -31,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -42,6 +49,7 @@ import java.util.function.Predicate;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
+@Slf4j
 public class S100Utils {
 
     /**
@@ -87,6 +95,55 @@ public class S100Utils {
     }
 
     /**
+     * This helper function translates the provided SNode domain object to
+     * a S100AbstractNode implementing DTO. This can be used when the service
+     * response to a client, rather than an internal component.
+     *
+     * @param snode the SNode object to be translated to a DTO
+     * @return the DTO generated from the provided SNode object
+     */
+    public static S100AbstractNode toS100Dto(SNode snode) {
+        // Sanity check
+        if(Objects.isNull(snode)) {
+            return null;
+        }
+
+        // We first need to extract the bounding box of the snode message
+        final AbstractFeatureType dataset;
+
+        // Unmarshall the station node message  using the appropriate message time
+        try {
+            switch (snode.getType()) {
+                case S125:
+                    dataset = S100Utils.unmarshallS125(snode.getMessage());
+                    break;
+                default:
+                    log.error("Unsupported S100 dataset translation operation detected...");
+                    return null;
+            }
+        } catch (JAXBException | NumberFormatException ex) {
+            log.error(ex.getMessage());
+            return null;
+        }
+
+        // Find out the bounding box
+        final List<Double> point = dataset.getBoundedBy().getEnvelope().getLowerCorner().getValues();
+        final String crsName = dataset.getBoundedBy().getEnvelope().getSrsName();
+        final Integer srid = Optional.ofNullable(crsName).map(crs -> crs.split(":")[1]).map(Integer::valueOf).orElse(null);
+        final JsonNode  bbox = GeoJSONUtils.createGeoJSONPoint(point.get(1), point.get(0), srid);
+
+        // Now construct the DTO based on the SNode type
+        switch (snode.getType()) {
+            case S124:
+                return new S124Node(snode.getUid(), bbox, snode.getMessage());
+            case S125:
+                return new S125Node(snode.getUid(), bbox, snode.getMessage());
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Constructors from an S125Node object.
      *
      * @param s125Node the S125Node object
@@ -97,7 +154,7 @@ public class S100Utils {
         AISMessage21 aisMessage21 = new AISMessage21();
 
         // Try to unmarshall the S125Node object
-        DataSet dataset = S100Utils.unmarshallS125(s125Node.getContent());
+        DataSet dataset = unmarshallS125(s125Node.getContent());
 
         // Extract the S125 Member NavAid Information
         Optional.ofNullable(dataset)

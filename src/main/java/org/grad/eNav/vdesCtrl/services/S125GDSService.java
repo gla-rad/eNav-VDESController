@@ -31,6 +31,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,6 +70,7 @@ public class S125GDSService {
 
     // Service Variables
     protected List<S125GDSListener> dsListeners;
+    protected boolean reloading;
 
     /**
      * Once the service has been initialised, we can that start the execution
@@ -117,19 +119,29 @@ public class S125GDSService {
      */
     @PreDestroy
     public void destroy() {
+        Optional.ofNullable(this.dsListeners)
+                .orElse(Collections.emptyList())
+                .forEach(S125GDSListener::destroy);
+
+        // If we are just reloading, don't drop the Geomesa DataStore Consumer
+        if(this.reloading) {
+            return;
+        }
+
         log.info("Geomesa Data Store is shutting down...");
-        Optional.ofNullable(this.dsListeners).ifPresent(l -> l.forEach(S125GDSListener::destroy));
         this.consumer.dispose();
     }
 
     /**
-     * Whenever we get changes in the stations configuration, we will need
-     * to reload the S125GDSListeners for each stations, so basically we need
+     * Whenever we get changes in the stations' configuration, we will need
+     * to reload the S125GDSListeners for each station, so basically we need
      * to call the init function again.
      */
     public void reload() {
-        // Destroy all the previous listeners if they exist, to have a clean slate
-        Optional.ofNullable(this.dsListeners).ifPresent(l -> l.forEach(S125GDSListener::destroy));
+        // Same as destroy - but set a flag to be safe
+        this.reloading = true;
+        this.destroy();
+        this.reloading = false;
 
         // And re-initialise the service
         this.init();

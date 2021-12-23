@@ -181,49 +181,13 @@ public class SNodeService {
      * @return the list of nodes
      */
     @Transactional(readOnly = true)
-    public List<S125Node> findAllForStationDto(BigInteger stationId) {
+    public List<S100AbstractNode> findAllForStationDto(BigInteger stationId) {
         log.debug("Request to get all Nodes for Station: {}", stationId);
         return Optional.ofNullable(stationId)
                 .map(this.stationService::findOne)
                 .map(Station::getNodes)
-                .map(l -> l.stream().map(this::toS100Dto).map(S125Node.class::cast).collect(Collectors.toList()))
+                .map(l -> l.stream().map(S100Utils::toS100Dto).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
     }
 
-    /**
-     * This helper function translates the provided SNode domain object to
-     * a S100AbstractNode implementing DTO. This can be used when the service
-     * response to a client, rather than an internal component.
-     *
-     * @param snode the SNode object to be translated to a DTO
-     * @return the DTO generated from the provided SNode object
-     */
-    private S100AbstractNode toS100Dto(SNode snode) {
-        // Sanity check
-        if(Objects.isNull(snode)) {
-            return null;
-        }
-
-        // We first need to extract the bounding box of the snode message
-        JsonNode bbox = null;
-        try {
-            DataSet s125Dataset = S100Utils.unmarshallS125(snode.getMessage());
-            List<Double> point = s125Dataset.getBoundedBy().getEnvelope().getLowerCorner().getValues();
-            String crsName = s125Dataset.getBoundedBy().getEnvelope().getSrsName();
-            Integer srid = Optional.ofNullable(crsName).map(crs -> crs.split(":")[1]).map(Integer::valueOf).orElse(null);
-            bbox = GeoJSONUtils.createGeoJSONPoint(point.get(0), point.get(1), srid);
-        } catch (JAXBException | NumberFormatException ex) {
-            log.error(ex.getMessage());
-        }
-
-        // Now construct the DTO based on the SNode type
-        switch (snode.getType()) {
-            case S124:
-                return new S124Node(snode.getUid(), bbox, snode.getMessage());
-            case S125:
-                return new S125Node(snode.getUid(), bbox, snode.getMessage());
-            default:
-                return null;
-        }
-    }
 }

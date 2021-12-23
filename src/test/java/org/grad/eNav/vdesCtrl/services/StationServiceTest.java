@@ -16,13 +16,19 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
+import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
+import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.query.SearchResult;
@@ -33,9 +39,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -51,6 +55,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,10 +81,28 @@ class StationServiceTest {
     S125GDSService s125GDSService;
 
     /**
-     * The Station Repository Mock.
+     * The GNURadio AIS Service mock.
+     */
+    @Mock
+    GrAisService grAisService;
+
+    /**
+     * The VDES-1000 Service mock.
+     */
+    @Mock
+    VDES1000Service vdes1000Service;
+
+    /**
+     * The Station Repository mock.
      */
     @Mock
     private StationRepo stationRepo;
+
+    /**
+     * The Station Node Repository mock.
+     */
+    @Mock
+    private SNodeRepo sNodeRepo;
 
     // Test Variables
     private List<Station> stations;
@@ -87,6 +110,7 @@ class StationServiceTest {
     private Pageable pageable;
     private Station newStation;
     private Station existingStation;
+    private S100AbstractNode s100AbstractNode;
 
     /**
      * Common setup for all the tests.
@@ -147,6 +171,9 @@ class StationServiceTest {
         this.existingStation.setType(StationType.GNU_RADIO);
         this.existingStation.setPort(8002);
         this.existingStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
+
+        // Also define a test S100 Abstract Node
+        this.s100AbstractNode = new S125Node("aton.uk.test_aton_no_1", GeoJSONUtils.createGeoJSONPoint(52.001, 1.002), "Message Content");
     }
 
     /**
@@ -260,7 +287,7 @@ class StationServiceTest {
      */
     @Test
     void testSave() {
-        doReturn(this.newStation).when(this.stationRepo).save(any());
+        doAnswer(returnsFirstArg()).when(this.stationRepo).save(any());
 
         // Perform the service call
         Station result = this.stationService.save(this.newStation);
@@ -276,8 +303,54 @@ class StationServiceTest {
         assertEquals(this.newStation.getGeometry(), result.getGeometry());
         assertEquals(this.newStation.getNodes(), result.getNodes());
 
+        // Make sure all the relevant services have been reloaded
+        verify(this.s125GDSService, times(1)).reload();
+        verify(this.grAisService, times(1)).reload();
+        verify(this.vdes1000Service, times(1)).reload();
+
         // Also that a saving call took place in the repository
         verify(this.stationRepo, times(1)).save(this.newStation);
+    }
+
+    /**
+     * Test that we can save correctly a new or existing station and all the
+     * already recorded station nodes will be correctly allocated if they match
+     * the geometry of the station.
+     */
+    @Test
+    void testSaveUpdateNodes() {
+        doAnswer(returnsFirstArg()).when(this.stationRepo).save(any());
+        doReturn(this.nodes).when(this.sNodeRepo).findAll();
+
+        // Perform the service call
+        try (MockedStatic<S100Utils> utilities = Mockito.mockStatic(S100Utils.class)) {
+            // Mock the S100 Node translations, cause this is how we pickup the nodes
+            utilities.when(() -> S100Utils.toS100Dto(any())).thenReturn(this.s100AbstractNode);
+
+            // Make sure we removed the nodes before hand so that we can check
+            // if the station nodes coming from the repo will be picked up
+            this.existingStation.setNodes(Collections.emptySet());
+            Station result = this.stationService.save(this.existingStation);
+
+            // Test the result
+            assertEquals(this.existingStation.getId(), result.getId());
+            assertEquals(this.existingStation.getName(), result.getName());
+            assertEquals(this.existingStation.getType(), result.getType());
+            assertEquals(this.existingStation.getIpAddress(), result.getIpAddress());
+            assertEquals(this.existingStation.getPort(), result.getPort());
+            assertEquals(this.existingStation.getMmsi(), result.getMmsi());
+            assertEquals(this.existingStation.getChannel(), result.getChannel());
+            assertEquals(this.existingStation.getGeometry(), result.getGeometry());
+            assertEquals(this.existingStation.getNodes(), result.getNodes());
+
+            // Make sure all the relevant services have been reloaded
+            verify(this.s125GDSService, times(1)).reload();
+            verify(this.grAisService, times(1)).reload();
+            verify(this.vdes1000Service, times(1)).reload();
+
+            // Also that a saving call took place in the repository
+            verify(this.stationRepo, times(1)).save(this.existingStation);
+        }
     }
 
     /**

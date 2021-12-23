@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
@@ -187,7 +188,7 @@ public class StationController {
      * @return the ResponseEntity with status 200 (OK) and the list of nodes in body
      */
     @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<S125Node>> getStationSNodes(@PathVariable BigInteger id) {
+    public ResponseEntity<List<S100AbstractNode>> getStationSNodes(@PathVariable BigInteger id) {
         log.debug("REST request to get page of Station Nodes");
         return ResponseEntity.ok()
                 .body(sNodeService.findAllForStationDto(id));

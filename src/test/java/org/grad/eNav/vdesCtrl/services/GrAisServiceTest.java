@@ -137,4 +137,63 @@ class GrAisServiceTest {
         verify(mockAdvertiser, times(this.stations.size())).destroy();
     }
 
+    /**
+     * Test that we can call the service to reload all the advertisers.
+     */
+    @Test
+    void testReload() {
+        //Perform the service call
+        this.grAisService.reload();
+
+        // Make sure we first destroy and re-init the service
+        verify(this.grAisService, times(1)).destroy();
+        verify(this.grAisService, times(1)).init();
+    }
+
+    /**
+     * Test that we can call all advertisers to publish their advertisements.
+     */
+    @Test
+    void testAdvertise() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.GNU_RADIO);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        GrAisAdvertiser mockAdvertiser = mock(GrAisAdvertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(GrAisAdvertiser.class);
+
+        // First initialise the service to pick up the advertisers
+        this.grAisService.init();
+
+        // Perform the service call
+        this.grAisService.advertiseAtons();
+
+        // Make sure all advertisers were called
+        verify(mockAdvertiser, times(this.stations.size())).advertiseAtons();
+    }
+
+    /**
+     * Test that during the reloading operation, the advertisers will be
+     * temporarily disabled so that we don't get any unwanted behaviour.
+     */
+    @Test
+    void testAdvertiseWhileReloading() {
+        doReturn(this.stations).when(this.stationService).findAllByType(StationType.GNU_RADIO);
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        GrAisAdvertiser mockAdvertiser = mock(GrAisAdvertiser.class);
+        doReturn(mockAdvertiser).when(this.applicationContext).getBean(GrAisAdvertiser.class);
+
+        // First initialise the service to pick up the advertisers
+        this.grAisService.init();
+
+        // Mock a reloading operation
+        this.grAisService.reloading = true;
+
+        // Perform the service call
+        this.grAisService.advertiseAtons();
+
+        // Make sure all advertisers were NOT called
+        verify(mockAdvertiser, never()).advertiseAtons();
+    }
+
 }

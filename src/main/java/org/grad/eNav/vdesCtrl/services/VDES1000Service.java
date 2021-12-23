@@ -18,12 +18,14 @@ package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
+import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
 import org.grad.eNav.vdesCtrl.components.Vdes1000Listener;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -64,6 +66,7 @@ public class VDES1000Service {
     // Service Variables
     protected List<Vdes1000Advertiser> vdes1000Advertisers;
     protected List<Vdes1000Listener> vdes1000Listeners;
+    protected boolean reloading;
 
     /**
      * The service post-construct operations where the handler auto-registers
@@ -118,8 +121,47 @@ public class VDES1000Service {
      */
     @PreDestroy
     public void destroy() {
-        this.vdes1000Listeners.forEach(Vdes1000Listener::destroy);
-        this.vdes1000Advertisers.forEach(Vdes1000Advertiser::destroy);
+        Optional.ofNullable(this.vdes1000Listeners)
+                .orElse(Collections.emptyList())
+                .forEach(Vdes1000Listener::destroy);
+        Optional.ofNullable(this.vdes1000Advertisers)
+                .orElse(Collections.emptyList())
+                .forEach(Vdes1000Advertiser::destroy);
+    }
+
+    /**
+     * Whenever we get changes in the stations' configuration, we will need
+     * to reload the VDES-1000 listeners and advertisers for each station,
+     * so basically we need to call the init function again.
+     */
+    public void reload() {
+        // Same as destroy - but set a flag to be safe
+        this.reloading = true;
+        this.destroy();
+        this.reloading = false;
+
+        // And re-initialise the service
+        this.init();
+    }
+
+    /**
+     * This is a scheduled task performed by the service. The fixed delay
+     * scheduler is used to execute the tasks at a specific time. The
+     * advertisement tasks run on asynchronous separate threads so there isn't
+     * really a reason to make sure the previous run has been completed before
+     * proceeding. Also, since the VDES-1000 basic operation is used, we should
+     * control the periodic transmissions manually.
+     */
+    @Scheduled(fixedDelay = 60000, initialDelay = 1000)
+    public void advertiseAtons() {
+        // Protection against advertisements while reloading
+        if(reloading) {
+            return;
+        }
+        // Otherwise, let the advertisers do their job
+        Optional.ofNullable(this.vdes1000Advertisers)
+                .orElse(Collections.emptyList())
+                .forEach(Vdes1000Advertiser::advertiseAtons);
     }
 
 }

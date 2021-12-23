@@ -21,9 +21,13 @@ import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
+import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
+import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.hibernate.search.backend.lucene.LuceneExtension;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.mapper.orm.Search;
@@ -41,6 +45,7 @@ import javax.persistence.EntityManager;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * The Station Service Class
@@ -68,10 +73,30 @@ public class StationService {
     S125GDSService s125GDSService;
 
     /**
+     * The GNURadio AIS Service.
+     */
+    @Autowired
+    @Lazy
+    GrAisService grAisService;
+
+    /**
+     * The VDES-1000 Service.
+     */
+    @Autowired
+    @Lazy
+    VDES1000Service vdes1000Service;
+
+    /**
      * The Station Repository.
      */
     @Autowired
     StationRepo stationRepo;
+
+    /**
+     * The Station Node Repo.
+     */
+    @Autowired
+    SNodeRepo sNodeRepo;
 
     // Service Variables
     private final String[] searchFields = new String[] {
@@ -138,8 +163,27 @@ public class StationService {
      */
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
-        Station savedStation =  this.stationRepo.save(station);
+
+        // Refresh the nodes to be allocated due to a potential geometry change
+        station.setNodes(this.sNodeRepo.findAll()
+                .stream()
+                .filter(sNode -> Optional.of(sNode)
+                        .map(S100Utils::toS100Dto)
+                        .map(S100AbstractNode::getBbox)
+                        .map(GeometryJSONConverter::convertToGeometry)
+                        .filter(station.getGeometry()::intersects)
+                        .isPresent())
+                .collect(Collectors.toSet()));
+
+        // Now save the updated station
+        Station savedStation = this.stationRepo.save(station);
+
+        // And ask the geomesa datastore service to reload
         this.s125GDSService.reload();
+        this.grAisService.reload();
+        this.vdes1000Service.reload();
+
+        // Finally, return the saved value
         return savedStation;
     }
 

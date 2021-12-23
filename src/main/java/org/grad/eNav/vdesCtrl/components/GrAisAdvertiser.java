@@ -17,9 +17,9 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -42,7 +42,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -122,17 +121,19 @@ public class GrAisAdvertiser {
     }
 
     /**
-     * This is a scheduled task performed by the service. The fixed delay
-     * scheduler is used to execute the tasks at a specific time. It should wait
-     * for the previous task completion. Since the GNURadio transmission are
-     * quite primitive we should control the periodic transmissions manually.
+     * This is the actual advertising task that is periodically called by the
+     * service. A fixed delay scheduler is used to execute the tasks at a
+     * specific time. Since the GNURadio transmission are quite primitive we
+     * should control the periodic transmissions manually.
      */
-    @Scheduled(fixedDelay = 60000, initialDelay = 1000)
-    public void advertiseAtons() throws InterruptedException {
+    @Async("taskExecutor")
+    public void advertiseAtons() {
         // Get all the nodes applicable for the station and build the messages
         List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(S125Node.class::isInstance)
+                .map(S125Node.class::cast)
                 .map(s125 -> {
                     try {
                         return S100Utils.s125ToAisMessage21(s125);
@@ -146,17 +147,21 @@ public class GrAisAdvertiser {
                 .collect(Collectors.toList());
 
         // Now create the AIS advertisements - wait in between
-        for(AISMessage21 message: messages) {
-            // First send the message right away and then check if to create a signature for it
-            this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), message);
+        try {
+            for (AISMessage21 message : messages) {
+                // First send the message right away and then check if to create a signature for it
+                this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), message);
 
-            // If signature messages are enabled, send one
-            if(this.enableSignatures) {
-                this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
+                // If signature messages are enabled, send one
+                if (this.enableSignatures) {
+                    this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
+                }
+
+                // Wait to give enough time for the AIS TDMA slot
+                Thread.sleep(this.aisInterval);
             }
-
-            // Wait to give enough time for the AIS TDMA slot
-            Thread.sleep(this.aisInterval);
+        } catch (InterruptedException ex) {
+            this.log.error(ex.getMessage());
         }
     }
 

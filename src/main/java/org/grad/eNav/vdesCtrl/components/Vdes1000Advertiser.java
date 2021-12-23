@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
@@ -35,8 +36,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.tokens.ScalarToken;
 
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
@@ -122,17 +125,19 @@ public class Vdes1000Advertiser {
     }
 
     /**
-     * This is a scheduled task performed by the service. The fixed delay
-     * scheduler is used to execute the tasks at a specific time. It should wait
-     * for the previous task completion. Since the VDES-1000 basic operation
-     * is used, we should control the periodic transmissions manually.
+     * This is the actual advertising task that is periodically called by the
+     * service. A fixed delay scheduler is used to execute the tasks at a
+     * specific time. Since the VDES-1000 basic TSA-VDM and DDM operations are
+     * used we should control the periodic transmissions manually.
      */
-    @Scheduled(fixedDelay = 60000, initialDelay = 1000)
-    public void advertiseAtons() throws VDES1000ConnException {
+    @Async("taskExecutor")
+    public void advertiseAtons() {
         // Get all the nodes applicable for the station and build the messages
         List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(S125Node.class::isInstance)
+                .map(S125Node.class::cast)
                 .map(s125 -> {
                     try {
                         return S100Utils.s125ToAisMessage21(s125);
@@ -146,22 +151,25 @@ public class Vdes1000Advertiser {
                 .collect(Collectors.toList());
 
         // Now create the AIS advertisements - wait in between
-        for(AISMessage21 message: messages) {
-            // First send the message right away and then check if to create a signature for it
-            log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
-            this.vdes1000Conn.sendMessage(message, this.station.getChannel());
+        try {
+            for (AISMessage21 message : messages) {
+                // First send the message right away and then check if to create a signature for it
+                log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
+                this.vdes1000Conn.sendMessage(message, this.station.getChannel());
 
-            // If signature messages are enabled, send one
-            if(this.enableSignatures) {
-                // Get the signature for the sent message
-                AbstractMessage signature = this.getSignature(message);
+                // If signature messages are enabled, send one
+                if (this.enableSignatures) {
+                    // Get the signature for the message sent
+                    AbstractMessage signature = this.getSignature(message);
 
-                // If we have a signature and it's valid
-                // [48, 48, 53, 112, 64, 81, 96, 100, 110, 83, 96, 83, 108, 87, 76, 58, 87, 63, 67, 116, 58, 48, 82, 101, 54, 97, 107, 98, 111, 109, 77, 105, 108, 78, 72, 107, 72, 77, 74, 106, 68, 116, 119, 64, 103, 108, 103, 61, 117, 56, 103, 102, 55, 83, 81, 54, 67]
-                if(Objects.nonNull(signature)) {
-                    this.vdes1000Conn.sendMessageWithBBM(signature, this.station.getChannel());
+                    // If we have a signature and it's valid
+                    if (Objects.nonNull(signature)) {
+                        this.vdes1000Conn.sendMessageWithBBM(signature, this.station.getChannel());
+                    }
                 }
             }
+        } catch (VDES1000ConnException ex) {
+            this.log.error(ex.getMessage());
         }
     }
 

@@ -21,6 +21,7 @@ import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -61,6 +62,7 @@ public class GrAisService {
 
     // Service Variables
     protected List<GrAisAdvertiser> grAisAdvertisers;
+    protected boolean reloading;
 
     /**
      * The service post-construct operations where the handler auto-registers
@@ -95,7 +97,44 @@ public class GrAisService {
      */
     @PreDestroy
     public void destroy() {
-        this.grAisAdvertisers.forEach(GrAisAdvertiser::destroy);
+        Optional.ofNullable(this.grAisAdvertisers)
+                .orElse(Collections.emptyList())
+                .forEach(GrAisAdvertiser::destroy);
+    }
+
+    /**
+     * Whenever we get changes in the stations' configuration, we will need
+     * to reload the GNURadio advertisers for each station, so basically we need
+     * to call the init function again.
+     */
+    public void reload() {
+        // Same as destroy - but set a flag to be safe
+        this.reloading = true;
+        this.destroy();
+        this.reloading = false;
+
+        // And re-initialise the service
+        this.init();
+    }
+
+    /**
+     * This is a scheduled task performed by the service. The fixed delay
+     * scheduler is used to execute the tasks at a specific time. The
+     * advertisement tasks run on asynchronous separate threads so there isn't
+     * really a reason to make sure the previous run has been completed before
+     * proceeding. Also, since the GNURadio transmission are quite primitive we
+     * should control the periodic transmissions manually.
+     */
+    @Scheduled(fixedDelay = 60000, initialDelay = 1000)
+    public void advertiseAtons() {
+        // Protection against advertisements while reloading
+        if(reloading) {
+            return;
+        }
+        // Otherwise, let the advertisers do their job
+        Optional.ofNullable(this.grAisAdvertisers)
+                .orElse(Collections.emptyList())
+                .forEach(GrAisAdvertiser::advertiseAtons);
     }
 
 }

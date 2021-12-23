@@ -175,6 +175,33 @@ class S125GDSServiceTest {
     }
 
     /**
+     * Test that the S125 Geomesa Datastore service can be destroyed gracefully,
+     * but if this happens during a reloading operation, the Geomesa DataStore
+     * consumer will NOT be dropped.
+     */
+    @Test
+    void testDestroyWhileReloading() {
+        doReturn(this.stations).when(this.stationService).findAll();
+
+        // Create a mock Datastore Listener to be returned by the listener initialisation
+        S125GDSListener mockListener = mock(S125GDSListener.class);
+        doReturn(mockListener).when(this.applicationContext).getBean(S125GDSListener.class);
+
+        // First initialise the service to pick up the listeners
+        this.s125GDSService.init();
+
+        // Mock a reloading operation
+        this.s125GDSService.reloading = true;
+
+        // Perform the service call
+        this.s125GDSService.destroy();
+
+        // Make sure the listeners and the Geomesa datastore gets disconnected
+        verify(mockListener, times(this.stations.size())).destroy();
+        verify(this.consumer, never()).dispose();
+    }
+
+    /**
      * Test that the S125 Geomesa Datastore service can reload by calling the
      * initialisation procedure on demand.
      */
