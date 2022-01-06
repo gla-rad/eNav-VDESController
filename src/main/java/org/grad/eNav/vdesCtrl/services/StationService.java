@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -165,7 +166,10 @@ public class StationService {
         log.debug("Request to save Station : {}", station);
 
         // Refresh the nodes to be allocated due to a potential geometry change
-        station.setNodes(this.sNodeRepo.findAll()
+        station.setNodes(Optional.of(station)
+                .map(Station::getGeometry)
+                .map(g -> this.sNodeRepo.findAll())
+                .orElse(Collections.emptyList())
                 .stream()
                 .filter(sNode -> Optional.of(sNode)
                         .map(S100Utils::toS100Dto)
