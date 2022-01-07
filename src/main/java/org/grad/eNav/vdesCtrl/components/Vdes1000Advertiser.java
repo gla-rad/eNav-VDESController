@@ -20,6 +20,7 @@ package org.grad.eNav.vdesCtrl.components;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
+import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
@@ -28,25 +29,26 @@ import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
 import org.grad.vdes1000.comm.VDES1000Conn;
+import org.grad.vdes1000.comm.VDES1000ConnListener;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.integration.channel.PublishSubscribeChannel;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.tokens.ScalarToken;
 
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
@@ -79,6 +81,13 @@ public class Vdes1000Advertiser {
     Integer signatureDestMmmsi;
 
     /**
+     * The Publish-Subscribe Channel to publish the incoming data to.
+     */
+    @Autowired
+    @Qualifier("publishSubscribeChannel")
+    PublishSubscribeChannel publishSubscribeChannel;
+
+    /**
      * The CKeeper Client
      */
     @Autowired
@@ -93,6 +102,7 @@ public class Vdes1000Advertiser {
     // Component Variables
     protected Station station;
     protected VDES1000Conn vdes1000Conn;
+    protected DatagramSocket fwdSocket;
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -105,13 +115,23 @@ public class Vdes1000Advertiser {
         this.station = station;
 
         // Create the VDES-1000 Connection
-        this.vdes1000Conn = new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
+        this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
                 "AI"+String.format("%04d", this.station.getId()),
                 InetAddress.getByName(this.station.getIpAddress()),
-                this.station.getPort());
+                this.station.getPort(),
+                this.station.getBroadcastPort()));
 
         // Add logging capability to the VDES-1000 connection
-        this.vdes1000Conn.setLogger(this.log);
+        this.getVdes1000Conn().setLogger(this.log);
+
+        // Enable the connection monitoring
+        this.getVdes1000Conn().addVdesListener(this::handleMessage);
+        this.getVdes1000Conn().startMonitoring();
+
+        // If we also have a forward address, open a forward port
+        if(Objects.nonNull(this.station.getFwdIpAddress()) && Objects.nonNull(this.station.getFwdIpAddress())) {
+            this.setFwdSocket(new DatagramSocket());
+        }
     }
 
     /**
@@ -121,7 +141,12 @@ public class Vdes1000Advertiser {
     @PreDestroy
     public void destroy() {
         log.info("VDES-1000 Advertiser is shutting down...");
-        this.vdes1000Conn.close();
+        // Try to close the connections and don't worry about the interrupts
+        try {
+            this.getVdes1000Conn().close();
+        } catch (InterruptedException ex) {
+            this.log.error(ex.getMessage());
+        }
     }
 
     /**
@@ -155,7 +180,7 @@ public class Vdes1000Advertiser {
             for (AISMessage21 message : messages) {
                 // First send the message right away and then check if to create a signature for it
                 log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
-                this.vdes1000Conn.sendMessage(message, this.station.getChannel());
+                this.getVdes1000Conn().sendMessage(message, this.station.getChannel());
 
                 // If signature messages are enabled, send one
                 if (this.enableSignatures) {
@@ -164,7 +189,7 @@ public class Vdes1000Advertiser {
 
                     // If we have a signature and it's valid
                     if (Objects.nonNull(signature)) {
-                        this.vdes1000Conn.sendMessageWithBBM(signature, this.station.getChannel());
+                        this.getVdes1000Conn().sendMessageWithBBM(signature, this.station.getChannel());
                     }
                 }
             }
@@ -209,4 +234,71 @@ public class Vdes1000Advertiser {
         return abstractMessage;
     }
 
+    /**
+     * Handle the received message.
+     *
+     * Messages coming from a VDES-1000 station are always string, such as NMEA
+     * sentences.
+     *
+     * @param message   The message to be handled.
+     */
+    public void handleMessage(String message) {
+        // Send the packet to our pub-sub messaging bus
+        this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
+                .setHeader(MessageHeaders.CONTENT_TYPE, this.station.getType())
+                .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
+                .setHeader(PubSubMsgHeaders.PORT.getHeader(), this.station.getBroadcastPort())
+                .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
+                .build());
+
+        // If we also have a forward address, send it there too
+        if(Objects.nonNull(this.getFwdSocket())) {
+            try {
+                this.getFwdSocket().send(new DatagramPacket(
+                        message.getBytes(),
+                        message.length(),
+                        InetAddress.getByName(this.station.getFwdIpAddress()),
+                        this.station.getFwdPort()
+                ));
+            } catch (IOException ex) {
+                this.log.error(ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Gets the VDES-1000 connection.
+     *
+     * @return the VDES-1000 connection
+     */
+    protected VDES1000Conn getVdes1000Conn() {
+        return vdes1000Conn;
+    }
+
+    /**
+     * Sets the VDES-1000 connection.
+     *
+     * @param vdes1000Conn the VDES-1000 connection
+     */
+    protected void setVdes1000Conn(VDES1000Conn vdes1000Conn) {
+        this.vdes1000Conn = vdes1000Conn;
+    }
+
+    /**
+     * Gets the forward port socket.
+     *
+     * @return the forward port socket
+     */
+    protected DatagramSocket getFwdSocket() {
+        return fwdSocket;
+    }
+
+    /**
+     * Sets the forward port socket.
+     *
+     * @param fwdSocket the forward port socket
+     */
+    protected void setFwdSocket(DatagramSocket fwdSocket) {
+        this.fwdSocket = fwdSocket;
+    }
 }

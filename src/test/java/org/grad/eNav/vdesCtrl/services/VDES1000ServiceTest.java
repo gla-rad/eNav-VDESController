@@ -17,7 +17,6 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
-import org.grad.eNav.vdesCtrl.components.Vdes1000Listener;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.vdes1000.generic.AISChannelPref;
@@ -106,8 +105,6 @@ class VDES1000ServiceTest {
         // Create a mock VDES-1000 advertiser & listener to be returned during initialisation
         Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
         doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
-        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
-        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
 
         // Perform the service call
         this.vdes1000Service.init();
@@ -116,7 +113,6 @@ class VDES1000ServiceTest {
         List<Station> advertisers = this.stations.stream()
                 .filter(s -> s.getType() == StationType.VDES_1000)
                 .collect(Collectors.toList());
-        assertEquals(stations.size(), this.vdes1000Service.vdes1000Listeners.size());
         assertEquals(stations.size(), this.vdes1000Service.vdes1000Advertisers.size());
     }
 
@@ -131,8 +127,6 @@ class VDES1000ServiceTest {
         // Create a mock VDES-1000 advertiser & listener to be returned during initialisation
         Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
         doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
-        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
-        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
 
         // First initialise the service to pick up the advertisers
         this.vdes1000Service.init();
@@ -141,7 +135,6 @@ class VDES1000ServiceTest {
         this.vdes1000Service.destroy();
 
         // Make sure the advertisers got destroyed
-        verify(mockListener, times(this.stations.size())).destroy();
         verify(mockAdvertiser, times(this.stations.size())).destroy();
     }
 
@@ -168,8 +161,6 @@ class VDES1000ServiceTest {
         // Create a mock Datastore Listener to be returned by the listener initialisation
         Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
         doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
-        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
-        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
 
         // First initialise the service to pick up the advertisers
         this.vdes1000Service.init();
@@ -192,8 +183,6 @@ class VDES1000ServiceTest {
         // Create a mock Datastore Listener to be returned by the listener initialisation
         Vdes1000Advertiser mockAdvertiser = mock(Vdes1000Advertiser.class);
         doReturn(mockAdvertiser).when(this.applicationContext).getBean(Vdes1000Advertiser.class);
-        Vdes1000Listener mockListener = mock(Vdes1000Listener.class);
-        doReturn(mockListener).when(this.applicationContext).getBean(Vdes1000Listener.class);
 
         // First initialise the service to pick up the advertisers
         this.vdes1000Service.init();

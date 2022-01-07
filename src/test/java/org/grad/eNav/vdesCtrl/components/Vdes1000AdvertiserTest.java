@@ -20,6 +20,7 @@ package org.grad.eNav.vdesCtrl.components;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
+import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
@@ -34,15 +35,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.integration.channel.PublishSubscribeChannel;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +73,12 @@ class Vdes1000AdvertiserTest {
     Vdes1000Advertiser vdes1000Advertiser;
 
     /**
+     * The Publish-Subscribe Channel mock.
+     */
+    @Mock
+    PublishSubscribeChannel publishSubscribeChannel;
+
+    /**
      * The CKeeper Client mock.
      */
     @Mock
@@ -82,6 +95,7 @@ class Vdes1000AdvertiserTest {
     private S125Node s125Node;
     private byte[] signature;
     private VDES1000Conn vdes1000Conn;
+    private DatagramSocket fwdSocket;
 
     /**
      * Common setup for all the tests.
@@ -115,8 +129,11 @@ class Vdes1000AdvertiserTest {
         // Mock a signature
         this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
 
-        // Also mock a UDP socket that does nothing, to be used in the tests
+        // Mock the VDES-1000 connection, to be used in the tests
         this.vdes1000Conn = mock(VDES1000Conn.class);
+
+        // Finally moch the VDES-1000 UDP forward socket
+        this.fwdSocket = mock(DatagramSocket.class);
     }
 
     /**
@@ -125,10 +142,14 @@ class Vdes1000AdvertiserTest {
     @Test
     void testInit() throws SocketException, UnknownHostException {
         // Perform the component call
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         this.vdes1000Advertiser.init(this.station);
 
         assertEquals(this.station, this.vdes1000Advertiser.station);
         assertNotNull(this.vdes1000Advertiser.vdes1000Conn);
+
+        // Make sure the monitoring will attempt to start
+        verify(this.vdes1000Conn, times(1)).startMonitoring();
     }
 
     /**
@@ -136,9 +157,10 @@ class Vdes1000AdvertiserTest {
      * will close its UDP connection to the GNURadio device.
      */
     @Test
-    void testDestroy() {
+    void testDestroy() throws SocketException, UnknownHostException, InterruptedException {
         // Initialise the advertiser
-        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        this.vdes1000Advertiser.init(this.station);
 
         // Perform the service class
         this.vdes1000Advertiser.destroy();
@@ -154,11 +176,11 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testAdvertiseAtons() throws VDES1000ConnException {
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = false;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
@@ -176,12 +198,12 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
@@ -202,7 +224,6 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.vdes1000Conn = this.vdes1000Conn;
         this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
 
@@ -211,6 +232,76 @@ class Vdes1000AdvertiserTest {
 
         // Make sure no UDP packet was sent to the GRURadio station
         verify(this.vdes1000Conn, never()).sendMessage(any(), eq(this.station.getChannel()));
+    }
+
+    /**
+     * Test that the VDES-1000 connection monitoring handler will pick up
+     * the received messages and attempt to publish them in the publish
+     * subscribe channel.
+     */
+    @Test
+    void testHandleMessage() throws IOException {
+        // Initialise the advertiser
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        this.vdes1000Advertiser.init(this.station);
+
+        // Spy on the publish/subscribe channel to pick up the published message
+        ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
+
+        // Perform the component call
+        this.vdes1000Advertiser.handleMessage("This is a test message");
+
+        // Verify that a correct message was published
+        verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
+        assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
+        assertEquals(this.station.getBroadcastPort(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
+        assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
+        assertEquals("This is a test message", messageArgument.getValue().getPayload());
+
+        // Verify that no forwarding took place
+        verify(this.fwdSocket, never()).send(any());
+    }
+
+    /**
+     * Test that the VDES-1000 connection monitoring handler will pick up
+     * the received messages and attempt to publish them in the publish
+     * subscribe channel, as well as forward them in the forward port if that
+     * has been defined.
+     */
+    @Test
+    void testHandleMessageWithForward() throws IOException {
+        // Turn on the forwarding
+        this.station.setFwdIpAddress("10.0.0.2");
+        this.station.setFwdPort(8003);
+
+        // Initialise the advertiser
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        doReturn(this.fwdSocket).when(vdes1000Advertiser).getFwdSocket();
+        this.vdes1000Advertiser.init(this.station);
+
+        // Spy on the publish/subscribe channel to pick up the published message
+        ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
+
+        // Spy on the forward
+        ArgumentCaptor<DatagramPacket> datagramPacketArgument = ArgumentCaptor.forClass(DatagramPacket.class);
+
+        // Perform the component call
+        this.vdes1000Advertiser.handleMessage("This is a test message");
+
+        // Verify that a correct message was published
+        verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
+        assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
+        assertEquals(this.station.getBroadcastPort(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
+        assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
+        assertEquals("This is a test message", messageArgument.getValue().getPayload());
+
+        // Verify that the correcy datagram packet was sent
+        verify(this.fwdSocket, times(1)).send(datagramPacketArgument.capture());
+        assertEquals(this.station.getFwdIpAddress(), datagramPacketArgument.getValue().getAddress().getHostAddress());
+        assertEquals(this.station.getFwdPort(), datagramPacketArgument.getValue().getPort());
+        assertEquals("This is a test message", new String(datagramPacketArgument.getValue().getData()));
     }
 
 }

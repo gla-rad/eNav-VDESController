@@ -60,7 +60,7 @@ class S125WebSocketServiceTest {
      * The AtoN Publish Subscribe Channel mock.
      */
     @Mock
-    PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel publishSubscribeChannel;
 
     /**
      * The Web Socket mock.
@@ -100,7 +100,7 @@ class S125WebSocketServiceTest {
         // Perform the service call
         this.s125WebSocketService.init();
 
-        verify(this.atonPublishChannel, times(1)).subscribe(this.s125WebSocketService);
+        verify(this.publishSubscribeChannel, times(1)).subscribe(this.s125WebSocketService);
     }
 
     /**
@@ -112,7 +112,7 @@ class S125WebSocketServiceTest {
         // Perform the service call
         this.s125WebSocketService.destroy();
 
-        verify(this.atonPublishChannel, times(1)).destroy();
+        verify(this.publishSubscribeChannel, times(1)).destroy();
     }
 
     /**
@@ -139,7 +139,7 @@ class S125WebSocketServiceTest {
         verify(this.webSocket, times(1)).convertAndSend(topicArgument.capture(), payLoadArgument.capture());
 
         // Verify the packet
-        assertEquals("/topic/127.0.0.1:8000", topicArgument.getValue());
+        assertEquals("/topic/s125/127.0.0.1:8000", topicArgument.getValue());
         assertEquals(this.s125Node, payLoadArgument.getValue());
     }
 
@@ -167,7 +167,7 @@ class S125WebSocketServiceTest {
         verify(this.webSocket, times(1)).convertAndSend(topicArgument.capture(), payLoadArgument.capture());
 
         // Verify the packet
-        assertEquals("/topic/127.0.0.1:8000", topicArgument.getValue());
+        assertEquals("/topic/messages/127.0.0.1:8000", topicArgument.getValue());
         assertEquals("This is a simple message", payLoadArgument.getValue());
     }
 

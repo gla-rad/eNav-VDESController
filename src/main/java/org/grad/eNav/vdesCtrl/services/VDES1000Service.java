@@ -17,10 +17,7 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.grad.eNav.vdesCtrl.components.GrAisAdvertiser;
-import org.grad.eNav.vdesCtrl.components.S125GDSListener;
 import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
-import org.grad.eNav.vdesCtrl.components.Vdes1000Listener;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +31,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,7 +61,6 @@ public class VDES1000Service {
 
     // Service Variables
     protected List<Vdes1000Advertiser> vdes1000Advertisers;
-    protected List<Vdes1000Listener> vdes1000Listeners;
     protected boolean reloading;
 
     /**
@@ -81,24 +76,6 @@ public class VDES1000Service {
         final List<Station> stations = Optional.of(StationType.VDES_1000)
                 .map(this.stationService::findAllByType)
                 .orElseGet(Collections::emptyList);
-
-        // Initialise the VDES-1000 Listeners, one per each station
-        this.vdes1000Listeners = stations.stream()
-                .filter(station -> Objects.nonNull(station.getBroadcastPort()))
-                .map(station -> {
-                    Vdes1000Listener vdes1000Listener = this.applicationContext.getBean(Vdes1000Listener.class);
-                    try {
-                        vdes1000Listener.init(station);
-                    } catch (SocketException | UnknownHostException ex) {
-                        log.error(ex.getMessage());
-                        return null;
-                    }
-                    return  vdes1000Listener;
-                })
-                .collect(Collectors.toList());
-
-        // Start listening
-        this.vdes1000Listeners.stream().forEach(Vdes1000Listener::listen);
 
         // Initialise the VDES-1000 Advertisers, one per each station
         this.vdes1000Advertisers = stations.stream()
@@ -121,9 +98,6 @@ public class VDES1000Service {
      */
     @PreDestroy
     public void destroy() {
-        Optional.ofNullable(this.vdes1000Listeners)
-                .orElse(Collections.emptyList())
-                .forEach(Vdes1000Listener::destroy);
         Optional.ofNullable(this.vdes1000Advertisers)
                 .orElse(Collections.emptyList())
                 .forEach(Vdes1000Advertiser::destroy);

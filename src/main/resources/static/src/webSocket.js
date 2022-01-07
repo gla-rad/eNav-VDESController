@@ -32,13 +32,13 @@ function connect() {
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             setConnected(true);
-            stompClient.subscribe('/topic/' + endpoint, function (msg) {
+            stompClient.subscribe('/topic/s125/' + endpoint, function (msg) {
                 showMessage(JSON.parse(msg.body));
             });
         });
     } else {
         setConnected(true);
-        stompClient.subscribe('/topic/' + endpoint, function (msg) {
+        stompClient.subscribe('/topic/s125/' + endpoint, function (msg) {
             showMessage(JSON.parse(msg.body));
         });
     }

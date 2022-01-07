@@ -65,7 +65,7 @@ class S125GDSServiceTest {
      * The AtoN Publish Channel mock.
      */
     @Mock
-    PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel publishSubscribeChannel;
 
     /**
      * The Station Service mock.

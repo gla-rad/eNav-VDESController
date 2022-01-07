@@ -66,8 +66,8 @@ public class S125GDSListener implements FeatureListener {
      * The AtoN Data Channel to publish the incoming data to.
      */
     @Autowired
-    @Qualifier("atonPublishChannel")
-    PublishSubscribeChannel atonPublishChannel;
+    @Qualifier("publishSubscribeChannel")
+    PublishSubscribeChannel publishSubscribeChannel;
 
     /**
      * The Station Service.
@@ -166,7 +166,7 @@ public class S125GDSListener implements FeatureListener {
                     .map(MessageBuilder::build)
                     .forEach(msg -> {
                         this.saveSNode(msg.getPayload());
-                        this.atonPublishChannel.send(msg);
+                        this.publishSubscribeChannel.send(msg);
                     });
         }
         // For feature deletions,

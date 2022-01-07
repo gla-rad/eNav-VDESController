@@ -57,8 +57,8 @@ public class S125WebSocketService implements MessageHandler {
      * The AtoN Publish Channel to listen the AtoN messages to.
      */
     @Autowired
-    @Qualifier("atonPublishChannel")
-    PublishSubscribeChannel atonPublishChannel;
+    @Qualifier("publishSubscribeChannel")
+    PublishSubscribeChannel publishSubscribeChannel;
 
     /**
      * Attach the web-socket as a simple messaging template
@@ -74,7 +74,7 @@ public class S125WebSocketService implements MessageHandler {
     @PostConstruct
     public void init() {
         log.info("AtoN Message Web Socket Service is booting up...");
-        this.atonPublishChannel.subscribe(this);
+        this.publishSubscribeChannel.subscribe(this);
     }
 
     /**
@@ -84,8 +84,8 @@ public class S125WebSocketService implements MessageHandler {
     @PreDestroy
     public void destroy() {
         log.info("AtoN Message Web Socket Service is shutting down...");
-        if (this.atonPublishChannel != null) {
-            this.atonPublishChannel.destroy();
+        if (this.publishSubscribeChannel != null) {
+            this.publishSubscribeChannel.destroy();
         }
     }
 
@@ -113,7 +113,7 @@ public class S125WebSocketService implements MessageHandler {
             log.debug(String.format("Received AtoN Message with UID: %s.", s125Node.getAtonUID()));
 
             // Now push the aton node down the web-socket stream
-            this.publishMessage(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), s125Node);
+            this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "s125", address, port), s125Node);
         }
         else if(message.getPayload() instanceof String) {
             // Get the header and payload of the incoming message
@@ -122,8 +122,8 @@ public class S125WebSocketService implements MessageHandler {
             // A simple debug message;
             log.debug(String.format("Received a simple pub/sub message: %s.", payload));
 
-            // Now push the aton node down the web-socket stream
-            this.publishMessage(this.webSocket, String.format("/%s/%s:%d", prefix, address, port), payload);
+            // Now push the message down the web-socket stream
+            this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "messages", address, port), payload);
 
         }
         else {

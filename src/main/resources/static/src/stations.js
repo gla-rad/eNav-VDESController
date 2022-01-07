@@ -446,7 +446,7 @@ function connectConsole() {
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 setConnected(true);
-                stompClient.subscribe('/topic/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
+                stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
                     $('#stationConsoleTextArea').val($('#stationConsoleTextArea').val() + msg.body);
                 });
             });

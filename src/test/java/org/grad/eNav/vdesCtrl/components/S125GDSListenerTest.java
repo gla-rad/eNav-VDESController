@@ -75,7 +75,7 @@ class S125GDSListenerTest {
      * The AtoN Data Channel mock.
      */
     @Mock
-    PublishSubscribeChannel atonPublishChannel;
+    PublishSubscribeChannel publishSubscribeChannel;
 
     /**
      * The Station Service mock.
@@ -211,7 +211,7 @@ class S125GDSListenerTest {
 
         // Verify that our message was saved and sent
         verify(this.stationService, times(1)).save(any(Station.class));
-        verify(atonPublishChannel, times(1)).send(any(Message.class));
+        verify(publishSubscribeChannel, times(1)).send(any(Message.class));
     }
 
     /**
@@ -243,7 +243,7 @@ class S125GDSListenerTest {
 
         // Verify that our message was not saved or sent
         verify(this.stationService, never()).save(any(Station.class));
-        verify(atonPublishChannel, never()).send(any(Message.class));
+        verify(publishSubscribeChannel, never()).send(any(Message.class));
     }
 
     /**
