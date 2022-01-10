@@ -129,7 +129,7 @@ public class Vdes1000Advertiser {
         this.getVdes1000Conn().startMonitoring();
 
         // If we also have a forward address, open a forward port
-        if(Objects.nonNull(this.station.getFwdIpAddress()) && Objects.nonNull(this.station.getFwdIpAddress())) {
+        if(Objects.nonNull(this.station.getFwdIpAddress()) && Objects.nonNull(this.station.getFwdPort())) {
             this.setFwdSocket(new DatagramSocket());
         }
     }
@@ -257,8 +257,13 @@ public class Vdes1000Advertiser {
                 this.getFwdSocket().send(new DatagramPacket(
                         message.getBytes(),
                         message.length(),
-                        InetAddress.getByName(this.station.getFwdIpAddress()),
-                        this.station.getFwdPort()
+                        Optional.of(this.station)
+                                .map(Station::getFwdIpAddress)
+                                .map(ip -> { try { return InetAddress.getByName(ip); } catch (UnknownHostException ex) { return null; } })
+                                .orElse(null),
+                        Optional.of(this.station)
+                                .map(Station::getFwdPort)
+                                .orElse(-1)
                 ));
             } catch (IOException ex) {
                 this.log.error(ex.getMessage());

@@ -196,7 +196,7 @@ public class DtPagingRequest {
     }
 
     /**
-     * Constructs a Springboot JPA page request of the of the datatables page
+     * Constructs a Springboot JPA page request of the datatables page
      * request.
      *
      * @return the Springboot JPA page request

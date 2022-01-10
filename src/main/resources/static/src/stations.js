@@ -103,7 +103,7 @@ var nodesColumnDefs = [{
 }];
 
 // Run when the document is ready
-$(document).ready( function () {
+$(function () {
     stationsTable = $('#stations_table').DataTable({
         processing: true,
         language: {
@@ -111,10 +111,10 @@ $(document).ready( function () {
         },
         serverSide: true,
         ajax: {
-            "type": "POST",
-            "url": "/api/stations/dt",
-            "contentType": "application/json",
-            "data": function (d) {
+            type: "POST",
+            url: "/api/stations/dt",
+            contentType: "application/json",
+            data: function (d) {
                 return JSON.stringify(d);
             },
             error: function (jqXHR, ajaxOptions, thrownError) {
@@ -355,11 +355,11 @@ function loadStationNodes(event, table, button, config) {
     // And re-initialise it
     stationsNodesTable = $('#stations_nodes_table').DataTable({
         ajax: {
-            "type": "GET",
-            "url": `/api/stations/${stationId}/nodes`,
-            "dataType": "json",
-            "cache": false,
-            "dataSrc": function (json) {
+            type: "GET",
+            url: `/api/stations/${stationId}/nodes`,
+            dataType: "json",
+            cache: false,
+            dataSrc: function (json) {
                 // Place the content inside a textarea to escape the XML
                 json.forEach(node => {
                     node["content"] = "<textarea style=\"width: 100%; max-height: 300px\" readonly>"
@@ -445,7 +445,6 @@ function connectConsole() {
             var socket = new SockJS('/vdes-ctrl-websocket');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
-                setConnected(true);
                 stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
                     $('#stationConsoleTextArea').val($('#stationConsoleTextArea').val() + msg.body);
                 });
