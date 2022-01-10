@@ -26,6 +26,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
+import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.query.SearchResult;
@@ -77,10 +78,10 @@ class SNodeServiceTest {
     EntityManager entityManager;
 
     /**
-     * The Station Service mock.
+     * The Station Repo mock.
      */
     @Mock
-    StationService stationService;
+    StationRepo stationRepo;
 
     /**
      * The Station Node Repository Mock.
@@ -358,7 +359,7 @@ class SNodeServiceTest {
             this.nodes.get(i).setMessage(xml);
         }
 
-        doReturn(this.station).when(this.stationService).findOne(this.station.getId());
+        doReturn(this.station).when(this.stationRepo).findOneWithEagerRelationships(this.station.getId());
 
         // Perform the service call
         List<S100AbstractNode> result = this.sNodeService.findAllForStationDto(this.station.getId());

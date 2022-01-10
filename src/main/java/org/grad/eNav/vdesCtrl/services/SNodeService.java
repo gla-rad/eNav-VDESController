@@ -25,6 +25,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
+import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.hibernate.search.backend.lucene.LuceneExtension;
 import org.hibernate.search.engine.search.query.SearchQuery;
@@ -64,10 +65,10 @@ public class SNodeService {
     EntityManager entityManager;
 
     /**
-     * The Station Service.
+     * The Station Repo.
      */
     @Autowired
-    StationService stationService;
+    StationRepo stationRepo;
 
     /**
      * The SNode Repo.
@@ -143,6 +144,7 @@ public class SNodeService {
      * @param SNode the entity to save
      * @return the persisted entity
      */
+    @Transactional
     public SNode save(SNode SNode) {
         log.debug("Request to save Node : {}", SNode);
         return this.sNodeRepo.save(SNode);
@@ -153,6 +155,7 @@ public class SNodeService {
      *
      * @param id the ID of the node
      */
+    @Transactional
     public void delete(BigInteger id) {
         log.debug("Request to delete Station Node : {}", id);
         if(this.sNodeRepo.existsById(id)) {
@@ -165,9 +168,9 @@ public class SNodeService {
                     .stream()
                     .forEach(station -> {
                         station.getNodes().remove(sNode);
-                        this.stationService.save(station);
+                        this.stationRepo.save(station);
                     });
-            // Finally delete the station node
+            // Finally, delete the station node
             this.sNodeRepo.deleteById(id);
         } else {
             throw new DataNotFoundException(String.format("No station node found for the provided ID: %d", id));
@@ -200,7 +203,7 @@ public class SNodeService {
     public List<S100AbstractNode> findAllForStationDto(BigInteger stationId) {
         log.debug("Request to get all Nodes for Station: {}", stationId);
         return Optional.ofNullable(stationId)
-                .map(this.stationService::findOne)
+                .map(this.stationRepo::findOneWithEagerRelationships)
                 .map(Station::getNodes)
                 .map(l -> l.stream().map(S100Utils::toS100Dto).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
