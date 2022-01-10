@@ -24,8 +24,12 @@ import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.vdes1000.generic.AISChannelPref;
+import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.engine.search.query.SearchResultTotal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,13 +46,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,11 +71,16 @@ class SNodeServiceTest {
     SNodeService sNodeService;
 
     /**
+     * The Entity Manager mock.
+     */
+    @Mock
+    EntityManager entityManager;
+
+    /**
      * The Station Service mock.
      */
     @Mock
     StationService stationService;
-
 
     /**
      * The Station Node Repository Mock.
@@ -365,6 +377,58 @@ class SNodeServiceTest {
             assertNotNull(matchingNode);
             assertEquals(matchingNode.getUid(), resultNode.getAtonUID());
             assertEquals(matchingNode.getMessage(), resultNode.getContent());
+        }
+    }
+
+    /**
+     * Test that we can retrieve the paged list of station nodes for a
+     * Datatables pagination request (which by the way also includes search and
+     * sorting definitions).
+     */
+    @Test
+    void testGetStationsForDatatables() {
+        // First create the pagination request
+        DtPagingRequest dtPagingRequest = new DtPagingRequest();
+        dtPagingRequest.setStart(0);
+        dtPagingRequest.setLength(5);
+
+        // Set the pagination request columns
+        dtPagingRequest.setColumns(new ArrayList());
+        Stream.of("uid", "type", "message")
+                .map(DtColumn::new)
+                .forEach(dtPagingRequest.getColumns()::add);
+
+        // Set the pagination request ordering
+        DtOrder dtOrder = new DtOrder();
+        dtOrder.setColumn(0);
+        dtOrder.setDir(DtDirection.asc);
+        dtPagingRequest.setOrder(Collections.singletonList(dtOrder));
+
+        // Set the pagination search
+        DtSearch dtSearch = new DtSearch();
+        dtSearch.setValue("search-term");
+        dtPagingRequest.setSearch(dtSearch);
+
+        // Mock the full text query
+        SearchQuery mockedQuery = mock(SearchQuery.class);
+        SearchResult mockedResult = mock(SearchResult.class);
+        SearchResultTotal mockedResultTotal = mock(SearchResultTotal.class);
+        doReturn(5L).when(mockedResultTotal).hitCount();
+        doReturn(mockedResultTotal).when(mockedResult).total();
+        doReturn(this.nodes.subList(0, 5)).when(mockedResult).hits();
+        doReturn(mockedResult).when(mockedQuery).fetch(any(), any());
+        doReturn(mockedQuery).when(this.sNodeService).searchSNodesQuery(any(), any());
+
+        // Perform the service call
+        DtPage<SNode> result = this.sNodeService.handleDatatablesPagingRequest(dtPagingRequest);
+
+        // Validate the result
+        assertNotNull(result);
+        assertEquals(5, result.getRecordsFiltered());
+
+        // Test each of the result entries
+        for(int i=0; i < result.getRecordsFiltered(); i++){
+            assertEquals(this.nodes.get(i), result.getData().get(i));
         }
     }
 

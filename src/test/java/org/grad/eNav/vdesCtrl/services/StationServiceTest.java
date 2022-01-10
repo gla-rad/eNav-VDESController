@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;

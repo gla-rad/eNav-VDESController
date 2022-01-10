@@ -16,29 +16,32 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import _int.iho.s125.gml._0.DataSet;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
-import org.grad.eNav.vdesCtrl.models.dtos.S124Node;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.hibernate.search.backend.lucene.LuceneExtension;
+import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.scope.SearchScope;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.xml.bind.JAXBException;
+import javax.persistence.EntityManager;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -55,6 +58,12 @@ import java.util.stream.Collectors;
 public class SNodeService {
 
     /**
+     * The Entity Manager.
+     */
+    @Autowired
+    EntityManager entityManager;
+
+    /**
      * The Station Service.
      */
     @Autowired
@@ -65,6 +74,13 @@ public class SNodeService {
      */
     @Autowired
     SNodeRepo sNodeRepo;
+
+    // Service Variables
+    private final String[] searchFields = new String[] {
+            "uid",
+            "type",
+            "message"
+    };
 
     /**
      * Get all the nodes.
@@ -188,6 +204,55 @@ public class SNodeService {
                 .map(Station::getNodes)
                 .map(l -> l.stream().map(S100Utils::toS100Dto).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Handles a datatables pagination request and returns the results list in
+     * an appropriate format to be viewed by a datatables jQuery table.
+     *
+     * @param dtPagingRequest the Datatables pagination request
+     * @return the Datatables paged response
+     */
+    @Transactional(readOnly = true)
+    public DtPage<SNode> handleDatatablesPagingRequest(DtPagingRequest dtPagingRequest) {
+        // Create the search query
+        SearchQuery searchQuery = this.searchSNodesQuery(
+                dtPagingRequest.getSearch().getValue(),
+                dtPagingRequest.getLucenceSort()
+        );
+
+        // For some reason we need this casting otherwise JDK8 complains
+        return Optional.of(searchQuery)
+                .map(query -> query.fetch(dtPagingRequest.getStart(), dtPagingRequest.getLength()))
+                .map(searchResult -> new PageImpl<SNode>(searchResult.hits(), dtPagingRequest.toPageRequest(), searchResult.total().hitCount()))
+                .map(Page.class::cast)
+                .map(page -> new DtPage<>((Page<SNode>)page, dtPagingRequest))
+                .orElseGet(DtPage::new);
+    }
+
+    /**
+     * Constructs a hibernate search query using Lucene based on the provided
+     * search test. This query will be based solely on the station nodes table
+     * and will include the following fields:
+     * - UID
+     * - Type
+     * - Message
+     *
+     * @param searchText the text to be searched
+     * @param sort the sorting selection for the search query
+     * @return the full text query
+     */
+    protected SearchQuery<SNode> searchSNodesQuery(String searchText, Sort sort) {
+        SearchSession searchSession = Search.session( entityManager );
+        SearchScope<SNode> scope = searchSession.scope( SNode.class );
+        return searchSession.search( scope )
+                .extension(LuceneExtension.get())
+                .where( scope.predicate().wildcard()
+                        .fields( this.searchFields )
+                        .matching( Optional.ofNullable(searchText).map(st -> "*"+st).orElse("") + "*" )
+                        .toPredicate() )
+                .sort(f -> f.fromLuceneSort(sort))
+                .toQuery();
     }
 
 }

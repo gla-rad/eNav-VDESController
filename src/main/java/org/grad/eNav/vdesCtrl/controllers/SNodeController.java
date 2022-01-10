@@ -17,17 +17,21 @@
 package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.grad.eNav.vdesCtrl.models.domain.SNode;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
+import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing Station Nodes.
@@ -44,6 +48,38 @@ public class SNodeController {
      */
     @Autowired
     SNodeService sNodeService;
+
+    /**
+     * GET /api/snodes : Returns a paged list of all current stations.
+     *
+     * @param page the page number to be retrieved
+     * @param size the number of entries on each page
+     * @return the ResponseEntity with status 200 (OK) and the list of stations in body
+     */
+    @ResponseStatus
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<SNode>> getNodes(@RequestParam("page") Optional<Integer> page,
+                                                @RequestParam("size") Optional<Integer> size) {
+        log.debug("REST request to get page of Stations");
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(10);
+        Page<SNode> nodePage = this.sNodeService.findAll(PageRequest.of(currentPage - 1, pageSize));
+        return ResponseEntity.ok()
+                .body(nodePage.getContent());
+    }
+
+    /**
+     * POST /api/snodes/dt : Returns a paged list of all current stations.
+     *
+     * @param dtPagingRequest the datatables paging request
+     * @return the ResponseEntity with status 200 (OK) and the list of stations in body
+     */
+    @PostMapping(value = "/dt", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DtPage<SNode>> getNodesForDatatables(@RequestBody DtPagingRequest dtPagingRequest) {
+        log.debug("REST request to get page of Stations for datatables");
+        return ResponseEntity.ok()
+                .body(this.sNodeService.handleDatatablesPagingRequest(dtPagingRequest));
+    }
 
     /**
      * DELETE /api/snodes/{id} : Delete the "id" station node.

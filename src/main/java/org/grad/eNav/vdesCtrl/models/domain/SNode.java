@@ -22,6 +22,11 @@ import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Cache;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ScaledNumberField;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -43,27 +48,32 @@ import java.util.Set;
 @Entity
 @Table(name = "node")
 @Cacheable
+@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class SNode {
 
     private static final long serialVersionUID = 1L;
 
     @Id
+    @ScaledNumberField(name = "id_sort", decimalScale=0, sortable = Sortable.YES)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "snode_generator")
     @SequenceGenerator(name="snode_generator", sequenceName = "snode_seq")
     private BigInteger id;
 
     @NotNull
+    @KeywordField(sortable = Sortable.YES)
     @Column(name = "uid", unique = true)
     private String uid;
 
     @NotNull
     @Enumerated(EnumType.STRING)
+    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "type", columnDefinition = "varchar(30) default 'S_125'")
     private SNodeType type;
 
     @NotNull
     @Type(type="text")
+    @FullTextField()
     @Column(name = "message")
     private String message;
 
@@ -76,6 +86,7 @@ public class SNode {
      * Instantiates a new Station Node.
      */
     public SNode() {
+        // Empty constructor
     }
 
     /**

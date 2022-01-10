@@ -88,10 +88,8 @@ var stationsColumnDefs = [{
 var nodesColumnDefs = [{
     data: "atonUID",
     title: "AtoN UID",
-    visible: true,
     hoverMsg: "The Node AtoN UID",
     placeholder: "The Node AtoN UID",
-    required: true,
     width: "33%"
 }, {
     data: "content",
@@ -99,7 +97,9 @@ var nodesColumnDefs = [{
     type: "textarea",
     hoverMsg: "The Node Content",
     placeholder: "The Node Content",
-    required: true
+    render: function (data, type, row) {
+        return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
+    }
 }];
 
 // Run when the document is ready
@@ -360,12 +360,6 @@ function loadStationNodes(event, table, button, config) {
             dataType: "json",
             cache: false,
             dataSrc: function (json) {
-                // Place the content inside a textarea to escape the XML
-                json.forEach(node => {
-                    node["content"] = "<textarea style=\"width: 100%; max-height: 300px\" readonly>"
-                     + node["content"]
-                     + "</textarea>";
-                });
                 return json;
             },
             error: function (jqXHR, ajaxOptions, thrownError) {
@@ -373,7 +367,7 @@ function loadStationNodes(event, table, button, config) {
             }
         },
         columns: nodesColumnDefs,
-        dom: "<'row'<'col-lg-3 col-md-4'B><'col-lg-2 col-md-4'l><'col-lg-7 col-md-4'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
+        dom: "<'row'<'col-lg-1 col-md-2'B><'col-lg-2 col-md-2'l><'col-lg-9 col-md-8'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
         select: 'single',
         lengthMenu: [10, 25, 50, 75, 100],
         responsive: true,
@@ -387,8 +381,8 @@ function loadStationNodes(event, table, button, config) {
         onDeleteRow: function (datatable, selectedRows, success, error) {
             selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
                 $.ajax({
-                    url: `/api/snodes/uid/${this.data()["atonUID"]}`,
                     type: 'DELETE',
+                    url: `/api/snodes/uid/${this.data()["atonUID"]}`,
                     success: success,
                     error: error
                 });

@@ -115,6 +115,20 @@ public class HTMLViewerController {
     }
 
     /**
+     * The station nodes page of the VDES Controller Application.
+     *
+     * @param model The application UI model
+     * @return The index page
+     */
+    @GetMapping("/nodes")
+    public String nodes(Model model) {
+        model.addAttribute("appName", this.appName);
+        model.addAttribute("appOperatorUrl", this.appOperatorUrl);
+        model.addAttribute("appCopyright", this.appCopyright);
+        return "nodes";
+    }
+
+    /**
      * The about page of the VDES Controller Application.
      *
      * @param model The application UI model

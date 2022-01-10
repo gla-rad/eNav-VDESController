@@ -112,6 +112,17 @@ class HTMLViewerControllerTest {
     }
 
     /**
+     * Test that we can access the station nodes HTML page.
+     */
+    @Test
+    void testGetNodes() throws Exception {
+        // Perform the MVC request
+        this.mockMvc.perform(get("/nodes")
+                        .contentType(MediaType.TEXT_HTML))
+                .andExpect(status().isOk());
+    }
+
+    /**
      * Test that we can access the about HTML page.
      */
     @Test
