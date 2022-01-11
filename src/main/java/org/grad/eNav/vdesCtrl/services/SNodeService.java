@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +81,10 @@ public class SNodeService {
     private final String[] searchFields = new String[] {
             "uid",
             "type",
+            "message"
+    };
+    private final String[] searchFieldsWithSort = new String[] {
+            "id",
             "message"
     };
 
@@ -219,7 +224,7 @@ public class SNodeService {
         // Create the search query
         SearchQuery searchQuery = this.searchSNodesQuery(
                 dtPagingRequest.getSearch().getValue(),
-                dtPagingRequest.getLucenceSort()
+                dtPagingRequest.getLucenceSort(Arrays.asList(searchFieldsWithSort))
         );
 
         // For some reason we need this casting otherwise JDK8 complains

@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +105,9 @@ public class StationService {
             "name",
             "ipAddress",
             "mmsi"
+    };
+    private final String[] searchFieldsWithSort = new String[] {
+            "id"
     };
 
     /**
@@ -223,7 +227,7 @@ public class StationService {
         // Create the search query
         SearchQuery searchQuery = this.searchStationsQuery(
                 dtPagingRequest.getSearch().getValue(),
-                dtPagingRequest.getLucenceSort()
+                dtPagingRequest.getLucenceSort(Arrays.asList(searchFieldsWithSort))
         );
 
         // For some reason we need this casting otherwise JDK8 complains

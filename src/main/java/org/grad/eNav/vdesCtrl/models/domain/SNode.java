@@ -74,6 +74,7 @@ public class SNode {
     @NotNull
     @Type(type="text")
     @FullTextField()
+    @KeywordField(name = "message_sort", normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "message")
     private String message;
 
