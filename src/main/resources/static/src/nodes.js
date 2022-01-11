@@ -47,7 +47,7 @@ $(function () {
         serverSide: true,
         ajax: {
             type: "POST",
-            url: "/api/snodes/dt",
+            url: "../api/snodes/dt",
             contentType: "application/json",
             data: function (d) {
                 return JSON.stringify(d);
@@ -72,7 +72,7 @@ $(function () {
             selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
                 $.ajax({
                     type: 'DELETE',
-                    url: `/api/snodes/${this.data()["id"]}`,
+                    url: `../api/snodes/${this.data()["id"]}`,
                     success: success,
                     error: error
                 });
