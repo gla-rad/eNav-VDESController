@@ -165,7 +165,7 @@
                 </div>
             </footer>
         </div>
-        <iframe th:fragment="sessionRefresher" sec:authorize="isAuthenticated()" id="sessionRefresher" src="/refresh" style="display: none;" onload="refreshSession()">
+        <iframe th:fragment="sessionRefresher" sec:authorize="isAuthenticated()" id="sessionRefresher" src="refresh" style="display: none;" onload="refreshSession()">
         </iframe>
     </body>
 </html>
