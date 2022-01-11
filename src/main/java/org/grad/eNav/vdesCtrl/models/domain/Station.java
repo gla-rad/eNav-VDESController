@@ -53,7 +53,7 @@ public class Station implements Serializable {
     @Id
     @ScaledNumberField(name = "id_sort", decimalScale=0, sortable = Sortable.YES)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "station_generator")
-    @SequenceGenerator(name="station_generator", sequenceName = "station_seq")
+    @SequenceGenerator(name="station_generator", sequenceName = "station_seq", allocationSize=1)
     private BigInteger id;
 
     @NotNull
@@ -105,12 +105,19 @@ public class Station implements Serializable {
     @Column(name = "geometry")
     private Geometry geometry;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "station_nodes",
             joinColumns = @JoinColumn(name="station_id", referencedColumnName="id"),
             inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="id"))
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private Set<SNode> nodes = new HashSet<>();
+
+    /**
+     * Instantiates a new Station.
+     */
+    public Station() {
+        // Empty constructor
+    }
 
     /**
      * Gets id.

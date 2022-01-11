@@ -52,10 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -292,15 +289,14 @@ class SNodeServiceTest {
         this.existingNode.setStations(new HashSet<>());
         this.existingNode.getStations().add(new Station());
 
-        doReturn(Boolean.TRUE).when(this.sNodeRepo).existsById(this.existingNode.getId());
-        doReturn(this.existingNode).when(this.sNodeRepo).findOneWithEagerRelationships(this.existingNode.getId());
-        doNothing().when(this.sNodeRepo).deleteById(this.existingNode.getId());
+        doReturn(Optional.of(this.existingNode)).when(this.sNodeRepo).findById(this.existingNode.getId());
+        doNothing().when(this.sNodeRepo).delete(this.existingNode);
 
         // Perform the service call
         this.sNodeService.delete(this.existingNode.getId());
 
         // Verify that a deletion call took place in the repository
-        verify(this.sNodeRepo, times(1)).deleteById(this.existingNode.getId());
+        verify(this.sNodeRepo, times(1)).delete(this.existingNode);
     }
 
     /**
@@ -309,7 +305,7 @@ class SNodeServiceTest {
      */
     @Test
     void testDeleteNotFound() {
-        doReturn(Boolean.FALSE).when(this.sNodeRepo).existsById(this.existingNode.getId());
+        doReturn(Optional.empty()).when(this.sNodeRepo).findById(this.existingNode.getId());
 
         // Perform the service call
         assertThrows(DataNotFoundException.class, () ->
@@ -359,7 +355,7 @@ class SNodeServiceTest {
             this.nodes.get(i).setMessage(xml);
         }
 
-        doReturn(this.station).when(this.stationRepo).findOneWithEagerRelationships(this.station.getId());
+        doReturn(Optional.of(this.station)).when(this.stationRepo).findById(this.station.getId());
 
         // Perform the service call
         List<S100AbstractNode> result = this.sNodeService.findAllForStationDto(this.station.getId());

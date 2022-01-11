@@ -342,13 +342,13 @@ class StationServiceTest {
             assertEquals(this.existingStation.getGeometry(), result.getGeometry());
             assertEquals(this.existingStation.getNodes(), result.getNodes());
 
+            // Verify that a saving call took place in the repository
+            verify(this.stationRepo, times(1)).save(this.existingStation);
+
             // Make sure all the relevant services have been reloaded
             verify(this.s125GDSService, times(1)).reload();
             verify(this.grAisService, times(1)).reload();
             verify(this.vdes1000Service, times(1)).reload();
-
-            // Also that a saving call took place in the repository
-            verify(this.stationRepo, times(1)).save(this.existingStation);
         }
     }
 
@@ -365,6 +365,11 @@ class StationServiceTest {
 
         // Verify that a deletion call took place in the repository
         verify(this.stationRepo, times(1)).deleteById(this.existingStation.getId());
+
+        // Make sure all the relevant services have been reloaded
+        verify(this.s125GDSService, times(1)).reload();
+        verify(this.grAisService, times(1)).reload();
+        verify(this.vdes1000Service, times(1)).reload();
     }
 
     /**
@@ -379,6 +384,11 @@ class StationServiceTest {
         assertThrows(DataNotFoundException.class, () ->
                 this.stationService.delete(this.existingStation.getId())
         );
+
+        // Make sure none of the relevant services have been reloaded
+        verify(this.s125GDSService, never()).reload();
+        verify(this.grAisService, never()).reload();
+        verify(this.vdes1000Service, never()).reload();
     }
 
     /**

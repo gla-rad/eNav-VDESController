@@ -158,23 +158,22 @@ public class SNodeService {
     @Transactional
     public void delete(BigInteger id) {
         log.debug("Request to delete Station Node : {}", id);
-        if(this.sNodeRepo.existsById(id)) {
-            // Get the station node with all relationships
-            SNode sNode = this.sNodeRepo.findOneWithEagerRelationships(id);
-            // Remove it from all linked stations
-            Optional.of(sNode)
-                    .map(SNode::getStations)
-                    .orElse(Collections.emptySet())
-                    .stream()
-                    .forEach(station -> {
-                        station.getNodes().remove(sNode);
-                        this.stationRepo.save(station);
-                    });
-            // Finally, delete the station node
-            this.sNodeRepo.deleteById(id);
-        } else {
-            throw new DataNotFoundException(String.format("No station node found for the provided ID: %d", id));
-        }
+        // Make sure the station node exists
+        final SNode sNode = this.sNodeRepo.findById(id)
+                .orElseThrow(() -> new DataNotFoundException(String.format("No station node found for the provided ID: %d", id)));
+
+        // Remove it from all linked stations
+        Optional.of(sNode)
+                .map(SNode::getStations)
+                .orElse(Collections.emptySet())
+                .stream()
+                .forEach(station -> {
+                    station.getNodes().remove(sNode);
+                    this.stationRepo.save(station);
+                });
+
+        // Now delete the station node
+        this.sNodeRepo.delete(sNode);
     }
 
     /**
@@ -202,8 +201,7 @@ public class SNodeService {
     @Transactional(readOnly = true)
     public List<S100AbstractNode> findAllForStationDto(BigInteger stationId) {
         log.debug("Request to get all Nodes for Station: {}", stationId);
-        return Optional.ofNullable(stationId)
-                .map(this.stationRepo::findOneWithEagerRelationships)
+        return this.stationRepo.findById(stationId)
                 .map(Station::getNodes)
                 .map(l -> l.stream().map(S100Utils::toS100Dto).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());

@@ -164,7 +164,6 @@ public class StationService {
      */
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
-
         // Refresh the nodes to be allocated due to a potential geometry change
         station.setNodes(Optional.of(station)
                 .map(Station::getGeometry)
@@ -182,7 +181,7 @@ public class StationService {
         // Now save the updated station
         Station savedStation = this.stationRepo.save(station);
 
-        // And ask the geomesa datastore service to reload
+        // And ask the geomesa datastore services to reload
         this.s125GDSService.reload();
         this.grAisService.reload();
         this.vdes1000Service.reload();
@@ -198,12 +197,18 @@ public class StationService {
      */
     public void delete(BigInteger id) {
         log.debug("Request to delete Station : {}", id);
-        if(this.stationRepo.existsById(id)) {
-            this.stationRepo.deleteById(id);
-            this.s125GDSService.reload();
-        } else {
+        // Make sure the station exists
+        if(!this.stationRepo.existsById(id)) {
             throw new DataNotFoundException(String.format("No station found for the provided ID: %d", id));
         }
+
+        // Now delete the station
+        this.stationRepo.deleteById(id);
+
+        // And ask the geomesa datastore services to reload
+        this.s125GDSService.reload();
+        this.grAisService.reload();
+        this.vdes1000Service.reload();
     }
 
     /**

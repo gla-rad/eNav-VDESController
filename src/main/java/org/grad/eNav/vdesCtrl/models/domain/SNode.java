@@ -57,7 +57,7 @@ public class SNode {
     @Id
     @ScaledNumberField(name = "id_sort", decimalScale=0, sortable = Sortable.YES)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "snode_generator")
-    @SequenceGenerator(name="snode_generator", sequenceName = "snode_seq")
+    @SequenceGenerator(name="snode_generator", sequenceName = "snode_seq", allocationSize=1)
     private BigInteger id;
 
     @NotNull
