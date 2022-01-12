@@ -20,12 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
-import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -36,7 +34,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -46,7 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -55,7 +52,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
 @WebMvcTest(controllers = SNodeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 class SNodeControllerTest {
 
