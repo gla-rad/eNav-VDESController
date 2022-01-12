@@ -112,7 +112,7 @@ $(function () {
         serverSide: true,
         ajax: {
             type: "POST",
-            url: "api/stations/dt",
+            url: "./api/stations/dt",
             contentType: "application/json",
             data: function (d) {
                 return JSON.stringify(d);
@@ -171,7 +171,7 @@ $(function () {
         }],
         onAddRow: function (datatable, rowdata, success, error) {
             $.ajax({
-                url: 'api/stations',
+                url: './api/stations',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -195,7 +195,7 @@ $(function () {
         onDeleteRow: function (datatable, selectedRows, success, error) {
             selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
                 $.ajax({
-                    url: `api/stations/${this.data()["id"]}`,
+                    url: `./api/stations/${this.data()["id"]}`,
                     type: 'DELETE',
                     success: success,
                     error: error
@@ -208,7 +208,7 @@ $(function () {
             var data = stationsTable.rows(idx.row).data();
             var geometry = data[0].geometry;
             $.ajax({
-                url: `api/stations/${rowdata["id"]}`,
+                url: `./api/stations/${rowdata["id"]}`,
                 type: 'PUT',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -356,7 +356,7 @@ function loadStationNodes(event, table, button, config) {
     stationsNodesTable = $('#stations_nodes_table').DataTable({
         ajax: {
             type: "GET",
-            url: `api/stations/${stationId}/nodes`,
+            url: `./api/stations/${stationId}/nodes`,
             dataType: "json",
             cache: false,
             dataSrc: function (json) {
@@ -382,7 +382,7 @@ function loadStationNodes(event, table, button, config) {
             selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
                 $.ajax({
                     type: 'DELETE',
-                    url: `api/snodes/uid/${this.data()["atonUID"]}`,
+                    url: `./api/snodes/uid/${this.data()["atonUID"]}`,
                     success: success,
                     error: error
                 });
@@ -413,7 +413,7 @@ function saveGeometry() {
         });
 
         $.ajax({
-            url: `api/stations/${station.id}`,
+            url: `./api/stations/${station.id}`,
             type: 'PUT',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',

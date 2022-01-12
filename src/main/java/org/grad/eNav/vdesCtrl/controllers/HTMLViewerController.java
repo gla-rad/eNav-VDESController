@@ -86,7 +86,7 @@ public class HTMLViewerController {
      * @param model The application UI model
      * @return The index page
      */
-    @GetMapping("/index.html")
+    @GetMapping("/index")
     public String index(Model model) {
         // Add the properties to the UI model
         model.addAttribute("endpoints", stationService.findAll()

@@ -180,9 +180,10 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                         "/css/**",          //css files
                         "/lib/**",          //js files
                         "/images/**",       //the images
-                        "/src/**"           //the javascript sources
+                        "/src/**",          //the javascript sources
+                        "/", "/index"       // The main index page
                 ).permitAll()
-                .requestMatchers(EndpointRequest.to( //
+                .requestMatchers(EndpointRequest.to(
                         InfoEndpoint.class,         //info endpoints
                         HealthEndpoint.class        //health endpoints
                 )).permitAll()
