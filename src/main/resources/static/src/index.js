@@ -28,7 +28,7 @@ function setConnected(connected) {
 function connect() {
     var endpoint = $( "#endpoint option:selected" ).text();
     if(stompClient == null) {
-        var socket = new SockJS('./vdes-ctrl-websocket');
+        var socket = new SockJS('/vdes-ctrl-websocket');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             setConnected(true);
