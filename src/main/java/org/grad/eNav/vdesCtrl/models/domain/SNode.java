@@ -78,11 +78,6 @@ public class SNode {
     @Column(name = "message")
     private String message;
 
-    @ManyToMany(mappedBy = "nodes", fetch = FetchType.LAZY)
-    @JsonIgnore
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<Station> stations = new HashSet<>();
-
     /**
      * Instantiates a new Station Node.
      */
@@ -182,24 +177,6 @@ public class SNode {
      */
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    /**
-     * Gets stations.
-     *
-     * @return the stations
-     */
-    public Set<Station> getStations() {
-        return stations;
-    }
-
-    /**
-     * Sets stations.
-     *
-     * @param stations the stations
-     */
-    public void setStations(Set<Station> stations) {
-        this.stations = stations;
     }
 
     /**

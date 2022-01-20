@@ -17,19 +17,19 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
 import org.grad.vdes1000.comm.VDES1000Conn;
-import org.grad.vdes1000.comm.VDES1000ConnListener;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AbstractMessage;
@@ -38,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.cloud.openfeign.support.PageJacksonModule;
+import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.context.annotation.Scope;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.support.MessageBuilder;
@@ -50,6 +52,7 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -94,10 +97,10 @@ public class Vdes1000Advertiser {
     CKeeperClient cKeeperClient;
 
     /**
-     * The SNode Service.
+     * The Station Service.
      */
     @Autowired
-    SNodeService sNodeService;
+    StationService stationService;
 
     // Component Variables
     protected Station station;
@@ -158,12 +161,16 @@ public class Vdes1000Advertiser {
     @Async("taskExecutor")
     public void advertiseAtons() {
         // Get all the nodes applicable for the station and build the messages
-        List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
+        List<AISMessage21> messages = Optional.of(this.station)
+                .map(Station::getId)
+                .map(id -> this.stationService.findMessagesForStation(id))
+                .orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(S125Node.class::isInstance)
                 .map(S125Node.class::cast)
                 .map(s125 -> {
+                    this.log.error(s125.getContent());
                     try {
                         return S100Utils.s125ToAisMessage21(s125);
                     }

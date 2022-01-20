@@ -39,16 +39,4 @@ public interface SNodeRepo extends JpaRepository<SNode, BigInteger> {
      */
     SNode findByUid(String uid);
 
-    /**
-     * Find one Station Node with eager relationships.
-     *
-     * @param id The id
-     * @return The matching station
-     */
-    @Query("select distinct snode " +
-            " from SNode snode " +
-            " left join fetch snode.stations " +
-            " where snode.id = :id")
-    SNode findOneWithEagerRelationships(@Param("id") BigInteger id);
-
 }

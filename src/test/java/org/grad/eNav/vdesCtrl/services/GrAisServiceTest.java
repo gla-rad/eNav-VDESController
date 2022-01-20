@@ -87,7 +87,6 @@ class GrAisServiceTest {
             station.setType(StationType.GNU_RADIO);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-            station.setNodes(new HashSet<>());
             this.stations.add(station);
         }
     }

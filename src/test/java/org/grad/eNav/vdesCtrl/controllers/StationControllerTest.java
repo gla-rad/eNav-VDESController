@@ -18,13 +18,14 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
-import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
+import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
-import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,15 +80,9 @@ class StationControllerTest {
     @MockBean
     StationService stationService;
 
-    /**
-     * The Station Node Service mock.
-     */
-    @MockBean
-    SNodeService sNodeService;
-
     // Test Variables
     private List<Station> stations;
-    private List<SNode> nodes;
+    private List<S100AbstractNode> messages;
     private Pageable pageable;
     private Station newStation;
     private Station existingStation;
@@ -100,15 +95,14 @@ class StationControllerTest {
         // Create a temp geometry factory to get a test geometries
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
-        // Initialise the station nodes list
-        this.nodes = new ArrayList<>();
+        // Initialise the station messages list
+        this.messages = new ArrayList<>();
         for(long i=0; i<2; i++) {
-            SNode node = new SNode();
-            node.setId(BigInteger.valueOf(i));
-            node.setUid("UID" + i);
-            node.setType(SNodeType.S125);
-            node.setMessage("Node Message");
-            this.nodes.add(node);
+            S125Node message = new S125Node();
+            message.setAtonUID("UID" + i);
+            message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setContent("Node Message");
+            this.messages.add(message);
         }
 
         // Initialise the stations list
@@ -123,8 +117,6 @@ class StationControllerTest {
             station.setType(StationType.VDES_1000);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-            station.setNodes(new HashSet<>());
-            station.getNodes().addAll(this.nodes);
             this.stations.add(station);
         }
 
@@ -359,13 +351,13 @@ class StationControllerTest {
     }
 
     /**
-     * Test that we can retrieve all the station nodes currently in the database
-     * in a paged result.
+     * Test that we can retrieve all the AtoN messages linked to a specific
+     * station.
      */
     @Test
-    void testGetStationNodes() throws Exception {
+    void testGetStationMessages() throws Exception {
         // Created a result page to be returned by the mocked service
-        doReturn(this.nodes).when(this.sNodeService).findAllForStationDto(this.existingStation.getId());
+        doReturn(this.messages).when(this.stationService).findMessagesForStation(this.existingStation.getId());
 
         // Perform the MVC request
         MvcResult mvcResult = this.mockMvc.perform(get("/api/stations/" + this.existingStation.getId()+ "/nodes"))
@@ -374,8 +366,8 @@ class StationControllerTest {
                 .andReturn();
 
         // Parse and validate the response
-        SNode[] result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), SNode[].class);
-        assertEquals(this.nodes.size(), Arrays.asList(result).size());
+        S125Node[] result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), S125Node[].class);
+        assertEquals(this.messages.size(), Arrays.asList(result).size());
     }
 
 }

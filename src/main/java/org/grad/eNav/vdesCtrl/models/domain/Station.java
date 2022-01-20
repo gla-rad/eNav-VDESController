@@ -105,13 +105,6 @@ public class Station implements Serializable {
     @Column(name = "geometry")
     private Geometry geometry;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "station_nodes",
-            joinColumns = @JoinColumn(name="station_id", referencedColumnName="id"),
-            inverseJoinColumns = @JoinColumn(name="node_id", referencedColumnName="id"))
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<SNode> nodes = new HashSet<>();
-
     /**
      * Instantiates a new Station.
      */
@@ -315,24 +308,6 @@ public class Station implements Serializable {
      */
     public void setMmsi(String mmsi) {
         this.mmsi = mmsi;
-    }
-
-    /**
-     * Gets nodes.
-     *
-     * @return the nodes
-     */
-    public Set<SNode> getNodes() {
-        return nodes;
-    }
-
-    /**
-     * Sets nodes.
-     *
-     * @param nodes the nodes
-     */
-    public void setNodes(Set<SNode> nodes) {
-        this.nodes = nodes;
     }
 
     /**

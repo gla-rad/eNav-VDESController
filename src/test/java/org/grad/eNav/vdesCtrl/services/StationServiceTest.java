@@ -16,18 +16,17 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
-import org.grad.eNav.vdesCtrl.models.domain.SNode;
-import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
+import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
-import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
-import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.query.SearchResult;
@@ -38,7 +37,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -49,8 +50,9 @@ import javax.persistence.EntityManager;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -74,10 +76,10 @@ class StationServiceTest {
     EntityManager entityManager;
 
     /**
-     * The S125 Geomesa Datastore Service mock.
+     * The AtoN Service Client mock.
      */
     @Mock
-    S125GDSService s125GDSService;
+    AtonServiceClient atonServiceClient;
 
     /**
      * The GNURadio AIS Service mock.
@@ -97,15 +99,9 @@ class StationServiceTest {
     @Mock
     private StationRepo stationRepo;
 
-    /**
-     * The Station Node Repository mock.
-     */
-    @Mock
-    private SNodeRepo sNodeRepo;
-
     // Test Variables
     private List<Station> stations;
-    private List<SNode> nodes;
+    private List<S100AbstractNode> messages;
     private Pageable pageable;
     private Station newStation;
     private Station existingStation;
@@ -119,15 +115,14 @@ class StationServiceTest {
         // Create a temp geometry factory to get a test geometries
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
-        // Initialise the station nodes list
-        this.nodes = new ArrayList<>();
-        for(long i=0; i<2; i++) {
-            SNode node = new SNode();
-            node.setId(BigInteger.valueOf(i));
-            node.setUid("UID" + i);
-            node.setType(SNodeType.S125);
-            node.setMessage("Node Message");
-            this.nodes.add(node);
+        // Initialise the station messages list
+        this.messages = new ArrayList<>();
+        for(long i=0; i<10; i++) {
+            S125Node message = new S125Node();
+            message.setAtonUID("UID" + i);
+            message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setContent("Node Message");
+            this.messages.add(message);
         }
 
         // Initialise the stations list
@@ -142,8 +137,6 @@ class StationServiceTest {
             station.setType(StationType.VDES_1000);
             station.setPort(8000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-            station.setNodes(new HashSet<>());
-            station.getNodes().addAll(this.nodes);
             this.stations.add(station);
         }
 
@@ -231,7 +224,7 @@ class StationServiceTest {
         List<Station> result = this.stationService.findAllByType(StationType.VDES_1000);
 
         // Test the result
-        assertEquals(result.size(), result.size());
+        assertEquals(this.stations.size(), result.size());
 
         // Test each of the result entries
         for(int i=0; i < result.size(); i++){
@@ -245,13 +238,13 @@ class StationServiceTest {
      */
     @Test
     void testFindOne() {
-        doReturn(this.existingStation).when(this.stationRepo).findOneWithEagerRelationships(this.existingStation.getId());
+        doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
 
         // Perform the service call
         Station result = this.stationService.findOne(this.existingStation.getId());
 
         // Make sure the eager relationships repo call was called
-        verify(this.stationRepo, times(1)).findOneWithEagerRelationships(this.existingStation.getId());
+        verify(this.stationRepo, times(1)).findById(this.existingStation.getId());
 
         // Test the result
         assertNotNull(result);
@@ -263,7 +256,6 @@ class StationServiceTest {
         assertEquals(this.existingStation.getMmsi(), result.getMmsi());
         assertEquals(this.existingStation.getChannel(), result.getChannel());
         assertEquals(this.existingStation.getGeometry(), result.getGeometry());
-        assertEquals(this.existingStation.getNodes(), result.getNodes());
     }
 
     /**
@@ -272,7 +264,7 @@ class StationServiceTest {
      */
     @Test
     void testFindOneNotFound() {
-        doReturn(null).when(this.stationRepo).findOneWithEagerRelationships(this.existingStation.getId());
+        doReturn(Optional.empty()).when(this.stationRepo).findById(this.existingStation.getId());
 
         // Perform the service call
         assertThrows(DataNotFoundException.class, () ->
@@ -300,10 +292,8 @@ class StationServiceTest {
         assertEquals(this.newStation.getMmsi(), result.getMmsi());
         assertEquals(this.newStation.getChannel(), result.getChannel());
         assertEquals(this.newStation.getGeometry(), result.getGeometry());
-        assertEquals(this.newStation.getNodes(), result.getNodes());
 
         // Make sure all the relevant services have been reloaded
-        verify(this.s125GDSService, times(1)).reload();
         verify(this.grAisService, times(1)).reload();
         verify(this.vdes1000Service, times(1)).reload();
 
@@ -319,37 +309,26 @@ class StationServiceTest {
     @Test
     void testSaveUpdateNodes() {
         doAnswer(returnsFirstArg()).when(this.stationRepo).save(any());
-        doReturn(this.nodes).when(this.sNodeRepo).findAll();
 
         // Perform the service call
-        try (MockedStatic<S100Utils> utilities = Mockito.mockStatic(S100Utils.class)) {
-            // Mock the S100 Node translations, cause this is how we pickup the nodes
-            utilities.when(() -> S100Utils.toS100Dto(any())).thenReturn(this.s100AbstractNode);
+        Station result = this.stationService.save(this.existingStation);
 
-            // Make sure we removed the nodes before hand so that we can check
-            // if the station nodes coming from the repo will be picked up
-            this.existingStation.setNodes(Collections.emptySet());
-            Station result = this.stationService.save(this.existingStation);
+        // Test the result
+        assertEquals(this.existingStation.getId(), result.getId());
+        assertEquals(this.existingStation.getName(), result.getName());
+        assertEquals(this.existingStation.getType(), result.getType());
+        assertEquals(this.existingStation.getIpAddress(), result.getIpAddress());
+        assertEquals(this.existingStation.getPort(), result.getPort());
+        assertEquals(this.existingStation.getMmsi(), result.getMmsi());
+        assertEquals(this.existingStation.getChannel(), result.getChannel());
+        assertEquals(this.existingStation.getGeometry(), result.getGeometry());
 
-            // Test the result
-            assertEquals(this.existingStation.getId(), result.getId());
-            assertEquals(this.existingStation.getName(), result.getName());
-            assertEquals(this.existingStation.getType(), result.getType());
-            assertEquals(this.existingStation.getIpAddress(), result.getIpAddress());
-            assertEquals(this.existingStation.getPort(), result.getPort());
-            assertEquals(this.existingStation.getMmsi(), result.getMmsi());
-            assertEquals(this.existingStation.getChannel(), result.getChannel());
-            assertEquals(this.existingStation.getGeometry(), result.getGeometry());
-            assertEquals(this.existingStation.getNodes(), result.getNodes());
+        // Verify that a saving call took place in the repository
+        verify(this.stationRepo, times(1)).save(this.existingStation);
 
-            // Verify that a saving call took place in the repository
-            verify(this.stationRepo, times(1)).save(this.existingStation);
-
-            // Make sure all the relevant services have been reloaded
-            verify(this.s125GDSService, times(1)).reload();
-            verify(this.grAisService, times(1)).reload();
-            verify(this.vdes1000Service, times(1)).reload();
-        }
+        // Make sure all the relevant services have been reloaded
+        verify(this.grAisService, times(1)).reload();
+        verify(this.vdes1000Service, times(1)).reload();
     }
 
     /**
@@ -367,7 +346,6 @@ class StationServiceTest {
         verify(this.stationRepo, times(1)).deleteById(this.existingStation.getId());
 
         // Make sure all the relevant services have been reloaded
-        verify(this.s125GDSService, times(1)).reload();
         verify(this.grAisService, times(1)).reload();
         verify(this.vdes1000Service, times(1)).reload();
     }
@@ -386,9 +364,46 @@ class StationServiceTest {
         );
 
         // Make sure none of the relevant services have been reloaded
-        verify(this.s125GDSService, never()).reload();
         verify(this.grAisService, never()).reload();
         verify(this.vdes1000Service, never()).reload();
+    }
+
+    /**
+     * Test that we can correctly receive and process the S125 messages for
+     * a specific station geometry through the AtoN service client.
+     */
+    @Test
+    void testFindMessagesForStation() {
+        Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
+        doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
+        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(JsonNode.class));
+
+        // Perform the service call
+        List<S100AbstractNode> result = this.stationService.findMessagesForStation(this.existingStation.getId());
+
+        // Test the result
+        assertEquals(page.getSize(), result.size());
+
+        // Test each of the result entries
+        for(int i=0; i < result.size(); i++){
+            assertEquals(this.messages.get(i), result.get(i));
+        }
+    }
+
+    /**
+     * Test that if the requested station has no specified geometry, then no
+     * linked AtoN messages will be return from the station message query.
+     */
+    @Test
+    void testFindMessagesForStationNoGeometry() {
+        this.existingStation.setGeometry(null);
+        doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
+
+        // Perform the service call
+        List<S100AbstractNode> result = this.stationService.findMessagesForStation(this.existingStation.getId());
+
+        // Test the result
+        assertEquals(0, result.size());
     }
 
     /**

@@ -22,7 +22,7 @@ import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,10 +68,10 @@ class GrAisAdvertiserTest {
     CKeeperClient cKeeperClient;
 
     /**
-     * The SNode Service mock.
+     * The Station Service mock.
      */
     @Mock
-    SNodeService sNodeService;
+    StationService stationService;
 
     // Test Variables
     private Station station;
@@ -149,8 +149,8 @@ class GrAisAdvertiserTest {
      * applicable.
      */
     @Test
-    void testAdvertiseAtons() throws IOException, InterruptedException {
-        doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+    void testAdvertiseAtons() throws IOException {
+        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;
@@ -171,8 +171,8 @@ class GrAisAdvertiserTest {
      * of the first, if that feature is enabled.
      */
     @Test
-    void testAdvertiseAtonsWithSignature() throws IOException, InterruptedException {
-        doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+    void testAdvertiseAtonsWithSignature() throws IOException {
+        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -194,7 +194,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsEmptyMessage() throws IOException, InterruptedException {
         this.s125Node.setContent(null);
-        doReturn(Collections.singletonList(null)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

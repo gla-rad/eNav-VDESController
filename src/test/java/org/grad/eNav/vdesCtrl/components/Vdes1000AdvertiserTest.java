@@ -24,7 +24,7 @@ import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
@@ -85,10 +85,10 @@ class Vdes1000AdvertiserTest {
     CKeeperClient cKeeperClient;
 
     /**
-     * The SNode Service mock.
+     * The Station Service mock.
      */
     @Mock
-    SNodeService sNodeService;
+    StationService stationService;
 
     // Test Variables
     private Station station;
@@ -177,7 +177,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtons() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
@@ -199,7 +199,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.s125Node)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -220,7 +220,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtonsEmptyMessage() throws VDES1000ConnException {
         this.s125Node.setContent(null);
-        doReturn(Collections.singletonList(null)).when(this.sNodeService).findAllForStationDto(this.station.getId());
+        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;

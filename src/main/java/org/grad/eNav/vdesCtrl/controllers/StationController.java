@@ -28,6 +28,7 @@ import org.grad.eNav.vdesCtrl.utils.HeaderUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,26 +56,16 @@ public class StationController {
     StationService stationService;
 
     /**
-     * The SNode Service.
-     */
-    @Autowired
-    SNodeService sNodeService;
-
-    /**
      * GET /api/stations : Returns a paged list of all current stations.
      *
-     * @param page the page number to be retrieved
-     * @param size the number of entries on each page
+     * @param pageable the pagination information
      * @return the ResponseEntity with status 200 (OK) and the list of stations in body
      */
     @ResponseStatus
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Station>> getStations(@RequestParam("page") Optional<Integer> page,
-                                                     @RequestParam("size") Optional<Integer> size) {
+    public ResponseEntity<List<Station>> getStations(Pageable pageable) {
         log.debug("REST request to get page of Stations");
-        int currentPage = page.orElse(1);
-        int pageSize = size.orElse(10);
-        Page<Station> stationPage = this.stationService.findAll(PageRequest.of(currentPage - 1, pageSize));
+        Page<Station> stationPage = this.stationService.findAll(pageable);
         return ResponseEntity.ok()
                 .body(stationPage.getContent());
     }
@@ -188,10 +179,10 @@ public class StationController {
      * @return the ResponseEntity with status 200 (OK) and the list of nodes in body
      */
     @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<S100AbstractNode>> getStationSNodes(@PathVariable BigInteger id) {
-        log.debug("REST request to get page of Station Nodes");
+    public ResponseEntity<List<S100AbstractNode>> getStationMessages(@PathVariable BigInteger id) {
+        log.debug("REST request to get the messages for Station : {}", id);
         return ResponseEntity.ok()
-                .body(sNodeService.findAllForStationDto(id));
+                .body(this.stationService.findMessagesForStation(id));
     }
 
 }

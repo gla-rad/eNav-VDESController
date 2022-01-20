@@ -16,17 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
 import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
-import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
-import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
-import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.query.SearchResult;
@@ -41,17 +37,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -73,12 +65,6 @@ class SNodeServiceTest {
      */
     @Mock
     EntityManager entityManager;
-
-    /**
-     * The Station Repo mock.
-     */
-    @Mock
-    StationRepo stationRepo;
 
     /**
      * The Station Node Repository Mock.
@@ -138,7 +124,6 @@ class SNodeServiceTest {
         this.station.setType(StationType.VDES_1000);
         this.station.setPort(8001);
         this.station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-        this.station.setNodes(new HashSet<>(this.nodes));
     }
 
     /**
@@ -190,13 +175,13 @@ class SNodeServiceTest {
      */
     @Test
     void testFindOne() {
-        doReturn(this.existingNode).when(this.sNodeRepo).findOneWithEagerRelationships(this.existingNode.getId());
+        doReturn(Optional.of(this.existingNode)).when(this.sNodeRepo).findById(this.existingNode.getId());
 
         // Perform the service call
         SNode result = this.sNodeService.findOne(this.existingNode.getId());
 
         // Make sure the eager relationships repo call was called
-        verify(this.sNodeRepo, times(1)).findOneWithEagerRelationships(this.existingNode.getId());
+        verify(this.sNodeRepo, times(1)).findById(this.existingNode.getId());
 
         // Test the result
         assertNotNull(result);
@@ -213,7 +198,7 @@ class SNodeServiceTest {
      */
     @Test
     void testFindOneNotFound() {
-        doReturn(null).when(this.sNodeRepo).findOneWithEagerRelationships(this.existingNode.getId());
+        doReturn(Optional.empty()).when(this.sNodeRepo).findById(this.existingNode.getId());
 
         // Perform the service call
         assertThrows(DataNotFoundException.class, () ->
@@ -285,10 +270,6 @@ class SNodeServiceTest {
      */
     @Test
     void testDelete() throws DataNotFoundException {
-        // Add a station to the node to be deleted
-        this.existingNode.setStations(new HashSet<>());
-        this.existingNode.getStations().add(new Station());
-
         doReturn(Optional.of(this.existingNode)).when(this.sNodeRepo).findById(this.existingNode.getId());
         doNothing().when(this.sNodeRepo).delete(this.existingNode);
 
@@ -340,41 +321,6 @@ class SNodeServiceTest {
         assertThrows(DataNotFoundException.class, () ->
                 this.sNodeService.deleteByUid(this.existingNode.getUid())
         );
-    }
-
-    /**
-     * Test that we can retrieve all the station nodes assigned to a sigle
-     * station as S125 objects.
-     */
-    @Test
-    void testFindAllForStationDto() throws IOException {
-        // First set a valid S125 content to the station nodes' messages
-        InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
-        String xml = IOUtils.toString(in, StandardCharsets.UTF_8.name());
-        for(int i=0; i<this.nodes.size(); i++) {
-            this.nodes.get(i).setMessage(xml);
-        }
-
-        doReturn(Optional.of(this.station)).when(this.stationRepo).findById(this.station.getId());
-
-        // Perform the service call
-        List<S100AbstractNode> result = this.sNodeService.findAllForStationDto(this.station.getId());
-
-        assertNotNull(result);
-        assertEquals(this.nodes.size(), result.size());
-
-        // Test each of the result entries
-        for(int i=0; i < result.size(); i++) {
-            assertTrue(S125Node.class.isInstance(result.get(i)));
-            S125Node resultNode = (S125Node) result.get(i);
-            SNode matchingNode = this.nodes.stream()
-                    .filter(node -> node.getUid().equals(resultNode.getAtonUID()))
-                    .findAny()
-                    .orElse(null);
-            assertNotNull(matchingNode);
-            assertEquals(matchingNode.getUid(), resultNode.getAtonUID());
-            assertEquals(matchingNode.getMessage(), resultNode.getContent());
-        }
     }
 
     /**

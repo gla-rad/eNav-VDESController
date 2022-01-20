@@ -34,6 +34,13 @@ public class S124Node extends S100AbstractNode {
     private String messageId;
 
     /**
+     * Empty Constructor
+     */
+    public S124Node() {
+
+    }
+
+    /**
      * The Fully Populated  Constructor.
      *
      * @param messageId     The Message ID

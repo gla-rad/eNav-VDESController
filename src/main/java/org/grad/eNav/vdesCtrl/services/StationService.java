@@ -19,20 +19,20 @@ package org.grad.eNav.vdesCtrl.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
+import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
-import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
-import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.hibernate.search.backend.lucene.LuceneExtension;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -43,11 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 /**
  * The Station Service Class
@@ -68,11 +67,10 @@ public class StationService {
     EntityManager entityManager;
 
     /**
-     * The S125 Geomesa Datastore Service.
+     * The AtoN Service Client
      */
     @Autowired
-    @Lazy
-    S125GDSService s125GDSService;
+    AtonServiceClient atonServiceClient;
 
     /**
      * The GNURadio AIS Service.
@@ -93,12 +91,6 @@ public class StationService {
      */
     @Autowired
     StationRepo stationRepo;
-
-    /**
-     * The Station Node Repo.
-     */
-    @Autowired
-    SNodeRepo sNodeRepo;
 
     // Service Variables
     private final String[] searchFields = new String[] {
@@ -153,8 +145,7 @@ public class StationService {
     @Transactional(readOnly = true)
     public Station findOne(BigInteger id) {
         log.debug("Request to get Station : {}", id);
-        return Optional.of(id)
-                .map(this.stationRepo::findOneWithEagerRelationships)
+        return this.stationRepo.findById(id)
                 .orElseThrow(() ->
                         new DataNotFoundException(String.format("No station found for the provided ID: %d", id))
                 );
@@ -168,25 +159,10 @@ public class StationService {
      */
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
-        // Refresh the nodes to be allocated due to a potential geometry change
-        station.setNodes(Optional.of(station)
-                .map(Station::getGeometry)
-                .map(g -> this.sNodeRepo.findAll())
-                .orElse(Collections.emptyList())
-                .stream()
-                .filter(sNode -> Optional.of(sNode)
-                        .map(S100Utils::toS100Dto)
-                        .map(S100AbstractNode::getBbox)
-                        .map(GeometryJSONConverter::convertToGeometry)
-                        .filter(station.getGeometry()::intersects)
-                        .isPresent())
-                .collect(Collectors.toSet()));
-
-        // Now save the updated station
+        // Save the updated station
         Station savedStation = this.stationRepo.save(station);
 
         // And ask the geomesa datastore services to reload
-        this.s125GDSService.reload();
         this.grAisService.reload();
         this.vdes1000Service.reload();
 
@@ -210,9 +186,30 @@ public class StationService {
         this.stationRepo.deleteById(id);
 
         // And ask the geomesa datastore services to reload
-        this.s125GDSService.reload();
         this.grAisService.reload();
         this.vdes1000Service.reload();
+    }
+
+    /**
+     * Get all the nodes of a specific station in a pageable search.
+     *
+     * @param stationId the station ID to retrieve the nodes for
+     * @return the list of nodes
+     */
+    @Transactional(readOnly = true)
+    public List<S100AbstractNode> findMessagesForStation(BigInteger stationId) {
+        log.debug("Request to get all Nodes for Station: {}", stationId);
+        return this.stationRepo.findById(stationId)
+                .map(Station::getGeometry)
+                .filter(Objects::nonNull)
+                .filter(not(Geometry::isEmpty))
+                .map(GeometryJSONConverter::convertFromGeometry)
+                .map(this.atonServiceClient::getMessagesForGeometry)
+                .map(Page::getContent)
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(S100AbstractNode.class::cast)
+                .collect(Collectors.toList());
     }
 
     /**

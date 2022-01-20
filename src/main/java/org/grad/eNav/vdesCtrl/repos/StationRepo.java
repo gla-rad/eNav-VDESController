@@ -39,16 +39,4 @@ public interface StationRepo  extends JpaRepository<Station, BigInteger> {
      */
     List<Station> findByType(StationType stationType);
 
-    /**
-     * Find one with eager relationships design.
-     *
-     * @param id The id
-     * @return the matching station
-     */
-    @Query("select distinct station " +
-            " from Station station " +
-            " left join fetch station.nodes " +
-            " where station.id = :id")
-    Station findOneWithEagerRelationships(@Param("id") BigInteger id);
-
 }

@@ -21,6 +21,7 @@ import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.SNodeService;
+import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.ais.messages.AISMessage6;
@@ -42,6 +43,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -87,10 +89,10 @@ public class GrAisAdvertiser {
     CKeeperClient cKeeperClient;
 
     /**
-     * The SNode Service.
+     * The Station Service.
      */
     @Autowired
-    SNodeService sNodeService;
+    StationService stationService;
 
     // Component Variables
     protected Station station;
@@ -129,7 +131,10 @@ public class GrAisAdvertiser {
     @Async("taskExecutor")
     public void advertiseAtons() {
         // Get all the nodes applicable for the station and build the messages
-        List<AISMessage21> messages = this.sNodeService.findAllForStationDto(station.getId())
+        List<AISMessage21> messages =  Optional.of(this.station)
+                .map(Station::getId)
+                .map(this.stationService::findMessagesForStation)
+                .orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(S125Node.class::isInstance)

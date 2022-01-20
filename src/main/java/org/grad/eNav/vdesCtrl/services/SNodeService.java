@@ -20,13 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SNode;
-import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.SNodeRepo;
-import org.grad.eNav.vdesCtrl.repos.StationRepo;
-import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.hibernate.search.backend.lucene.LuceneExtension;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.mapper.orm.Search;
@@ -42,10 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The Station Node Service Class
@@ -64,12 +58,6 @@ public class SNodeService {
      */
     @Autowired
     EntityManager entityManager;
-
-    /**
-     * The Station Repo.
-     */
-    @Autowired
-    StationRepo stationRepo;
 
     /**
      * The SNode Repo.
@@ -120,8 +108,7 @@ public class SNodeService {
     @Transactional(readOnly = true)
     public SNode findOne(BigInteger id) {
         log.debug("Request to get Node : {}", id);
-        return Optional.ofNullable(id)
-                .map(this.sNodeRepo::findOneWithEagerRelationships)
+        return this.sNodeRepo.findById(id)
                 .orElseThrow(() ->
                         new DataNotFoundException(String.format("No station node found for the provided ID: %d", id))
                 );
@@ -163,19 +150,10 @@ public class SNodeService {
     @Transactional
     public void delete(BigInteger id) {
         log.debug("Request to delete Station Node : {}", id);
+
         // Make sure the station node exists
         final SNode sNode = this.sNodeRepo.findById(id)
                 .orElseThrow(() -> new DataNotFoundException(String.format("No station node found for the provided ID: %d", id)));
-
-        // Remove it from all linked stations
-        Optional.of(sNode)
-                .map(SNode::getStations)
-                .orElse(Collections.emptySet())
-                .stream()
-                .forEach(station -> {
-                    station.getNodes().remove(sNode);
-                    this.stationRepo.save(station);
-                });
 
         // Now delete the station node
         this.sNodeRepo.delete(sNode);
@@ -195,21 +173,6 @@ public class SNodeService {
                         new DataNotFoundException(String.format("No station node found for the provided UID: %s", uid))
                 );
         this.delete(id);
-    }
-
-    /**
-     * Get all the nodes of a specific station in a pageable search.
-     *
-     * @param stationId the station ID to retrieve the nodes for
-     * @return the list of nodes
-     */
-    @Transactional(readOnly = true)
-    public List<S100AbstractNode> findAllForStationDto(BigInteger stationId) {
-        log.debug("Request to get all Nodes for Station: {}", stationId);
-        return this.stationRepo.findById(stationId)
-                .map(Station::getNodes)
-                .map(l -> l.stream().map(S100Utils::toS100Dto).collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
     }
 
     /**

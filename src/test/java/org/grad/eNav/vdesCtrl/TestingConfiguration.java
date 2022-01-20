@@ -17,9 +17,10 @@
 package org.grad.eNav.vdesCtrl;
 
 import org.geotools.data.DataStore;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 import javax.security.auth.message.config.RegistrationListener;
 
@@ -31,9 +32,8 @@ import static org.mockito.Mockito.mock;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-@Profile("test")
-@Configuration
-public class TestConfiguration {
+@TestConfiguration
+public class TestingConfiguration {
 
 	/**
 	 * Feign depends on the Eureka Registration Listener bean so let's mock one
@@ -44,6 +44,24 @@ public class TestConfiguration {
 	@Bean
 	RegistrationListener registrationListener() {
 		return mock(RegistrationListener.class);
+	}
+
+	/**
+	 * The registration listener for feign registers the client inside a
+	 * client repository which is als needed, hence mocked.
+	 */
+	@Bean
+	public ClientRegistrationRepository clientRegistrationRepository() {
+		return mock(ClientRegistrationRepository.class);
+	}
+
+	/**
+	 * Finally feing also requires authentication if not initiated by a user, so
+	 * we also need to mock the feign OAuth2 client.
+	 */
+	@Bean
+	public OAuth2AuthorizedClientManager authorizedClientManager() {
+		return mock(OAuth2AuthorizedClientManager.class);
 	}
 
 	/**
