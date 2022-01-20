@@ -254,7 +254,7 @@
 		<dependency>
 			<groupId>org.grad.vdes1000</groupId>
 			<artifactId>vdes1000lib</artifactId>
-			<version>0.0.8</version>
+			<version>0.0.9</version>
 		</dependency>
 
 		<!-- Bouncy Castle -->
