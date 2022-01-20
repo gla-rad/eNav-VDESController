@@ -376,7 +376,7 @@ class StationServiceTest {
     void testFindMessagesForStation() {
         Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
         doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
-        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(JsonNode.class));
+        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
 
         // Perform the service call
         List<S100AbstractNode> result = this.stationService.findMessagesForStation(this.existingStation.getId());

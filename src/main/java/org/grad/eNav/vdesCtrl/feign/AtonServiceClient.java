@@ -36,6 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AtonServiceClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/api/messages")
-    Page<S125Node> getMessagesForGeometry(@RequestParam("geometry") JsonNode geometry);
+    Page<S125Node> getMessagesForGeometry(@RequestParam("geometry") String geometryJson);
 
 }

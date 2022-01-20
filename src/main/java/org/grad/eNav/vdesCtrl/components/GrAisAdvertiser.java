@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.services.SNodeService;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
 import org.grad.vdes1000.ais.messages.AISMessage21;

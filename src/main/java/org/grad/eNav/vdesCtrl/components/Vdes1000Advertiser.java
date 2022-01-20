@@ -170,7 +170,6 @@ public class Vdes1000Advertiser {
                 .filter(S125Node.class::isInstance)
                 .map(S125Node.class::cast)
                 .map(s125 -> {
-                    this.log.error(s125.getContent());
                     try {
                         return S100Utils.s125ToAisMessage21(s125);
                     }

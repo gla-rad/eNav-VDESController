@@ -16,6 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
@@ -198,12 +199,13 @@ public class StationService {
      */
     @Transactional(readOnly = true)
     public List<S100AbstractNode> findMessagesForStation(BigInteger stationId) {
-        log.debug("Request to get all Nodes for Station: {}", stationId);
+        log.debug("Request to get all messages for Station: {}", stationId);
         return this.stationRepo.findById(stationId)
                 .map(Station::getGeometry)
                 .filter(Objects::nonNull)
                 .filter(not(Geometry::isEmpty))
                 .map(GeometryJSONConverter::convertFromGeometry)
+                .map(JsonNode::toString)
                 .map(this.atonServiceClient::getMessagesForGeometry)
                 .map(Page::getContent)
                 .orElseGet(Collections::emptyList)

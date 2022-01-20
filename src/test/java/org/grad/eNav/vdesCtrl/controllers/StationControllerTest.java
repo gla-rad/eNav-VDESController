@@ -18,7 +18,6 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
-import org.grad.eNav.vdesCtrl.models.domain.SNodeType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;

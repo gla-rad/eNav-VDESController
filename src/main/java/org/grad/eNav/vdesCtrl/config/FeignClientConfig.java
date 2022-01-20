@@ -1,6 +1,7 @@
 package org.grad.eNav.vdesCtrl.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.Logger;
 import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.jackson.JacksonDecoder;
@@ -37,6 +38,11 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class FeignClientConfig {
+
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.FULL;
+    }
 
     /**
      * The OAuth2 Authorized Client Manager bean provider. In the new Spring

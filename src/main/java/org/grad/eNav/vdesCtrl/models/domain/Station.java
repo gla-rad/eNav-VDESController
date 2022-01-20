@@ -24,10 +24,10 @@ import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ScaledNumberField;
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.ValueBridgeRef;
+import org.hibernate.search.mapper.pojo.extractor.mapping.annotation.ContainerExtract;
+import org.hibernate.search.mapper.pojo.extractor.mapping.annotation.ContainerExtraction;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.*;
 import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.*;
@@ -35,6 +35,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -104,6 +105,10 @@ public class Station implements Serializable {
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
     @Column(name = "geometry")
     private Geometry geometry;
+
+    @FullTextField
+    @ElementCollection
+    private List<String> blacklistedUids;
 
     /**
      * Instantiates a new Station.
@@ -290,6 +295,24 @@ public class Station implements Serializable {
      */
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    /**
+     * Gets blacklisted uids.
+     *
+     * @return the blacklisted uids
+     */
+    public List<String> getBlacklistedUids() {
+        return blacklistedUids;
+    }
+
+    /**
+     * Sets blacklisted uids.
+     *
+     * @param blacklistedUids the blacklisted uids
+     */
+    public void setBlacklistedUids(List<String> blacklistedUids) {
+        this.blacklistedUids = blacklistedUids;
     }
 
     /**
