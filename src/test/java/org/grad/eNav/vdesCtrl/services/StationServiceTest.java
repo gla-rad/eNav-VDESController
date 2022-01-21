@@ -16,16 +16,15 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.search.engine.search.query.SearchQuery;
@@ -105,7 +104,6 @@ class StationServiceTest {
     private Pageable pageable;
     private Station newStation;
     private Station existingStation;
-    private S100AbstractNode s100AbstractNode;
 
     /**
      * Common setup for all the tests.
@@ -118,7 +116,7 @@ class StationServiceTest {
         // Initialise the station messages list
         this.messages = new ArrayList<>();
         for(long i=0; i<10; i++) {
-            S125Node message = new S125Node();
+            AtonMessageDto message = new AtonMessageDto();
             message.setAtonUID("UID" + i);
             message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
             message.setContent("Node Message");
@@ -152,6 +150,7 @@ class StationServiceTest {
         this.newStation.setType(StationType.VDES_1000);
         this.newStation.setPort(8001);
         this.newStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
+        this.newStation.setBlacklistedUids(Collections.emptySet());
 
         // Create a station with an ID
         this.existingStation = new Station();
@@ -163,9 +162,7 @@ class StationServiceTest {
         this.existingStation.setType(StationType.GNU_RADIO);
         this.existingStation.setPort(8002);
         this.existingStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-
-        // Also define a test S100 Abstract Node
-        this.s100AbstractNode = new S125Node("aton.uk.test_aton_no_1", GeoJSONUtils.createGeoJSONPoint(52.001, 1.002), "Message Content");
+        this.existingStation.setBlacklistedUids(Collections.emptySet());
     }
 
     /**
@@ -379,7 +376,7 @@ class StationServiceTest {
         doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
 
         // Perform the service call
-        List<S100AbstractNode> result = this.stationService.findMessagesForStation(this.existingStation.getId());
+        List<AtonMessageDto> result = this.stationService.findMessagesForStation(this.existingStation.getId());
 
         // Test the result
         assertEquals(page.getSize(), result.size());
@@ -400,10 +397,13 @@ class StationServiceTest {
         doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
 
         // Perform the service call
-        List<S100AbstractNode> result = this.stationService.findMessagesForStation(this.existingStation.getId());
+        List<AtonMessageDto> result = this.stationService.findMessagesForStation(this.existingStation.getId());
 
         // Test the result
         assertEquals(0, result.size());
+
+        // Make sure the Feign call was never made
+        verify(this.atonServiceClient, never()).getMessagesForGeometry(any(String.class));
     }
 
     /**

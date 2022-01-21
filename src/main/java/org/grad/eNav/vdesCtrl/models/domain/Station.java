@@ -108,7 +108,7 @@ public class Station implements Serializable {
 
     @FullTextField
     @ElementCollection
-    private List<String> blacklistedUids;
+    private Set<String> blacklistedUids;
 
     /**
      * Instantiates a new Station.
@@ -302,7 +302,7 @@ public class Station implements Serializable {
      *
      * @return the blacklisted uids
      */
-    public List<String> getBlacklistedUids() {
+    public Set<String> getBlacklistedUids() {
         return blacklistedUids;
     }
 
@@ -311,7 +311,7 @@ public class Station implements Serializable {
      *
      * @param blacklistedUids the blacklisted uids
      */
-    public void setBlacklistedUids(List<String> blacklistedUids) {
+    public void setBlacklistedUids(Set<String> blacklistedUids) {
         this.blacklistedUids = blacklistedUids;
     }
 

@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.components;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
@@ -47,6 +48,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 /**
  * The GNURadio AIS Advertiser Component Class
@@ -136,6 +139,7 @@ public class GrAisAdvertiser {
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(not(AtonMessageDto::isBlacklisted))
                 .filter(S125Node.class::isInstance)
                 .map(S125Node.class::cast)
                 .map(s125 -> {

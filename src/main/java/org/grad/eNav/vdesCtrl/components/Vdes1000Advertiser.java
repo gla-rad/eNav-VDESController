@@ -23,6 +23,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.S100Utils;
@@ -57,6 +58,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 /**
  * The VDES-1000 Advertiser Component.
@@ -167,6 +170,7 @@ public class Vdes1000Advertiser {
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
+                .filter(not(AtonMessageDto::isBlacklisted))
                 .filter(S125Node.class::isInstance)
                 .map(S125Node.class::cast)
                 .map(s125 -> {

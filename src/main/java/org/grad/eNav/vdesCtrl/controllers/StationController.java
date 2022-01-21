@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
@@ -34,6 +35,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST controller for managing Stations.
@@ -169,16 +171,42 @@ public class StationController {
     }
 
     /**
-     * GET /api/stations/{id}/nodes : Returns a paged list of all nodes in the
-     * specified station.
+     * GET /api/stations/{id}/messages : Returns a paged list of all messages
+     * assigned to a specified station.
      *
      * @return the ResponseEntity with status 200 (OK) and the list of nodes in body
      */
-    @GetMapping(value = "/{id}/nodes", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<S100AbstractNode>> getStationMessages(@PathVariable BigInteger id) {
+    @GetMapping(value = "/{id}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<AtonMessageDto>> getStationMessages(@PathVariable BigInteger id) {
         log.debug("REST request to get the messages for Station : {}", id);
         return ResponseEntity.ok()
                 .body(this.stationService.findMessagesForStation(id));
+    }
+
+    /**
+     * PUT /api/stations/{id}/messages/{uid}/blacklist : Add a specific AtoN UID in the
+     * blacklist for a given station
+     *
+     * @return the ResponseEntity with status 200 (OK)
+     */
+    @PutMapping(value = "/{id}/messages/{uid}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<S100AbstractNode>> addBlacklistUid(@PathVariable BigInteger id, @PathVariable String uid) {
+        log.debug("REST request to blacklist Message UID {} for Station : {}", uid, id);
+        this.stationService.addBlacklistUid(id, uid);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * DELETE /api/stations/{id}/messages/{uid}/blacklist : Removes a specific AtoN UID from
+     * the blacklist for a given station
+     *
+     * @return the ResponseEntity with status 200 (OK)
+     */
+    @DeleteMapping(value = "/{id}/messages/{uid}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<S100AbstractNode>> deleteBlacklistUid(@PathVariable BigInteger id, @PathVariable String uid) {
+        log.debug("REST request to blacklist Message UID {} for Station : {}", uid, id);
+        this.stationService.removeBlacklistUid(id, uid);
+        return ResponseEntity.ok().build();
     }
 
 }

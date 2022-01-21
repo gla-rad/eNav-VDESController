@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
@@ -75,7 +76,7 @@ class GrAisAdvertiserTest {
 
     // Test Variables
     private Station station;
-    private S125Node s125Node;
+    private AtonMessageDto atonMessageDto;
     private byte[] signature;
     private DatagramSocket gnuRadioSocket;
 
@@ -106,7 +107,7 @@ class GrAisAdvertiserTest {
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
 
         // Now create the S125 node object
-        this.s125Node = new S125Node("test_aton", point, xml);
+        this.atonMessageDto = new AtonMessageDto(new S125Node("test_aton", point, xml), false);
 
         // Mock a signature
         this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
@@ -144,13 +145,13 @@ class GrAisAdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can actually read the stations
-     * from the station service and advertise the to the GNURadio stations
-     * applicable.
+     * Test that the GNURadio AIS advertiser can actually read the station
+     * messages from the message service and advertise the connected GNURadio
+     * station.
      */
     @Test
     void testAdvertiseAtons() throws IOException {
-        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;
@@ -165,14 +166,38 @@ class GrAisAdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can actually read the stations
-     * from the station service and advertise the to the GNURadio stations
-     * applicable. It will also send a second message containing the signature
+     * Test that the  GNURadio AIS advertiser can actually read the station
+     * messages from the message service but will not advertise the ones that
+     * have been blacklisted.
+     */
+    @Test
+    void testAdvertiseAtonsBlacklisted() throws IOException {
+        // Blacklist the AtoN message
+        this.atonMessageDto.setBlacklisted(true);
+
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+
+        // Initialise the advertiser and perform the component call
+        this.grAisAdvertiser.station = this.station;
+        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+        this.grAisAdvertiser.aisInterval = 1000L;
+        this.grAisAdvertiser.enableSignatures = false;
+        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
+        this.grAisAdvertiser.advertiseAtons();
+
+        // Make sure the UDP packet was sent to the GRURadio station
+        verify(this.gnuRadioSocket, never()).send(any());
+    }
+
+    /**
+     * Test that the GNURadio AIS advertiser can actually read the station
+     * messages from the message service and advertise the connected GNURadio
+     * station. It will also send a second message containing the signature
      * of the first, if that feature is enabled.
      */
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException {
-        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -193,7 +218,7 @@ class GrAisAdvertiserTest {
      */
     @Test
     void testAdvertiseAtonsEmptyMessage() throws IOException, InterruptedException {
-        this.s125Node.setContent(null);
+        this.atonMessageDto.setContent(null);
         doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call

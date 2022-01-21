@@ -2,7 +2,7 @@
  * Global variables
  */
 var stationsTable = undefined;
-var stationsNodesTable = undefined;
+var stationMessagesTable = undefined;
 var stationsMap = undefined;
 var drawControl = undefined;
 var drawnItems = undefined;
@@ -85,18 +85,30 @@ var stationsColumnDefs = [{
  * The Station Nodes Table Column Definitions
  * @type {Array}
  */
-var nodesColumnDefs = [{
+var messageColumnDefs = [{
     data: "atonUID",
-    title: "AtoN UID",
-    hoverMsg: "The Node AtoN UID",
-    placeholder: "The Node AtoN UID",
-    width: "33%"
+    title: "Message UID",
+    hoverMsg: "The Message UID",
+    placeholder: "The Message UID",
+    width: "25%"
 }, {
+    data: "blacklisted",
+    title: "Blacklisted",
+    hoverMsg: "Whether the message is blacklisted",
+    placeholder: "Whether the message is blacklisted",
+    width: "15%",
+    className: 'dt-body-center',
+    render: function ( data, type, row ) {
+        return (data ?
+            `<i class="fas fa-check-circle" style="color:red"></i>`:
+            `<i class="fas fa-times-circle" style="color:green"></i>`);
+    },
+ },{
     data: "content",
     title: "Content",
     type: "textarea",
-    hoverMsg: "The Node Content",
-    placeholder: "The Node Content",
+    hoverMsg: "The Message Content",
+    placeholder: "The Message Content",
     render: function (data, type, row) {
         return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
     }
@@ -155,9 +167,9 @@ $(function () {
             text: '<i class="fas fa-table"></i>',
             titleAttr: 'Station Nodes',
             name: 'stationNodes', // do not change name
-            className: 'station-nodes-toggle',
+            className: 'station-messages-toggle',
             action: (e, dt, node, config) => {
-                loadStationNodes(e, dt, node, config);
+                loadStationMessages(e, dt, node, config);
             }
         }, {
             extend: 'selected', // Bind to Selected row
@@ -241,9 +253,9 @@ $(function () {
     // We also need to link the station nodes toggle button with the the modal
     // side panel so that by clicking the button the panel pops up. It's easier
     // done with jQuery.
-    stationsTable.buttons('.station-nodes-toggle')
+    stationsTable.buttons('.station-messages-toggle')
         .nodes()
-        .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationNodesPanel" });
+        .attr({ "data-bs-toggle": "modal", "data-bs-target": "#stationMessagesPanel" });
 
     // We also need to link the station console toggle button with the the modal
     // panel so that by clicking the button the panel pops up. It's easier done
@@ -333,30 +345,30 @@ function addNonGroupLayers(sourceLayer, targetGroup) {
 }
 
 /**
- * This function will initialise the station_nodes_table DOM element and loads
- * the station nodes applicable for the provided row's station ID.
+ * This function will initialise the station_messages_table DOM element and
+ * loads the station messages applicable for the provided row's station ID.
  *
  * @param {Event}         event         The event that took place
  * @param {DataTable}     table         The stations table
  * @param {Node}          button        The button node that was pressed
  * @param {Configuration} config        The table configuration
  */
-function loadStationNodes(event, table, button, config) {
+function loadStationMessages(event, table, button, config) {
     var idx = table.cell('.selected', 0).index();
     var data = table.rows(idx.row).data();
     var stationId = data[0].id;
 
     // Destroy the table if it already exists
-    if (stationsNodesTable) {
-        stationsNodesTable.destroy();
-        stationsNodesTable = undefined;
+    if (stationMessagesTable) {
+        stationMessagesTable.destroy();
+        stationMessagesTable = undefined;
     }
 
     // And re-initialise it
-    stationsNodesTable = $('#stations_nodes_table').DataTable({
+    stationMessagesTable = $('#station_messages_table').DataTable({
         ajax: {
             type: "GET",
-            url: `./api/stations/${stationId}/nodes`,
+            url: `./api/stations/${stationId}/messages`,
             dataType: "json",
             cache: false,
             dataSrc: function (json) {
@@ -366,28 +378,63 @@ function loadStationNodes(event, table, button, config) {
                 console.error(thrownError);
             }
         },
-        columns: nodesColumnDefs,
-        dom: "<'row'<'col-lg-1 col-md-2'B><'col-lg-2 col-md-2'l><'col-lg-9 col-md-8'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
+        columns: messageColumnDefs,
+        dom: "<'row'<'col-lg-2 col-md-2'B><'col-lg-2 col-md-2'l><'col-lg-8 col-md-8'f>><'row'<'col-md-12'rt>><'row'<'col-md-6'i><'col-md-6'p>>",
         select: 'single',
         lengthMenu: [10, 25, 50, 75, 100],
         responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
-            extend: 'selected', // Bind to Selected row
-            text: '<i class="fas fa-trash-alt"></i>',
-            titleAttr: 'Delete Node',
-            name: 'delete' // do not change name
-        }],
-        onDeleteRow: function (datatable, selectedRows, success, error) {
-            selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
-                $.ajax({
-                    type: 'DELETE',
-                    url: `./api/snodes/uid/${this.data()["atonUID"]}`,
-                    success: success,
-                    error: error
-                });
-            });
-        }
+           extend: 'selected', // Bind to Selected row
+           text: '<i class="fas fa-play-circle"></i>',
+           titleAttr: 'Whitelist Message',
+           name: 'whitelist', // do not change name
+           action: (e, dt, node, config) => {
+              toggleBlacklistUid(e, dt, node, config, false);
+           }
+       }, {
+          extend: 'selected', // Bind to Selected row
+          text: '<i class="fas fa-stop-circle"></i>',
+          titleAttr: 'Blacklist Message',
+          name: 'blacklist', // do not change name
+          action: (e, dt, node, config) => {
+             toggleBlacklistUid(e, dt, node, config, true);
+          }
+       }],
+       createdRow: (row, data, dataIndex) => {
+           if( data["blacklisted"] ){
+               $(row).addClass('table-danger');
+           }
+       }
+    });
+}
+
+/**
+ * This function performs the blacklisting of the selected message UIDs.
+ *
+ * @param {Event}         event         The event that took place
+ * @param {DataTable}     table         The stations table
+ * @param {Node}          button        The button node that was pressed
+ * @param {Configuration} config        The table configuration
+ */
+function toggleBlacklistUid(event, table, button, config, blacklist) {
+    // Get the selected message UID
+    let idx = table.cell('.selected', 0).index();
+    let data = table.rows(idx.row).data();
+    let atonUID = data[0].atonUID;
+
+    // Get the selected station ID
+    let stationIdx = stationsTable.cell('.selected', 0).index();
+    let stationData = stationsTable.rows(stationIdx.row).data();
+    let stationId = stationData[0].id;
+
+    // And call the API to add the blacklist
+    $.ajax({
+        url: `./api/stations/${stationId}/messages/${atonUID}/blacklist`,
+        type: blacklist ? 'PUT' : 'DELETE',
+        contentType: 'application/json; charset=utf-8',
+        success: () => {stationMessagesTable.ajax.reload();},
+        error: () => {console.error("error");}
     });
 }
 

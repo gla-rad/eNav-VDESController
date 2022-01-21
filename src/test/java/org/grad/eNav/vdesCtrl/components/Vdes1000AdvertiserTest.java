@@ -23,6 +23,7 @@ import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
@@ -92,7 +93,7 @@ class Vdes1000AdvertiserTest {
 
     // Test Variables
     private Station station;
-    private S125Node s125Node;
+    private AtonMessageDto atonMessageDto;
     private byte[] signature;
     private VDES1000Conn vdes1000Conn;
     private DatagramSocket fwdSocket;
@@ -124,7 +125,7 @@ class Vdes1000AdvertiserTest {
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
 
         // Now create the S125 node object
-        this.s125Node = new S125Node("test_aton", point, xml);
+        this.atonMessageDto = new AtonMessageDto(new S125Node("test_aton", point, xml), false);
 
         // Mock a signature
         this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
@@ -137,7 +138,7 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can initialise correctly.
+     * Test that the VDES-1000 advertiser can initialise correctly.
      */
     @Test
     void testInit() throws SocketException, UnknownHostException {
@@ -153,7 +154,7 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can be destroyed gracefully and
+     * Test that the VDES-1000 advertiser can be destroyed gracefully and
      * will close its UDP connection to the GNURadio device.
      */
     @Test
@@ -170,14 +171,14 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can actually read the stations
-     * from the station service and advertise the to the GNURadio stations
-     * applicable.
+     * Test that the VDES-1000 advertiser can actually read the station
+     * messages from the message service and advertise the connected VDES-1000
+     * station.
      */
     @Test
     void testAdvertiseAtons() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
@@ -191,15 +192,38 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser can actually read the stations
-     * from the station service and advertise the to the GNURadio stations
-     * applicable. It will also send a second message containing the signature
+     * Test that the VDES-1000 advertiser can actually read the station
+     * messages from the message service but will not advertise the ones that
+     * have been blacklisted.
+     */
+    @Test
+    void testAdvertiseAtonsBlacklisted() throws VDES1000ConnException {
+        // Blacklist the AtoN message
+        this.atonMessageDto.setBlacklisted(true);
+
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+
+        // Initialise the advertiser and perform the component call
+        this.vdes1000Advertiser.station = this.station;
+        this.vdes1000Advertiser.enableSignatures = false;
+        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.advertiseAtons();
+
+        // Make sure the UDP packet was sent to the GRURadio station
+        verify(this.vdes1000Conn, never()).sendMessage(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+    }
+
+    /**
+     * Test that the VDES-1000 advertiser can actually read the station
+     * messages from the message service and advertise the connected VDES-1000
+     * station. It will also send a second message containing the signature
      * of the first, if that feature is enabled.
      */
     @Test
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.s125Node)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -214,12 +238,12 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
-     * Test that the GNURadio AIS advertiser will not actually send anything
+     * Test that the VDES-1000 advertiser will not actually send anything
      * if an empty/null S125 message is received
      */
     @Test
     void testAdvertiseAtonsEmptyMessage() throws VDES1000ConnException {
-        this.s125Node.setContent(null);
+        this.atonMessageDto.setContent(null);
         doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
 
         // Initialise the advertiser and perform the component call

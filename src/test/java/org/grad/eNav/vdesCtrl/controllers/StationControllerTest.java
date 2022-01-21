@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
@@ -97,7 +98,7 @@ class StationControllerTest {
         // Initialise the station messages list
         this.messages = new ArrayList<>();
         for(long i=0; i<2; i++) {
-            S125Node message = new S125Node();
+            AtonMessageDto message = new AtonMessageDto();
             message.setAtonUID("UID" + i);
             message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
             message.setContent("Node Message");
@@ -350,23 +351,23 @@ class StationControllerTest {
     }
 
     /**
-     * Test that we can retrieve all the AtoN messages linked to a specific
-     * station.
+     * Test that we can blacklist an AtoN message UID successfully.
      */
     @Test
-    void testGetStationMessages() throws Exception {
-        // Created a result page to be returned by the mocked service
-        doReturn(this.messages).when(this.stationService).findMessagesForStation(this.existingStation.getId());
-
+    void testAddBlacklistUid() throws Exception {
         // Perform the MVC request
-        MvcResult mvcResult = this.mockMvc.perform(get("/api/stations/" + this.existingStation.getId()+ "/nodes"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andReturn();
+        this.mockMvc.perform(put("/api/stations/" + this.existingStation.getId()+ "/messages/test_aton_uid/blacklist"))
+                .andExpect(status().isOk());
+    }
 
-        // Parse and validate the response
-        S125Node[] result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), S125Node[].class);
-        assertEquals(this.messages.size(), Arrays.asList(result).size());
+    /**
+     * Test that we remove an AtoN message UID successfully from the blacklist.
+     */
+    @Test
+    void testDeleteBlacklistUid() throws Exception {
+        // Perform the MVC request
+        this.mockMvc.perform(delete("/api/stations/" + this.existingStation.getId()+ "/messages/test_aton_uid/blacklist"))
+                .andExpect(status().isOk());
     }
 
 }

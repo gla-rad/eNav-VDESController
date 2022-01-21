@@ -23,6 +23,7 @@ import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
@@ -160,6 +161,14 @@ public class StationService {
      */
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
+
+        // Copy the existing blacklist IDs if available
+        Optional.of(station)
+                .map(Station::getId)
+                .map(this.stationRepo::getById)
+                .map(Station::getBlacklistedUids)
+                .ifPresent(station::setBlacklistedUids);
+
         // Save the updated station
         Station savedStation = this.stationRepo.save(station);
 
@@ -198,9 +207,12 @@ public class StationService {
      * @return the list of nodes
      */
     @Transactional(readOnly = true)
-    public List<S100AbstractNode> findMessagesForStation(BigInteger stationId) {
+    public List<AtonMessageDto> findMessagesForStation(BigInteger stationId) {
         log.debug("Request to get all messages for Station: {}", stationId);
-        return this.stationRepo.findById(stationId)
+        // First access the station information
+        final Station station = this.findOne(stationId);
+        // Now query for the non-blacklisted AtoN messages
+        return Optional.of(station)
                 .map(Station::getGeometry)
                 .filter(Objects::nonNull)
                 .filter(not(Geometry::isEmpty))
@@ -210,7 +222,7 @@ public class StationService {
                 .map(Page::getContent)
                 .orElseGet(Collections::emptyList)
                 .stream()
-                .map(S100AbstractNode.class::cast)
+                .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getAtonUID())))
                 .collect(Collectors.toList());
     }
 
@@ -236,6 +248,53 @@ public class StationService {
                 .map(Page.class::cast)
                 .map(page -> new DtPage<>((Page<Station>)page, dtPagingRequest))
                 .orElseGet(DtPage::new);
+    }
+
+    /**
+     * Retrieves the blacklist message UIDs for a specific station.
+     *
+     * @param id the ID of the station to retrieve the blacklist for
+     * @return the list of blacklisted message UIDs
+     */
+    public Set<String> getBlacklistUid(BigInteger id) {
+        // First get the specified stations
+        Station station = this.findOne(id);
+        //Now return the blacklist
+        return station.getBlacklistedUids();
+    }
+
+    /**
+     * Add the provided message UID into the specified station's blacklist.
+     *
+     * @param id the ID of the station to add the blacklist entry
+     * @param uid the UID of the entry to be added into the blacklist
+     */
+    public void addBlacklistUid(BigInteger id, String uid) {
+        // First get the specified stations
+        Station station = this.findOne(id);
+
+        // Add the specified UID
+        station.getBlacklistedUids().add(uid);
+
+        // And save the list
+        this.save(station);
+    }
+
+    /**
+     * Removes a specific UID from the given station's blacklist.
+     *
+     * @param id the ID of the station to remove the blacklist entry
+     * @param uid the UID of the entry be removed from the blacklist
+     */
+    public void removeBlacklistUid(BigInteger id, String uid) {
+        // First get the specified stations
+        Station station = this.findOne(id);
+
+        // Remove the specified UID
+        station.getBlacklistedUids().remove(uid);
+
+        // And save the list
+        this.save(station);
     }
 
     /**
