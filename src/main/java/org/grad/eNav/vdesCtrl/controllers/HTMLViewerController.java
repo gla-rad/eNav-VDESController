@@ -88,30 +88,11 @@ public class HTMLViewerController {
      */
     @GetMapping("/index")
     public String index(Model model) {
-        // Add the properties to the UI model
-        model.addAttribute("endpoints", stationService.findAll()
-                .stream()
-                .map(station -> String.format("%s:%d", station.getIpAddress(), station.getPort()))
-                .collect(Collectors.toList()));
         model.addAttribute("appName", this.appName);
         model.addAttribute("appOperatorUrl", this.appOperatorUrl);
         model.addAttribute("appCopyright", this.appCopyright);
         // Return the rendered index
         return "index";
-    }
-
-    /**
-     * The stations page of the VDES Controller Application.
-     *
-     * @param model The application UI model
-     * @return The index page
-     */
-    @GetMapping("/stations")
-    public String stations(Model model) {
-        model.addAttribute("appName", this.appName);
-        model.addAttribute("appOperatorUrl", this.appOperatorUrl);
-        model.addAttribute("appCopyright", this.appCopyright);
-        return "stations";
     }
 
     /**

@@ -36,6 +36,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -44,13 +45,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.Message;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -150,7 +149,7 @@ class StationServiceTest {
         this.newStation.setType(StationType.VDES_1000);
         this.newStation.setPort(8001);
         this.newStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-        this.newStation.setBlacklistedUids(Collections.emptySet());
+        this.newStation.setBlacklistedUids(new HashSet<>());
 
         // Create a station with an ID
         this.existingStation = new Station();
@@ -162,7 +161,7 @@ class StationServiceTest {
         this.existingStation.setType(StationType.GNU_RADIO);
         this.existingStation.setPort(8002);
         this.existingStation.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
-        this.existingStation.setBlacklistedUids(Collections.emptySet());
+        this.existingStation.setBlacklistedUids(new HashSet<>());
     }
 
     /**
@@ -388,6 +387,30 @@ class StationServiceTest {
     }
 
     /**
+     * Test that we can correctly receive and process the S125 messages for
+     * a specific station geometry through the AtoN service client. Make sure
+     * however, that the blacklisted messages will NOT be included.
+     */
+    @Test
+    void testFindMessagesForStationBlacklisted() {
+        // Blacklist all messages
+        this.existingStation.setBlacklistedUids(this.messages.stream()
+                .map(AtonMessageDto.class::cast)
+                .map(AtonMessageDto::getAtonUID)
+                .collect(Collectors.toSet()));
+
+        Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
+        doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
+        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
+
+        // Perform the service call
+        List<AtonMessageDto> result = this.stationService.findMessagesForStation(this.existingStation.getId(), false);
+
+        // Test the result
+        assertEquals(0, result.size());
+    }
+
+    /**
      * Test that if the requested station has no specified geometry, then no
      * linked AtoN messages will be return from the station message query.
      */
@@ -412,7 +435,7 @@ class StationServiceTest {
      * definitions).
      */
     @Test
-    void testGetStationsForDatatables() {
+    void testHandleDatatablesPagingRequest() {
         // First create the pagination request
         DtPagingRequest dtPagingRequest = new DtPagingRequest();
         dtPagingRequest.setStart(0);
@@ -456,6 +479,47 @@ class StationServiceTest {
         for(int i=0; i < result.getRecordsFiltered(); i++){
             assertEquals(this.stations.get(i), result.getData().get(i));
         }
+    }
+
+    /**
+     * Test that we can add a new message UID into a station's blacklist.
+     */
+    @Test
+    void testAddBlacklistUid() {
+        doReturn(this.existingStation).when(this.stationService).findOne(this.existingStation.getId());
+
+        // Perform the service call
+        this.stationService.addBlacklistUid(this.existingStation.getId(), "test_message_uid");
+
+        // Check that during the station update the blacklist was updated
+        ArgumentCaptor<Station> stationsArgument = ArgumentCaptor.forClass(Station.class);
+        verify(this.stationRepo, times(1)).save(stationsArgument.capture());
+        assertNotNull(stationsArgument.getValue());
+        assertNotNull(stationsArgument.getValue().getBlacklistedUids());
+        assertEquals(1, stationsArgument.getValue().getBlacklistedUids().size());
+        assertTrue(stationsArgument.getValue().getBlacklistedUids().contains("test_message_uid"));
+    }
+
+    /**
+     * Test that we can remove an existing message UID from a station's
+     * blacklist.
+     */
+    @Test
+    void testRemoveBlacklistUid() {
+        // Initialise the station with an existing blacklisted message UID
+        this.existingStation.getBlacklistedUids().add("test_message_iod");
+
+        doReturn(this.existingStation).when(this.stationService).findOne(this.existingStation.getId());
+
+        // Perform the service call
+        this.stationService.removeBlacklistUid(this.existingStation.getId(), "test_message_iod");
+
+        // Check that during the station update the blacklist was updated
+        ArgumentCaptor<Station> stationsArgument = ArgumentCaptor.forClass(Station.class);
+        verify(this.stationRepo, times(1)).save(stationsArgument.capture());
+        assertNotNull(stationsArgument.getValue());
+        assertNotNull(stationsArgument.getValue().getBlacklistedUids());
+        assertEquals(0, stationsArgument.getValue().getBlacklistedUids().size());
     }
 
 }

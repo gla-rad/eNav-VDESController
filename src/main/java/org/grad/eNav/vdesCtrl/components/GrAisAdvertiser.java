@@ -135,11 +135,10 @@ public class GrAisAdvertiser {
         // Get all the nodes applicable for the station and build the messages
         List<AISMessage21> messages =  Optional.of(this.station)
                 .map(Station::getId)
-                .map(this.stationService::findMessagesForStation)
+                .map(id -> this.stationService.findMessagesForStation(id, false))
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(Objects::nonNull)
-                .filter(not(AtonMessageDto::isBlacklisted))
                 .filter(S125Node.class::isInstance)
                 .map(S125Node.class::cast)
                 .map(s125 -> {

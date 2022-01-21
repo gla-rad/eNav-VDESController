@@ -178,7 +178,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtons() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
@@ -198,10 +198,7 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testAdvertiseAtonsBlacklisted() throws VDES1000ConnException {
-        // Blacklist the AtoN message
-        this.atonMessageDto.setBlacklisted(true);
-
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.emptyList()).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
@@ -223,7 +220,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -244,7 +241,7 @@ class Vdes1000AdvertiserTest {
     @Test
     void testAdvertiseAtonsEmptyMessage() throws VDES1000ConnException {
         this.atonMessageDto.setContent(null);
-        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;

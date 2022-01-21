@@ -151,7 +151,7 @@ class GrAisAdvertiserTest {
      */
     @Test
     void testAdvertiseAtons() throws IOException {
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;
@@ -172,10 +172,7 @@ class GrAisAdvertiserTest {
      */
     @Test
     void testAdvertiseAtonsBlacklisted() throws IOException {
-        // Blacklist the AtoN message
-        this.atonMessageDto.setBlacklisted(true);
-
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.emptyList()).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;
@@ -197,7 +194,7 @@ class GrAisAdvertiserTest {
      */
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException {
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
         doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
@@ -219,7 +216,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsEmptyMessage() throws IOException, InterruptedException {
         this.atonMessageDto.setContent(null);
-        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(this.station.getId());
+        doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

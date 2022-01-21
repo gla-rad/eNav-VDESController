@@ -201,13 +201,27 @@ public class StationService {
     }
 
     /**
-     * Get all the nodes of a specific station in a pageable search.
+     * Get all the allocated messages for a specific station in a pageable
+     * search. The result will include all all the blacklisted messages.
      *
-     * @param stationId the station ID to retrieve the nodes for
-     * @return the list of nodes
+     * @param stationId the station ID to retrieve the messages for
+     * @return the list of messages
      */
     @Transactional(readOnly = true)
     public List<AtonMessageDto> findMessagesForStation(BigInteger stationId) {
+        return this.findMessagesForStation(stationId, true);
+    }
+
+    /**
+     * Get all the allocated messages for a specific station in a pageable
+     * search. An additional parameter can be used to indicate whether the
+     * blacklisted messages should me omitted.
+     *
+     * @param stationId the station ID to retrieve the messages for
+     * @return the list of messages
+     */
+    @Transactional(readOnly = true)
+    public List<AtonMessageDto> findMessagesForStation(BigInteger stationId, boolean includeBlacklisted) {
         log.debug("Request to get all messages for Station: {}", stationId);
         // First access the station information
         final Station station = this.findOne(stationId);
@@ -223,6 +237,7 @@ public class StationService {
                 .orElseGet(Collections::emptyList)
                 .stream()
                 .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getAtonUID())))
+                .filter(msg -> includeBlacklisted || !msg.isBlacklisted())
                 .collect(Collectors.toList());
     }
 
@@ -248,19 +263,6 @@ public class StationService {
                 .map(Page.class::cast)
                 .map(page -> new DtPage<>((Page<Station>)page, dtPagingRequest))
                 .orElseGet(DtPage::new);
-    }
-
-    /**
-     * Retrieves the blacklist message UIDs for a specific station.
-     *
-     * @param id the ID of the station to retrieve the blacklist for
-     * @return the list of blacklisted message UIDs
-     */
-    public Set<String> getBlacklistUid(BigInteger id) {
-        // First get the specified stations
-        Station station = this.findOne(id);
-        //Now return the blacklist
-        return station.getBlacklistedUids();
     }
 
     /**

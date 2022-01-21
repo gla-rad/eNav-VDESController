@@ -18,27 +18,107 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <th:block th:include="fragments/general.html :: headerfiles"></th:block>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.0/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.0/css/buttons.bootstrap5.min.css" />
+    <link rel="stylesheet" th:href="@{/webjars/leaflet/dist/leaflet.css}" />
+    <link rel="stylesheet" th:href="@{/webjars/leaflet-draw/dist/leaflet.draw.css}" />
 </head>
 <body>
-    <noscript>
-        <h2 style="color: #ff0000">
-            Seems your browser doesn't support Javascript!
-            Websocket relies on Javascript being enabled.
-            Please enable Javascript and reload this page!
-        </h2>
-    </noscript>
     <div class="d-flex flex-column vh-100">
         <div th:replace="fragments/general.html :: navbar"></div>
-        <div class="flex-fill flex-grow-1 flex-shrink-0 sky-bg">
+        <div class="flex-fill flex-grow-1 flex-shrink-0 sky-bg" >
             <div id="main-content" class="container mt-3">
                 <div th:replace="fragments/general.html :: login-card"></div>
                 <div class="card shadow" sec:authorize="isAuthenticated()">
                     <div class="card-header">
-                        <h2>Welcome to the VDES Controller!</h2>
+                        <h2>Stations Dashboard</h2>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <p>Please select an option from the top menu to access the service functionality</p>
+                        <div class="col-12 m-1">
+                            <table id="stations_table" class="table table-sm table-striped row-border hover w-100">
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="stationAreasPanel" tabindex="-1" role="dialog" aria-labelledby="stationAreasPanelHeader"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="stationAreasPanelHeader">Station Area</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- map container -->
+                            <div id="stationMap" class="map border shadow"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="float-right">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
+                                    <i class="fas">&times</i>
+                                    <span class="btn-label"> Close</span>
+                                </button>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" title="Save Changes" onclick="saveGeometry()">
+                                    <i class="fas fa-save"></i>
+                                    <span class="btn-label"> Save</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="stationConsolePanel" tabindex="-1" role="dialog" aria-labelledby="stationConsolePanelHeader"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="stationConsolePanelHeader">Station Console</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <textarea class="form-control form-control-sm" id="stationConsoleTextArea" rows="20" readonly></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="float-right">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
+                                    <i class="fas">&times</i>
+                                    <span class="btn-label"> Close</span>
+                                </button>
+                                <button type="button" class="btn btn-primary" id="consoleConnectButton" title="Connect" onclick="connectConsole()">
+                                    <i class="fas fa-plug"></i>
+                                    <span class="btn-label"> Connect</span>
+                                </button>
+                                <button type="button" class="btn btn-warning" id="consoleDisconnectButton" title="Disconnect" onclick="disconnectConsole()" style="display: none">
+                                    <i class="fas fa-door-closed"></i>
+                                    <span class="btn-label"> Disconnect</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="stationMessagesPanel" tabindex="-1" role="dialog" aria-labelledby="stationMessagesPanelHeader"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-slideout modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="stationMessagesPanelHeader">Station Nodes</h5>
+                            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <table id="station_messages_table" class="table table-striped table-bordered table-sm row-border hover w-100">
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="float-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" title="Cancel Changes">
+                                    <i class="fas">&times</i>
+                                    <span class="btn-label"> Close</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -46,9 +126,22 @@
         </div>
         <div th:replace="fragments/general.html :: footer"></div>
     </div>
+    <!-- We need to refresh the session due to our AJAX calls -->
+    <iframe th:replace="fragments/general.html :: sessionRefresher"></iframe>
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
     <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
     <script th:src="@{/webjars/stomp-websocket/stomp.min.js}"></script>
+    <script th:src="@{/webjars/leaflet/dist/leaflet.js}"></script>
+    <script th:src="@{/webjars/leaflet-draw/dist/leaflet.draw.js}"></script>
+    <script src="https://cdn.datatables.net/1.11.0/js/jquery.dataTables.js" ></script>
+    <script src="https://cdn.datatables.net/1.11.0/js/dataTables.bootstrap5.min.js" ></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js" ></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.bootstrap5.min.js" ></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js" ></script>
+    <script src="https://cdn.datatables.net/select/1.3.1/js/dataTables.select.js" ></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.5/js/dataTables.responsive.js" ></script>
+    <script th:src="@{/lib/dataTables.altEditor.free.js}"></script>
+    <script th:src="@{/src/stations.js}"></script>
 </body>
 </html>
