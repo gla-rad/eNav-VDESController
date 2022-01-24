@@ -12,35 +12,36 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
 package org.grad.eNav.vdesCtrl;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-
-import javax.security.auth.message.config.RegistrationListener;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import static org.mockito.Mockito.mock;
 
 /**
- * This is a test only configuration that will get activated when the "test"
- * profile is active.
+ * This is a test configuration for implementing some Feign required security
+ * mocks. Use wisely...
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @TestConfiguration
-public class TestingConfiguration {
+public class TestFeignSecurityConfig {
 
-	/**
-	 * The registration listener for feign registers the client inside a
-	 * client repository which is als needed, hence mocked.
-	 */
-	@Bean
-	public ClientRegistrationRepository clientRegistrationRepository() {
-		return mock(ClientRegistrationRepository.class);
-	}
+    /**
+     * The HTTP Security mock.
+     *
+     * @return the HTTP security mock
+     */
+    @Bean
+    HttpSecurity httpSecurity() {
+        return mock(HttpSecurity.class);
+    }
 
 }
