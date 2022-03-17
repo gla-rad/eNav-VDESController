@@ -24,7 +24,7 @@
 		<springdoc.version>1.5.10</springdoc.version>
 		<bootstrap.version>5.1.0</bootstrap.version>
 		<jquery.version>3.5.1</jquery.version>
-		<fa.version>5.11.2</fa.version>
+		<fa.version>6.0.0</fa.version>
 		<geomesa.version>3.3.0</geomesa.version>
 		<scala.abi.version>2.12</scala.abi.version>
 		<zookeeper.version>3.5.9</zookeeper.version>
