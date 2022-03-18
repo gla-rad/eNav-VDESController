@@ -186,6 +186,7 @@ $(function () {
                 url: './api/stations',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
                 dataType: 'json',
                 data: JSON.stringify({
                     id: rowdata["id"],
@@ -209,6 +210,7 @@ $(function () {
                 $.ajax({
                     url: `./api/stations/${this.data()["id"]}`,
                     type: 'DELETE',
+                    crossDomain: true,
                     success: success,
                     error: error
                 });
@@ -223,6 +225,7 @@ $(function () {
                 url: `./api/stations/${rowdata["id"]}`,
                 type: 'PUT',
                 contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
                 dataType: 'json',
                 data: JSON.stringify({
                     id: rowdata["id"],
@@ -369,6 +372,7 @@ function loadStationMessages(event, table, button, config) {
         ajax: {
             type: "GET",
             url: `./api/stations/${stationId}/messages`,
+            crossDomain: true,
             dataType: "json",
             cache: false,
             dataSrc: function (json) {
@@ -433,6 +437,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
         url: `./api/stations/${stationId}/messages/${atonUID}/blacklist`,
         type: blacklist ? 'PUT' : 'DELETE',
         contentType: 'application/json; charset=utf-8',
+        crossDomain: true,
         success: () => {stationMessagesTable.ajax.reload();},
         error: () => {console.error("error");}
     });
