@@ -17,16 +17,14 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
@@ -39,8 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.cloud.openfeign.support.PageJacksonModule;
-import org.springframework.cloud.openfeign.support.SortJacksonModule;
 import org.springframework.context.annotation.Scope;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.support.MessageBuilder;
@@ -58,8 +54,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.util.function.Predicate.not;
 
 /**
  * The VDES-1000 Advertiser Component.
@@ -174,7 +168,7 @@ public class Vdes1000Advertiser {
                 .map(S125Node.class::cast)
                 .map(s125 -> {
                     try {
-                        return S100Utils.s125ToAisMessage21(s125);
+                        return AISMessageUtils.s125ToAisMessage21(s125);
                     }
                     catch (JAXBException ex) {
                         log.error(ex.getMessage());
