@@ -109,6 +109,7 @@ var messageColumnDefs = [{
     type: "textarea",
     hoverMsg: "The Message Content",
     placeholder: "The Message Content",
+    width: "60%"
     render: function (data, type, row) {
         return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
     }
@@ -411,6 +412,7 @@ function loadStationMessages(event, table, button, config) {
            }
        }
     });
+    stationMessagesTable.columns.adjust();
 }
 
 /**
