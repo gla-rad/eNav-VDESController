@@ -410,12 +410,11 @@ function loadStationMessages(event, table, button, config) {
            if( data["blacklisted"] ){
                $(row).addClass('table-danger');
            }
+       },
+       drawCallback: (settings) => {
+           $('#station_messages_table').DataTable().columns.adjust();
        }
     });
-    setTimeout(() => {
-        stationMessagesTable.columns.adjust();
-    });
-
 }
 
 /**
