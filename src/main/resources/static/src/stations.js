@@ -412,7 +412,7 @@ function loadStationMessages(event, table, button, config) {
            }
        },
        drawCallback: (settings) => {
-           $('#station_messages_table').DataTable().columns.adjust();
+           setTimeout(() => $('#station_messages_table').DataTable().columns.adjust(), 100);
        }
     });
 }
