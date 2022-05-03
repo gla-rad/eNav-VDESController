@@ -90,7 +90,7 @@ var messageColumnDefs = [{
     title: "Message UID",
     hoverMsg: "The Message UID",
     placeholder: "The Message UID",
-    width: "20%"
+    width: "25%"
 }, {
     data: "blacklisted",
     title: "Blacklisted",
@@ -109,7 +109,7 @@ var messageColumnDefs = [{
     type: "textarea",
     hoverMsg: "The Message Content",
     placeholder: "The Message Content",
-    width: "60%",
+    width: "55%",
     render: function (data, type, row) {
         return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
     }
