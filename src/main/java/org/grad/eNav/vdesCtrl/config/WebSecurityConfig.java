@@ -18,7 +18,6 @@ package org.grad.eNav.vdesCtrl.config;
 
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -159,8 +158,6 @@ class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         super.configure(httpSecurity);
         httpSecurity
                 .csrf().disable()
-                .headers().frameOptions().sameOrigin()
-                .and()
                 .authorizeRequests()
                 .antMatchers(
                         "/webjars/**",   //bootstrap

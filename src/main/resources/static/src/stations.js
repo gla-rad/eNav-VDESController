@@ -100,8 +100,8 @@ var messageColumnDefs = [{
     className: 'dt-body-center',
     render: function ( data, type, row ) {
         return (data ?
-            `<i class="fas fa-check-circle" style="color:red"></i>`:
-            `<i class="fas fa-times-circle" style="color:green"></i>`);
+            `<i class="fa-solid fa-circle-check" style="color:red"></i>`:
+            `<i class="fa-solid fa-circle-xmark" style="color:green"></i>`);
     },
  },{
     data: "content",
@@ -109,6 +109,7 @@ var messageColumnDefs = [{
     type: "textarea",
     hoverMsg: "The Message Content",
     placeholder: "The Message Content",
+    width: "60%"
     render: function (data, type, row) {
         return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
     }
@@ -140,22 +141,22 @@ $(function () {
         responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
-            text: '<i class="fas fa-plus-circle"></i>',
+            text: '<i class="fa-solid fa-plus"></i>',
             titleAttr: 'Add Station',
             name: 'add' // do not change name
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fas fa-edit"></i>',
+            text: '<i class="fa-solid fa-pen-to-square"></i>',
             titleAttr: 'Edit Station',
             name: 'edit' // do not change name
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fas fa-trash-alt"></i>',
+            text: '<i class="fa-solid fa-trash"></i>',
             titleAttr: 'Delete Station',
             name: 'delete' // do not change name
         }, {
            extend: 'selected', // Bind to Selected row
-           text: '<i class="fas fa-map-marked-alt"></i>',
+           text: '<i class="fa-solid fa-map-location-dot"></i>',
            titleAttr: 'Define Station Area',
            name: 'stationArea', // do not change name
            className: 'station-area-toggle',
@@ -164,7 +165,7 @@ $(function () {
            }
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fas fa-table"></i>',
+            text: '<i class="fa-solid fa-table"></i>',
             titleAttr: 'Station Nodes',
             name: 'stationNodes', // do not change name
             className: 'station-messages-toggle',
@@ -173,7 +174,7 @@ $(function () {
             }
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fas fa-terminal"></i>',
+            text: '<i class="fa-solid fa-terminal"></i>',
             titleAttr: 'Station Console',
             name: 'stationConsole', // do not change name
             className: 'station-console-toggle',
@@ -186,6 +187,7 @@ $(function () {
                 url: './api/stations',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
                 dataType: 'json',
                 data: JSON.stringify({
                     id: rowdata["id"],
@@ -209,6 +211,7 @@ $(function () {
                 $.ajax({
                     url: `./api/stations/${this.data()["id"]}`,
                     type: 'DELETE',
+                    crossDomain: true,
                     success: success,
                     error: error
                 });
@@ -223,6 +226,7 @@ $(function () {
                 url: `./api/stations/${rowdata["id"]}`,
                 type: 'PUT',
                 contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
                 dataType: 'json',
                 data: JSON.stringify({
                     id: rowdata["id"],
@@ -369,6 +373,7 @@ function loadStationMessages(event, table, button, config) {
         ajax: {
             type: "GET",
             url: `./api/stations/${stationId}/messages`,
+            crossDomain: true,
             dataType: "json",
             cache: false,
             dataSrc: function (json) {
@@ -386,7 +391,7 @@ function loadStationMessages(event, table, button, config) {
         altEditor: true, // Enable altEditor
         buttons: [{
            extend: 'selected', // Bind to Selected row
-           text: '<i class="fas fa-play-circle"></i>',
+           text: '<i class="fa-solid fa-circle-play"></i>',
            titleAttr: 'Whitelist Message',
            name: 'whitelist', // do not change name
            action: (e, dt, node, config) => {
@@ -394,7 +399,7 @@ function loadStationMessages(event, table, button, config) {
            }
        }, {
           extend: 'selected', // Bind to Selected row
-          text: '<i class="fas fa-stop-circle"></i>',
+          text: '<i class="fa-solid fa-circle-stop"></i>',
           titleAttr: 'Blacklist Message',
           name: 'blacklist', // do not change name
           action: (e, dt, node, config) => {
@@ -407,6 +412,7 @@ function loadStationMessages(event, table, button, config) {
            }
        }
     });
+    stationMessagesTable.columns.adjust();
 }
 
 /**
@@ -433,6 +439,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
         url: `./api/stations/${stationId}/messages/${atonUID}/blacklist`,
         type: blacklist ? 'PUT' : 'DELETE',
         contentType: 'application/json; charset=utf-8',
+        crossDomain: true,
         success: () => {stationMessagesTable.ajax.reload();},
         error: () => {console.error("error");}
     });

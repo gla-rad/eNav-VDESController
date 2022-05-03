@@ -19,10 +19,9 @@ package org.grad.eNav.vdesCtrl.components;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
-import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.S100Utils;
+import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
 import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
@@ -48,8 +47,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.util.function.Predicate.not;
 
 /**
  * The GNURadio AIS Advertiser Component Class
@@ -143,7 +140,7 @@ public class GrAisAdvertiser {
                 .map(S125Node.class::cast)
                 .map(s125 -> {
                     try {
-                        return S100Utils.s125ToAisMessage21(s125);
+                        return AISMessageUtils.s125ToAisMessage21(s125);
                     }
                     catch (JAXBException ex) {
                         log.error(ex.getMessage());

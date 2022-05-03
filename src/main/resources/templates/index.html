@@ -56,11 +56,11 @@
                         <div class="modal-footer">
                             <div class="float-right">
                                 <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fas">&times</i>
+                                    <i class="fa-solid fa-xmark"></i>
                                     <span class="btn-label"> Close</span>
                                 </button>
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" title="Save Changes" onclick="saveGeometry()">
-                                    <i class="fas fa-save"></i>
+                                    <i class="fa-solid fa-floppy-disk"></i>
                                     <span class="btn-label"> Save</span>
                                 </button>
                             </div>
@@ -84,15 +84,15 @@
                         <div class="modal-footer">
                             <div class="float-right">
                                 <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fas">&times</i>
+                                    <i class="fa-solid fa-xmark"></i>
                                     <span class="btn-label"> Close</span>
                                 </button>
                                 <button type="button" class="btn btn-primary" id="consoleConnectButton" title="Connect" onclick="connectConsole()">
-                                    <i class="fas fa-plug"></i>
+                                    <i class="fa-solid fa-plug"></i>
                                     <span class="btn-label"> Connect</span>
                                 </button>
                                 <button type="button" class="btn btn-warning" id="consoleDisconnectButton" title="Disconnect" onclick="disconnectConsole()" style="display: none">
-                                    <i class="fas fa-door-closed"></i>
+                                    <i class="fa-solid fa-door-closed"></i>
                                     <span class="btn-label"> Disconnect</span>
                                 </button>
                             </div>
@@ -115,7 +115,7 @@
                         <div class="modal-footer">
                             <div class="float-end">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fas">&times</i>
+                                    <i class="fa-solid fa-xmark"></i>
                                     <span class="btn-label"> Close</span>
                                 </button>
                             </div>
@@ -127,7 +127,6 @@
         <div th:replace="fragments/general.html :: footer"></div>
     </div>
     <!-- We need to refresh the session due to our AJAX calls -->
-    <iframe th:replace="fragments/general.html :: sessionRefresher"></iframe>
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
     <script th:src="@{/webjars/sockjs-client/sockjs.min.js}"></script>
