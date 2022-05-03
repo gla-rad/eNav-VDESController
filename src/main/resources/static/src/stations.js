@@ -90,13 +90,13 @@ var messageColumnDefs = [{
     title: "Message UID",
     hoverMsg: "The Message UID",
     placeholder: "The Message UID",
-    width: "25%"
+    width: "20%"
 }, {
     data: "blacklisted",
     title: "Blacklisted",
     hoverMsg: "Whether the message is blacklisted",
     placeholder: "Whether the message is blacklisted",
-    width: "15%",
+    width: "20%",
     className: 'dt-body-center',
     render: function ( data, type, row ) {
         return (data ?
@@ -412,7 +412,10 @@ function loadStationMessages(event, table, button, config) {
            }
        }
     });
-    stationMessagesTable.columns.adjust();
+    setTimeout(() => {
+        stationMessagesTable.columns.adjust();
+    });
+
 }
 
 /**
