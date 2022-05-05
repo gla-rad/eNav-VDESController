@@ -79,8 +79,8 @@ public class AISMessageUtils {
                     Optional.of(s125Aton)
                             .map(S125AidsToNavigationType::getTextualDescription)
                             .ifPresent(aisMessage21::setName);
-                    Optional.of(s125Aton).
-                            map(AISMessageUtils::s125FeatureTypeToAtonType)
+                    Optional.of(s125Aton)
+                            .map(AISMessageUtils::s125FeatureTypeToAtonType)
                             .ifPresent(aisMessage21::setAtonType);
                     Optional.of(s125Aton)
                             .map(S125Utils::geomPerS125AidsToNavigationType)
