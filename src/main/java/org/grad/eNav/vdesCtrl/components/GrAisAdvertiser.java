@@ -27,6 +27,7 @@ import org.grad.vdes1000.ais.messages.AISMessage6;
 import org.grad.vdes1000.ais.messages.AISMessage8;
 import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
+import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -197,9 +198,9 @@ public class GrAisAdvertiser {
     }
 
     /**
-     * This function will generate a signature message for the S125Node combined
-     * with the transmission UNIX timestamp and send this as an AIS message 6/8
-     * to the GNURadio UDP port as well.
+     * This function will generate a signature message for the AIS Message 21
+     * combined with the transmission UNIX timestamp and send this as an AIS
+     * Message 6/8 to the GNURadio UDP port as well.
      *
      * @param address the address to send the datagram to
      * @param port the port to send the datagram to
@@ -218,6 +219,7 @@ public class GrAisAdvertiser {
         final AbstractMessage abstractMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
+            log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp(0)));
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
