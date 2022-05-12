@@ -85,17 +85,17 @@ public class AISMessageUtils {
                     Optional.of(s125Aton)
                             .map(S125Utils::geomPerS125AidsToNavigationType)
                             .map(AISMessageUtils::s125PointCurveSurfaceToGeometry)
-                            .filter(GeometryCollection.class::isInstance)
-                            .map(GeometryCollection.class::cast)
-                            .map(GeometryCollection::getCoordinate)
+                            .filter(Point.class::isInstance)
+                            .map(Point.class::cast)
+                            .map(Point::getCoordinate)
                             .map(Coordinate::getX)
                             .ifPresent(aisMessage21::setLongitude);
                     Optional.of(s125Aton)
                             .map(S125Utils::geomPerS125AidsToNavigationType)
                             .map(AISMessageUtils::s125PointCurveSurfaceToGeometry)
-                            .filter(GeometryCollection.class::isInstance)
-                            .map(GeometryCollection.class::cast)
-                            .map(GeometryCollection::getCoordinate)
+                            .filter(Point.class::isInstance)
+                            .map(Point.class::cast)
+                            .map(Point::getCoordinate)
                             .map(Coordinate::getY)
                             .ifPresent(aisMessage21::setLatitude);
                     aisMessage21.setMmsi(AISMessageUtils.s125FeatureTypeField(s125Aton, "MMSICode", BigDecimal.class).intValueExact());
