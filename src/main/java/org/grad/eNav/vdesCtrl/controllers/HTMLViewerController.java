@@ -41,7 +41,7 @@ public class HTMLViewerController {
     /**
      * The Application Name Information.
      */
-    @Value("${gla.rad.vdes-ctrl.info.name.name:VDES Controller}")
+    @Value("${gla.rad.vdes-ctrl.info.name:VDES Controller}")
     private String appName;
 
     /**

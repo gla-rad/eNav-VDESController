@@ -73,8 +73,8 @@ public class AISMessageUtils {
                 .filter(S125AidsToNavigationType.class::isInstance)
                 .map(S125AidsToNavigationType.class::cast)
                 .ifPresent(s125Aton -> {
-                    Optional.of(dataset)
-                            .map(DataSet::getId)
+                    Optional.of(s125Aton)
+                            .map(S125AidsToNavigationType::getIdCode)
                             .ifPresent(aisMessage21::setUid);
                     Optional.of(s125Aton)
                             .map(S125AidsToNavigationType::getTextualDescription)

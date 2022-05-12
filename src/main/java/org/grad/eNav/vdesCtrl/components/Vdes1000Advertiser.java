@@ -33,6 +33,7 @@ import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
+import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -202,9 +203,9 @@ public class Vdes1000Advertiser {
     }
 
     /**
-     * This function will generate a signature message for the S125Node combined
-     * with the transmission UNIX timestamp and send this as an AIS message 6/8
-     * to the VDES-1000 UDP port as well.
+     * This function will generate a signature message for the AIS Message 21
+     * combined with the transmission UNIX timestamp and send this as an AIS
+     * Message 6/8 to the VDES-1000 UDP port as well.
      *
      * @param aisMessage21 the AIS message 21 that was transmitted
      */
@@ -214,10 +215,14 @@ public class Vdes1000Advertiser {
             return null;
         }
 
+        // Construct the NMEA sentence of message 21 to be signed
+        log.debug(String.format("Generating signature for Message 21 NMEA Sentence: %s", new String(aisMessage21.getBinaryMessage(true))));
+
         // Construct the signature message for the VDES station
         final AbstractMessage abstractMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
+            log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp(0)));
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
