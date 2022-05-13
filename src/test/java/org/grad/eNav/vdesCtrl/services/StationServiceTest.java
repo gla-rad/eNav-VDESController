@@ -45,7 +45,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.Message;
 
 import javax.persistence.EntityManager;
 import java.math.BigInteger;
@@ -116,8 +115,8 @@ class StationServiceTest {
         this.messages = new ArrayList<>();
         for(long i=0; i<10; i++) {
             AtonMessageDto message = new AtonMessageDto();
-            message.setAtonUID("UID" + i);
-            message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setAtonNumber("AtonNumber" + i);
+            message.setGeometry(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
             message.setContent("Node Message");
             this.messages.add(message);
         }
@@ -396,7 +395,7 @@ class StationServiceTest {
         // Blacklist all messages
         this.existingStation.setBlacklistedUids(this.messages.stream()
                 .map(AtonMessageDto.class::cast)
-                .map(AtonMessageDto::getAtonUID)
+                .map(AtonMessageDto::getAtonNumber)
                 .collect(Collectors.toSet()));
 
         Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
@@ -489,7 +488,7 @@ class StationServiceTest {
         doReturn(this.existingStation).when(this.stationService).findOne(this.existingStation.getId());
 
         // Perform the service call
-        this.stationService.addBlacklistUid(this.existingStation.getId(), "test_message_uid");
+        this.stationService.addBlacklistAtonNumber(this.existingStation.getId(), "test_message_uid");
 
         // Check that during the station update the blacklist was updated
         ArgumentCaptor<Station> stationsArgument = ArgumentCaptor.forClass(Station.class);
@@ -512,7 +511,7 @@ class StationServiceTest {
         doReturn(this.existingStation).when(this.stationService).findOne(this.existingStation.getId());
 
         // Perform the service call
-        this.stationService.removeBlacklistUid(this.existingStation.getId(), "test_message_iod");
+        this.stationService.removeBlacklisAtonNumber(this.existingStation.getId(), "test_message_iod");
 
         // Check that during the station update the blacklist was updated
         ArgumentCaptor<Station> stationsArgument = ArgumentCaptor.forClass(Station.class);

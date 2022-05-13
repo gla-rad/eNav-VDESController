@@ -100,8 +100,8 @@ class StationControllerTest {
         this.messages = new ArrayList<>();
         for(long i=0; i<2; i++) {
             AtonMessageDto message = new AtonMessageDto();
-            message.setAtonUID("UID" + i);
-            message.setBbox(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setAtonNumber("AtonNumber" + i);
+            message.setGeometry(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
             message.setContent("Node Message");
             this.messages.add(message);
         }

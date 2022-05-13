@@ -24,14 +24,14 @@ import java.util.Objects;
  * The S125 Node Class.
  *
  * This node extends the S-100 abstract node to implement the S-125 messages
- * including the AtoN UID value.
+ * including the AtoN Number value.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 public class S125Node extends S100AbstractNode {
 
     // Class Variables
-    private String atonUID;
+    private String atonNumber;
 
     /**
      * Empty Constructor
@@ -43,31 +43,31 @@ public class S125Node extends S100AbstractNode {
     /**
      * The Fully Populated  Constructor.
      *
-     * @param atonUID       The AtoN UID
-     * @param bbox          The object bounding box
+     * @param atonNumber    The AtoN Number
+     * @param geometry      The object geometry
      * @param content       The XML content
      */
-    public S125Node(String atonUID, JsonNode bbox, String content) {
-        super(bbox, content);
-        this.atonUID = atonUID;
+    public S125Node(String atonNumber, JsonNode geometry, String content) {
+        super(geometry, content);
+        this.atonNumber = atonNumber;
     }
 
     /**
-     * Sets new atonUID.
+     * Gets aton number.
      *
-     * @param atonUID New value of atonUID.
+     * @return the aton number
      */
-    public void setAtonUID(String atonUID) {
-        this.atonUID = atonUID;
+    public String getAtonNumber() {
+        return atonNumber;
     }
 
     /**
-     * Gets atonUID.
+     * Sets aton number.
      *
-     * @return Value of atonUID.
+     * @param atonNumber the aton number
      */
-    public String getAtonUID() {
-        return atonUID;
+    public void setAtonNumber(String atonNumber) {
+        this.atonNumber = atonNumber;
     }
 
     /** {@inheritDoc} */
@@ -77,13 +77,13 @@ public class S125Node extends S100AbstractNode {
         if (!(o instanceof S125Node)) return false;
         if (!super.equals(o)) return false;
         S125Node s125Node = (S125Node) o;
-        return Objects.equals(atonUID, s125Node.atonUID);
+        return Objects.equals(atonNumber, s125Node.atonNumber);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), atonUID);
+        return Objects.hash(super.hashCode(), atonNumber);
     }
 
 }

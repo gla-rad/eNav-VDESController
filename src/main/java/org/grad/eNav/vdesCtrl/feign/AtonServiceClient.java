@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "aton-service", configuration = FeignClientConfig.class)
 public interface AtonServiceClient {
 
-    @RequestMapping(method = RequestMethod.GET, value = "/api/messages")
+    @RequestMapping(method = RequestMethod.GET, value = "/api/atons")
     Page<S125Node> getMessagesForGeometry(@RequestParam("geometry") String geometryJson);
 
 }

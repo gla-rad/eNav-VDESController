@@ -24,7 +24,6 @@ import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
-import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
@@ -236,7 +235,7 @@ public class StationService {
                 .map(Page::getContent)
                 .orElseGet(Collections::emptyList)
                 .stream()
-                .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getAtonUID())))
+                .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getAtonNumber())))
                 .filter(msg -> includeBlacklisted || !msg.isBlacklisted())
                 .collect(Collectors.toList());
     }
@@ -266,34 +265,34 @@ public class StationService {
     }
 
     /**
-     * Add the provided message UID into the specified station's blacklist.
+     * Add the provided AtoN Number UID into the specified station's blacklist.
      *
      * @param id the ID of the station to add the blacklist entry
-     * @param uid the UID of the entry to be added into the blacklist
+     * @param atonNumber the AtoN Number of the entry to be added into the blacklist
      */
-    public void addBlacklistUid(BigInteger id, String uid) {
+    public void addBlacklistAtonNumber(BigInteger id, String atonNumber) {
         // First get the specified stations
         Station station = this.findOne(id);
 
         // Add the specified UID
-        station.getBlacklistedUids().add(uid);
+        station.getBlacklistedUids().add(atonNumber);
 
         // And save the list
         this.save(station);
     }
 
     /**
-     * Removes a specific UID from the given station's blacklist.
+     * Removes a specific AtoN Number from the given station's blacklist.
      *
      * @param id the ID of the station to remove the blacklist entry
-     * @param uid the UID of the entry be removed from the blacklist
+     * @param atonNumber the AtoN Number of the entry be removed from the blacklist
      */
-    public void removeBlacklistUid(BigInteger id, String uid) {
+    public void removeBlacklisAtonNumber(BigInteger id, String atonNumber) {
         // First get the specified stations
         Station station = this.findOne(id);
 
         // Remove the specified UID
-        station.getBlacklistedUids().remove(uid);
+        station.getBlacklistedUids().remove(atonNumber);
 
         // And save the list
         this.save(station);

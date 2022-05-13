@@ -44,7 +44,7 @@ public class AtonMessageDto extends S125Node {
      * @param blacklisted whether the entry has been blacklisted
      */
     public AtonMessageDto(S125Node s125Node, boolean blacklisted) {
-        super(s125Node.getAtonUID(), s125Node.getBbox(), s125Node.getContent());
+        super(s125Node.getAtonNumber(), s125Node.getGeometry(), s125Node.getContent());
         this.blacklisted = blacklisted;
     }
 

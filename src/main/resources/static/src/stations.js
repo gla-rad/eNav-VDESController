@@ -86,10 +86,10 @@ var stationsColumnDefs = [{
  * @type {Array}
  */
 var messageColumnDefs = [{
-    data: "atonUID",
-    title: "Message UID",
-    hoverMsg: "The Message UID",
-    placeholder: "The Message UID",
+    data: "atonNumber",
+    title: "AtoN Number",
+    hoverMsg: "The AtoN Number",
+    placeholder: "The AtoN Number",
     width: "25%"
 }, {
     data: "blacklisted",
@@ -429,7 +429,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
     // Get the selected message UID
     let idx = table.cell('.selected', 0).index();
     let data = table.rows(idx.row).data();
-    let atonUID = data[0].atonUID;
+    let atonNumber = data[0].atonNumber;
 
     // Get the selected station ID
     let stationIdx = stationsTable.cell('.selected', 0).index();
@@ -438,7 +438,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
 
     // And call the API to add the blacklist
     $.ajax({
-        url: `./api/stations/${stationId}/messages/${atonUID}/blacklist`,
+        url: `./api/stations/${stationId}/messages/${atonNumber}/blacklist`,
         type: blacklist ? 'PUT' : 'DELETE',
         contentType: 'application/json; charset=utf-8',
         crossDomain: true,
