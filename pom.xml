@@ -200,7 +200,7 @@
 		<dependency>
 			<groupId>org.grad.vdes1000</groupId>
 			<artifactId>vdes1000lib</artifactId>
-			<version>0.0.10</version>
+			<version>0.0.11</version>
 		</dependency>
 
 		<!-- Testing -->
