@@ -18,10 +18,7 @@ package org.grad.eNav.vdesCtrl;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-
-import javax.security.auth.message.config.RegistrationListener;
 
 import static org.mockito.Mockito.mock;
 

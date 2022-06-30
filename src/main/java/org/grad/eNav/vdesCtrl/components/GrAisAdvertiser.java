@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -220,7 +221,10 @@ public class GrAisAdvertiser {
         try {
             // Combine the AIS message and the timestamp into a hash
             log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp(0)));
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(aisMessage21.getBinaryMessage(false));
+            outputStream.write(StringBinUtils.convertBinaryStringToBytes(StringBinUtils.convertLongToBinary(aisMessage21.getUnixTxTimestamp(0), 64), false));
+            byte[] stampedAisMessage = outputStream.toByteArray();
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
@@ -229,7 +233,7 @@ public class GrAisAdvertiser {
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
                     .map(destMmsi -> (AbstractMessage) new AISMessage6(aisMessage21.getMmsi(), destMmsi, signature))
                     .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature));
-        } catch (NoSuchAlgorithmException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex.getMessage());
             return;
         }
