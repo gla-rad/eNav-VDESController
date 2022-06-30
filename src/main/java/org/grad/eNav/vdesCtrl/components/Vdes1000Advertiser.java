@@ -223,7 +223,7 @@ public class Vdes1000Advertiser {
         try {
             // Combine the AIS message and the timestamp into a hash
             log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp(0)));
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessageHash(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
@@ -233,7 +233,7 @@ public class Vdes1000Advertiser {
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
                     .map(destMmsi -> (AbstractMessage) new AISMessage6(aisMessage21.getMmsi(), destMmsi, signature))
                     .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature));
-        } catch (NoSuchAlgorithmException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex.getMessage());
             return null;
         }
