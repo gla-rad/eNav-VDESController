@@ -294,7 +294,7 @@ public class AISMessageUtils {
             ReflectUtils.getPropertyMethods(new PropertyDescriptor[]{pd}, true, false);
             value = pd.getReadMethod().invoke(s125AidsToNavigationType);
         } catch (IntrospectionException | InvocationTargetException | IllegalAccessException ex) {
-            log.error(ex.getMessage());
+            log.debug(ex.getMessage());
         }
         // Check if we can cast the result and return
         return Optional.ofNullable(value)
