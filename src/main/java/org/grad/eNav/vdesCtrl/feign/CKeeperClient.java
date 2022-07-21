@@ -35,7 +35,7 @@ public interface CKeeperClient {
     @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityId}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     byte[] generateEntitySignature(@PathVariable String entityId,
                                    @RequestParam("mmsi") String mmsi,
-                                   @RequestParam("entityType") McpEntityType entityType,
+                                   @RequestParam("entityType") String entityType,
                                    @RequestBody byte[] signaturePayload);
 
 }

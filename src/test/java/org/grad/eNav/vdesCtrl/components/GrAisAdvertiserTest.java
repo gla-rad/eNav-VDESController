@@ -196,7 +196,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException {
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

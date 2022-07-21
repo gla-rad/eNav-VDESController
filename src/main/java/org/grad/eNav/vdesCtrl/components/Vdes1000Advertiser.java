@@ -227,7 +227,7 @@ public class Vdes1000Advertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE, stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE.getValue(), stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
 
             // And generate the signature message

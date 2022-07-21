@@ -222,7 +222,7 @@ class Vdes1000AdvertiserTest {
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
