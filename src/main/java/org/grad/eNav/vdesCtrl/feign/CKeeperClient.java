@@ -17,13 +17,11 @@
 package org.grad.eNav.vdesCtrl.feign;
 
 import org.grad.eNav.vdesCtrl.config.FeignClientConfig;
+import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * The Feign Interface For the CKeeper Client.
@@ -34,7 +32,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "ckeeper", configuration = FeignClientConfig.class)
 public interface CKeeperClient {
 
-    @RequestMapping(method = RequestMethod.POST, value = "/api/signatures/atons/generate", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-    byte[] generateAtoNSignature(@RequestParam("atonUID") String atonUID, @RequestParam("mmsi") String mmsi, @RequestBody byte[] signaturePayload);
+    @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityId}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    byte[] generateEntitySignature(@PathVariable String entityId,
+                                   @RequestParam("mmsi") String mmsi,
+                                   @RequestParam("entityType") McpEntityType entityType,
+                                   @RequestBody byte[] signaturePayload);
 
 }

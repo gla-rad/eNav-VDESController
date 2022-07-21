@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
+import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -226,7 +227,7 @@ public class Vdes1000Advertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE, stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
 
             // And generate the signature message

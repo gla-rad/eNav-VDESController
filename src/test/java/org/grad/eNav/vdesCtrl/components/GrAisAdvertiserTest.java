@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.components;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
+import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
@@ -195,7 +196,7 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException {
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateAtoNSignature(any(String.class), any(String.class), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;

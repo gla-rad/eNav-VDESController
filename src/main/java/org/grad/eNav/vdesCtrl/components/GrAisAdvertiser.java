@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.components;
 
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
+import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -224,7 +225,7 @@ public class GrAisAdvertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateAtoNSignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE, stampedAisMessage);
 
             // And generate the signature message
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
