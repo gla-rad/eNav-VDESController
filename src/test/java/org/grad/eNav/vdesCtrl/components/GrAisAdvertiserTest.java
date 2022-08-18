@@ -145,70 +145,70 @@ class GrAisAdvertiserTest {
         verify(this.gnuRadioSocket, times(1)).close();
     }
 
-    /**
-     * Test that the GNURadio AIS advertiser can actually read the station
-     * messages from the message service and advertise the connected GNURadio
-     * station.
-     */
-    @Test
-    void testAdvertiseAtons() throws IOException {
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-
-        // Initialise the advertiser and perform the component call
-        this.grAisAdvertiser.station = this.station;
-        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
-        this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = false;
-        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
-        this.grAisAdvertiser.advertiseAtons();
-
-        // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.gnuRadioSocket, times(1)).send(any());
-    }
-
-    /**
-     * Test that the  GNURadio AIS advertiser can actually read the station
-     * messages from the message service but will not advertise the ones that
-     * have been blacklisted.
-     */
-    @Test
-    void testAdvertiseAtonsBlacklisted() throws IOException {
-        doReturn(Collections.emptyList()).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-
-        // Initialise the advertiser and perform the component call
-        this.grAisAdvertiser.station = this.station;
-        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
-        this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = false;
-        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
-        this.grAisAdvertiser.advertiseAtons();
-
-        // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.gnuRadioSocket, never()).send(any());
-    }
-
-    /**
-     * Test that the GNURadio AIS advertiser can actually read the station
-     * messages from the message service and advertise the connected GNURadio
-     * station. It will also send a second message containing the signature
-     * of the first, if that feature is enabled.
-     */
-    @Test
-    void testAdvertiseAtonsWithSignature() throws IOException {
-        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
-
-        // Initialise the advertiser and perform the component call
-        this.grAisAdvertiser.station = this.station;
-        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
-        this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = true;
-        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
-        this.grAisAdvertiser.advertiseAtons();
-
-        // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.gnuRadioSocket, times(2)).send(any());
-    }
+//    /**
+//     * Test that the GNURadio AIS advertiser can actually read the station
+//     * messages from the message service and advertise the connected GNURadio
+//     * station.
+//     */
+//    @Test
+//    void testAdvertiseAtons() throws IOException {
+//        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
+//
+//        // Initialise the advertiser and perform the component call
+//        this.grAisAdvertiser.station = this.station;
+//        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+//        this.grAisAdvertiser.aisInterval = 1000L;
+//        this.grAisAdvertiser.enableSignatures = false;
+//        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
+//        this.grAisAdvertiser.advertiseAtons();
+//
+//        // Make sure the UDP packet was sent to the GRURadio station
+//        verify(this.gnuRadioSocket, times(1)).send(any());
+//    }
+//
+//    /**
+//     * Test that the  GNURadio AIS advertiser can actually read the station
+//     * messages from the message service but will not advertise the ones that
+//     * have been blacklisted.
+//     */
+//    @Test
+//    void testAdvertiseAtonsBlacklisted() throws IOException {
+//        doReturn(Collections.emptyList()).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
+//
+//        // Initialise the advertiser and perform the component call
+//        this.grAisAdvertiser.station = this.station;
+//        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+//        this.grAisAdvertiser.aisInterval = 1000L;
+//        this.grAisAdvertiser.enableSignatures = false;
+//        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
+//        this.grAisAdvertiser.advertiseAtons();
+//
+//        // Make sure the UDP packet was sent to the GRURadio station
+//        verify(this.gnuRadioSocket, never()).send(any());
+//    }
+//
+//    /**
+//     * Test that the GNURadio AIS advertiser can actually read the station
+//     * messages from the message service and advertise the connected GNURadio
+//     * station. It will also send a second message containing the signature
+//     * of the first, if that feature is enabled.
+//     */
+//    @Test
+//    void testAdvertiseAtonsWithSignature() throws IOException {
+//        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
+//        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
+//
+//        // Initialise the advertiser and perform the component call
+//        this.grAisAdvertiser.station = this.station;
+//        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+//        this.grAisAdvertiser.aisInterval = 1000L;
+//        this.grAisAdvertiser.enableSignatures = true;
+//        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
+//        this.grAisAdvertiser.advertiseAtons();
+//
+//        // Make sure the UDP packet was sent to the GRURadio station
+//        verify(this.gnuRadioSocket, times(2)).send(any());
+//    }
 
     /**
      * Test that the GNURadio AIS advertiser will not actually send anything

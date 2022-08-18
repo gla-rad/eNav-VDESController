@@ -40,10 +40,8 @@ import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.io.PrintWriter;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
@@ -99,6 +97,7 @@ public class GrAisAdvertiser {
     // Component Variables
     protected Station station;
     protected DatagramSocket gnuRadioSocket;
+    protected Socket gnuRadioSTcpSocket;
 
     /**
      * Once the advertiser is initialised it will have all the information
@@ -191,9 +190,15 @@ public class GrAisAdvertiser {
         // Create and send the UDP datagram packet
         byte[] buffer = (aisMessage21.getBinaryMessageString() +'\n').getBytes();
         try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.gnuRadioSocket.send(packet);
+
+            this.gnuRadioSTcpSocket = new Socket(address, port);
+            PrintWriter out = new PrintWriter(this.gnuRadioSTcpSocket.getOutputStream(), true);
+            out.println(buffer);
+            out.close();
+            this.gnuRadioSTcpSocket.close();
+//            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+//                    InetAddress.getByName(address), port);
+//            this.gnuRadioSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -239,9 +244,14 @@ public class GrAisAdvertiser {
         // Create and send the UDP datagram packet
         byte[] buffer = (abstractMessage.getBinaryMessageString() + '\n').getBytes();
         try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.gnuRadioSocket.send(packet);
+            this.gnuRadioSTcpSocket = new Socket(address, port);
+            PrintWriter out = new PrintWriter(this.gnuRadioSTcpSocket.getOutputStream(), true);
+            out.println(buffer);
+            out.close();
+            this.gnuRadioSTcpSocket.close();
+//            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+//                    InetAddress.getByName(address), port);
+//            this.gnuRadioSocket.send(packet);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
