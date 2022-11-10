@@ -33,7 +33,7 @@ public class TestingConfiguration {
 
 	/**
 	 * The registration listener for feign registers the client inside a
-	 * client repository which is als needed, hence mocked.
+	 * client repository which is also needed, hence mocked.
 	 */
 	@Bean
 	public ClientRegistrationRepository clientRegistrationRepository() {
