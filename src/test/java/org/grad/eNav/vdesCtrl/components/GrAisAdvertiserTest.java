@@ -17,7 +17,6 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.io.IOUtils;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
@@ -102,7 +101,7 @@ class GrAisAdvertiserTest {
 
         // Read a valid S125 content to generate the S125Node message for.
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
-        String xml = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8.name());
 
         // Also create a GeoJSON point geometry for our S125 message
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
