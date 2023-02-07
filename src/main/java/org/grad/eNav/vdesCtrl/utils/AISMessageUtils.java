@@ -27,8 +27,8 @@ import org.grad.vdes1000.generic.AtonType;
 import org.locationtech.jts.geom.*;
 import org.springframework.cglib.core.ReflectUtils;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;

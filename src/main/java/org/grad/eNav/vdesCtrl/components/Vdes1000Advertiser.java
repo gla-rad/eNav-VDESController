@@ -17,6 +17,8 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
+import jakarta.annotation.PreDestroy;
+import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
@@ -34,7 +36,6 @@ import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
-import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,11 +47,8 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;

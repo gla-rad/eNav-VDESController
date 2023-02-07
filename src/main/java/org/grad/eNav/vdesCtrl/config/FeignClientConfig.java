@@ -91,7 +91,7 @@ public class FeignClientConfig {
     public RequestInterceptor repositoryClientOAuth2Interceptor(OAuth2AuthorizedClientManager manager) {
         return requestTemplate -> {
             OAuth2AuthorizedClient client = manager.authorize(OAuth2AuthorizeRequest
-                    .withClientRegistrationId("keycloak")
+                    .withClientRegistrationId("feign")
                     .principal(new AnonymousAuthenticationToken("name", "vdes-ctrl", AuthorityUtils.createAuthorityList("ROLE_ACTUATOR")))
                     .build());
             String accessToken = client.getAccessToken().getTokenValue();

@@ -21,7 +21,7 @@ import org.grad.vdes1000.ais.messages.AISMessage21;
 import org.grad.vdes1000.generic.AtonType;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import static org.junit.jupiter.api.Assertions.*;
 

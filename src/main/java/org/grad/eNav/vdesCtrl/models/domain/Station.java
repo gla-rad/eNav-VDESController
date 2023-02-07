@@ -18,24 +18,19 @@ package org.grad.eNav.vdesCtrl.models.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import jakarta.validation.constraints.NotNull;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
 import org.grad.vdes1000.generic.AISChannelPref;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.ValueBridgeRef;
-import org.hibernate.search.mapper.pojo.extractor.mapping.annotation.ContainerExtract;
-import org.hibernate.search.mapper.pojo.extractor.mapping.annotation.ContainerExtraction;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.*;
 import org.locationtech.jts.geom.Geometry;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
