@@ -12,7 +12,7 @@
 
 	<groupId>org.grad</groupId>
 	<artifactId>vdes-controller</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>VDESController</name>
 	<description>GRAD e-Navigation VDES Controller Microservice</description>
 
