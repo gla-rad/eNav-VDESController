@@ -29,7 +29,7 @@ public class GlobalConfig {
      *
      * @return the in memory HTTP trance repository
      */
-    @ConditionalOnProperty(value = "management.trace.http.enabled", havingValue = "true")
+    @ConditionalOnProperty(value = "management.endpoint.httpexchanges.enabled", havingValue = "true")
     @Bean
     public HttpExchangeRepository httpTraceRepository() {
         return new InMemoryHttpExchangeRepository();
