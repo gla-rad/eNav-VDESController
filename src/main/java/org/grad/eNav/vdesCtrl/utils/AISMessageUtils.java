@@ -17,7 +17,10 @@
 package org.grad.eNav.vdesCtrl.utils;
 
 import _int.iala_aism.s125.gml._0_0.*;
-import _int.iho.s100.gml.base._1_0_Ext.PointCurveSurfaceProperty;
+import _int.iho.s100.gml.base._5_0.CurveProperty;
+import _int.iho.s100.gml.base._5_0.PointProperty;
+import _int.iho.s100.gml.base._5_0.S100SpatialAttributeType;
+import _int.iho.s100.gml.base._5_0.SurfaceProperty;
 import _net.opengis.gml.profiles.*;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.s125.utils.S125Utils;
@@ -33,6 +36,7 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
@@ -83,7 +87,7 @@ public class AISMessageUtils {
                             .map(AISMessageUtils::s125FeatureTypeToAtonType)
                             .ifPresent(aisMessage21::setAtonType);
                     Optional.of(s125Aton)
-                            .map(S125Utils::geomPerS125AidsToNavigationType)
+                            .map(S125Utils::getS125AidsToNavigationTypeGeometriesList)
                             .map(AISMessageUtils::s125PointCurveSurfaceToGeometry)
                             .filter(Point.class::isInstance)
                             .map(Point.class::cast)
@@ -91,14 +95,14 @@ public class AISMessageUtils {
                             .map(Coordinate::getX)
                             .ifPresent(aisMessage21::setLongitude);
                     Optional.of(s125Aton)
-                            .map(S125Utils::geomPerS125AidsToNavigationType)
+                            .map(S125Utils::getS125AidsToNavigationTypeGeometriesList)
                             .map(AISMessageUtils::s125PointCurveSurfaceToGeometry)
                             .filter(Point.class::isInstance)
                             .map(Point.class::cast)
                             .map(Point::getCoordinate)
                             .map(Coordinate::getY)
                             .ifPresent(aisMessage21::setLatitude);
-                    aisMessage21.setMmsi(AISMessageUtils.s125FeatureTypeField(s125Aton, "MMSICode", BigDecimal.class).intValueExact());
+                    aisMessage21.setMmsi(AISMessageUtils.s125FeatureTypeField(s125Aton, "MMSICode", BigInteger.class).intValueExact());
                     aisMessage21.setLength((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "length", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setWidth((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "width", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setRaim(false);
@@ -200,25 +204,27 @@ public class AISMessageUtils {
      * feature type into a JTS geometry (most likely a geometry collection)
      * that can be understood and handled by the services.
      *
-     * @param pointCurveSurface the S-100 point/curve/surface property
+     * @param s100SpatialAttributeTypes the S-100 point/curve/surface property
      * @return the respective geometry
      */
-    protected static Geometry s125PointCurveSurfaceToGeometry(PointCurveSurfaceProperty pointCurveSurface) {
+    protected static Geometry s125PointCurveSurfaceToGeometry(List<S100SpatialAttributeType> s100SpatialAttributeTypes) {
         final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-        return Optional.ofNullable(pointCurveSurface)
-                .map(pcs -> {
+        return s100SpatialAttributeTypes.stream()
+                .map(pty -> {
                     // Map based on the type of the populated geometry
-                    if(Objects.nonNull(pcs.getPointProperty())) {
-                        return Optional.of(pcs.getPointProperty())
-                                .map(_int.iho.s100.gml.base._1_0.PointProperty::getPoint)
-                                .map(_net.opengis.gml.profiles.PointType::getPos)
-                                .map(pos -> new Coordinate(pos.getValues().get(0), pos.getValues().get(1)))
+                    if(pty instanceof PointProperty) {
+                        return Optional.of(pty)
+                                .map(PointProperty.class::cast)
+                                .map(PointProperty::getPoint)
+                                .map(PointType::getPos)
+                                .map(pos -> new Coordinate(pos.getValue()[0], pos.getValue()[1]))
                                 .map(geometryFactory::createPoint)
                                 .map(Geometry.class::cast)
                                 .orElse(geometryFactory.createEmpty(0));
-                    } else if(Objects.nonNull(pcs.getCurveProperty())) {
-                        return geometryFactory.createGeometryCollection(Optional.of(pcs.getCurveProperty())
-                                .map(_int.iho.s100.gml.base._1_0.CurveProperty::getCurve)
+                    } else if(pty instanceof CurveProperty) {
+                        return geometryFactory.createGeometryCollection(Optional.of(pty)
+                                .map(CurveProperty.class::cast)
+                                .map(CurveProperty::getCurve)
                                 .map(CurveType::getSegments)
                                 .map(Segments::getAbstractCurveSegments)
                                 .orElse(Collections.emptyList())
@@ -231,12 +237,10 @@ public class AISMessageUtils {
                                 .map(coords -> coords.length == 1? geometryFactory.createPoint(coords[0]) : geometryFactory.createLineString(coords))
                                 .toList()
                                 .toArray(Geometry[]::new));
-                    } else if(Objects.nonNull(pcs.getSurfaceProperty())) {
-                        return geometryFactory.createGeometryCollection(Optional.of(pcs.getSurfaceProperty())
-                                .map(_int.iho.s100.gml.base._1_0.SurfaceProperty::getAbstractSurface)
-                                .map(JAXBElement::getValue)
-                                .filter(SurfaceType.class::isInstance)
-                                .map(SurfaceType.class::cast)
+                    } else if(pty instanceof SurfaceProperty) {
+                        return geometryFactory.createGeometryCollection(Optional.of(pty)
+                                .map(SurfaceProperty.class::cast)
+                                .map(SurfaceProperty::getSurface)
                                 .map(SurfaceType::getPatches)
                                 .map(Patches::getAbstractSurfacePatches)
                                 .orElse(Collections.emptyList())
@@ -257,7 +261,7 @@ public class AISMessageUtils {
                     }
                     return null;
                 })
-                .orElseGet(() -> geometryFactory.createEmpty(-1));
+                .reduce(geometryFactory.createEmpty(-1), (un, el) -> un == null || un.isEmpty() ? el : un.union(el));
     }
 
     /**
@@ -269,9 +273,8 @@ public class AISMessageUtils {
      */
     protected static Coordinate[] gmlPosListToCoordinates(PosList posList) {
         final List<Coordinate> result = new ArrayList<>();
-        final Iterator<Double> iterator = posList.getValues().iterator();
-        while(iterator.hasNext()) {
-            result.add(new Coordinate(iterator.next(), iterator.next()));
+        for(int i=0; i<posList.getValue().length; i=i+2) {
+            result.add(new Coordinate(posList.getValue()[i], posList.getValue()[i+1]));
         }
         return result.toArray(new Coordinate[]{});
     }
