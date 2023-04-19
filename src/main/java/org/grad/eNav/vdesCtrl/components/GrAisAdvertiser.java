@@ -148,6 +148,7 @@ public class GrAisAdvertiser {
                     }
                 })
                 .filter(Objects::nonNull)
+                .filter(AISMessage21::getVaton) // Only transmit Virtual AtoNs
                 .collect(Collectors.toList());
 
         // Now create the AIS advertisements - wait in between
