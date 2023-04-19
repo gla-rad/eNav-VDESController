@@ -102,7 +102,10 @@ public class AISMessageUtils {
                             .map(Point::getCoordinate)
                             .map(Coordinate::getY)
                             .ifPresent(aisMessage21::setLatitude);
-                    aisMessage21.setMmsi(AISMessageUtils.s125FeatureTypeField(s125Aton, "MMSICode", BigInteger.class).intValueExact());
+                    Optional.of(s125Aton)
+                            .map(aton-> AISMessageUtils.s125FeatureTypeField(aton, "MMSICode", BigInteger.class))
+                            .map(BigInteger::intValueExact)
+                            .ifPresent(aisMessage21::setMmsi);
                     aisMessage21.setLength((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "length", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setWidth((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "width", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setRaim(false);
