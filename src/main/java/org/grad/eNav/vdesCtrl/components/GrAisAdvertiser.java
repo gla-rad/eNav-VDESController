@@ -219,8 +219,8 @@ public class GrAisAdvertiser {
         final AbstractMessage abstractMessage;
         try {
             // Combine the AIS message and the timestamp into a hash
-            log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp(0)));
-            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp(0));
+            log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp()));
+            byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp());
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE.getValue(), stampedAisMessage);
