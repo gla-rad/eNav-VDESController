@@ -116,7 +116,7 @@ public class Vdes1000Advertiser {
 
         // Create the VDES-1000 Connection
         this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
-                "AI"+String.format("%04d", this.station.getId()),
+                String.format("%04d", this.station.getId()),
                 InetAddress.getByName(this.station.getIpAddress()),
                 this.station.getPort(),
                 this.station.getBroadcastPort()));
