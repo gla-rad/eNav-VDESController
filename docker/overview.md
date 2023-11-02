@@ -240,6 +240,13 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     feign.autoconfiguration.jackson.enabled=true
     feign.client.config.default.connectTimeout=60000
     feign.client.config.default.readTimeout=20000
+
+    # Feign Security
+    spring.security.oauth2.client.registration.feign.client-id=vdes-ctrl
+    spring.security.oauth2.client.registration.feign.client-secret=<changeit>
+    spring.security.oauth2.client.registration.feign.authorization-grant-type=client_credentials
+    spring.security.oauth2.client.registration.feign.scope=web-origins,openid
+    spring.security.oauth2.client.provider.feign.token-uri=http://${service.variable.keycloak.server.name}:${service.variable.keycloak.server.port}/realms/${service.variable.keycloak.server.realm}/protocol/openid-connect/token
     
     # Web Socket Configuration
     gla.rad.vdes-ctrl.web-socket.name=vdes-ctrl-websocket
