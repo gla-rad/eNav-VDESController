@@ -489,7 +489,7 @@ function connectConsole() {
     if(station) {
         // Do we need to open a new web-socket?
         if(stompClient == null) {
-            var socket = new SockJS('/vdes-ctrl-websocket');
+            var socket = new SockJS(window.location.pathname + 'vdes-ctrl-websocket');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
