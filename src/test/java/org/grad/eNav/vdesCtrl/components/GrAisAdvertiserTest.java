@@ -158,6 +158,7 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
         this.grAisAdvertiser.enableSignatures = false;
+        this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
 
@@ -179,6 +180,7 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
         this.grAisAdvertiser.enableSignatures = false;
+        this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
 
@@ -195,13 +197,14 @@ class GrAisAdvertiserTest {
     @Test
     void testAdvertiseAtonsWithSignature() throws IOException {
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.grAisAdvertiser.station = this.station;
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
         this.grAisAdvertiser.enableSignatures = true;
+        this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
 
@@ -223,6 +226,7 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
         this.grAisAdvertiser.enableSignatures = true;
+        this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
 
         // Perform the component call

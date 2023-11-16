@@ -75,10 +75,16 @@ public class Vdes1000Advertiser {
     Boolean enableSignatures;
 
     /**
-     * The sSignature Message Destination MMSI
+     * The Signature Message Destination MMSI
      */
     @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.destMmsi:}")
     Integer signatureDestMmmsi;
+
+    /**
+     * The Signature Algorithm.
+     */
+    @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.algorithm:SHA256withCVC-ECDSA}")
+    String signatureAlgorithm;
 
     /**
      * The Publish-Subscribe Channel to publish the incoming data to.
@@ -226,7 +232,7 @@ public class Vdes1000Advertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp());
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE.getValue(), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
 
             // And generate the signature message

@@ -33,8 +33,9 @@ import org.springframework.web.bind.annotation.*;
 public interface CKeeperClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityId}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-    byte[] generateEntitySignature(@PathVariable String entityId,
+    byte[] generateEntitySignature(@PathVariable String entityName,
                                    @RequestParam("mmsi") String mmsi,
+                                   @RequestParam("algorithm") String algorithm,
                                    @RequestParam("entityType") String entityType,
                                    @RequestBody byte[] signaturePayload);
 

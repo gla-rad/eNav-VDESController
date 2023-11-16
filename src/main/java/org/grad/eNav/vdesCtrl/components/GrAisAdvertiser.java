@@ -82,6 +82,12 @@ public class GrAisAdvertiser {
     Integer signatureDestMmmsi;
 
     /**
+     * The Signature Algorithm.
+     */
+    @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.algorithm:SHA256withCVC-ECDSA}")
+    String signatureAlgorithm;
+
+    /**
      * The CKeeper Client
      */
     @Autowired
@@ -223,7 +229,7 @@ public class GrAisAdvertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp());
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), McpEntityType.DEVICE.getValue(), stampedAisMessage);
+            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
 
             // And generate the signature message
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)

@@ -183,6 +183,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.enableSignatures = false;
+        this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
@@ -203,6 +204,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.enableSignatures = false;
+        this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
@@ -221,11 +223,12 @@ class Vdes1000AdvertiserTest {
     void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
-        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.enableSignatures = true;
+        this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
@@ -246,6 +249,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.enableSignatures = true;
+        this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
 
         // Perform the component call
