@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.components;
 import jakarta.annotation.PreDestroy;
 import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
@@ -230,6 +231,7 @@ public class GrAisAdvertiser {
 
             // Get the signature
             byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
+            log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
 
             // And generate the signature message
             abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)

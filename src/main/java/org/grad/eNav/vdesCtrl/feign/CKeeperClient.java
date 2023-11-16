@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "ckeeper", configuration = FeignClientConfig.class)
 public interface CKeeperClient {
 
-    @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityId}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityName}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     byte[] generateEntitySignature(@PathVariable String entityName,
                                    @RequestParam("mmsi") String mmsi,
                                    @RequestParam("algorithm") String algorithm,
