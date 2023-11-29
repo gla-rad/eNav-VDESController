@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
@@ -100,6 +101,7 @@ public class StationController {
      * @return the ResponseEntity with status 201 (Created) and with body the new station, or with status 400 (Bad Request) if the station has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Station> createStation(@RequestBody Station station) throws Exception, URISyntaxException {
         log.debug("REST request to save Station : {}", station);
@@ -129,6 +131,7 @@ public class StationController {
      * @param station the station to update
      * @return the ResponseEntity with status 201 (Created) and with body the new station, or with status 400 (Bad Request) if the station has already an ID
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Station> updateStation(@PathVariable BigInteger id,
                                                  @RequestBody Station station) {
@@ -160,6 +163,7 @@ public class StationController {
      * @param id the ID of the station to delete
      * @return the ResponseEntity with status 200 (OK)
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteStation(@PathVariable BigInteger id) {
         log.debug("REST request to delete Station : {}", id);
@@ -188,6 +192,7 @@ public class StationController {
      *
      * @return the ResponseEntity with status 200 (OK)
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping(value = "/{id}/messages/{atonNumber}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<S100AbstractNode>> addBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonNumber) {
         log.debug("REST request to blacklist AtoN Number {} for Station : {}", atonNumber, id);
@@ -201,6 +206,7 @@ public class StationController {
      *
      * @return the ResponseEntity with status 200 (OK)
      */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping(value = "/{id}/messages/{atonNumber}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<S100AbstractNode>> deleteBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonNumber) {
         log.debug("REST request to blacklist AtoN Number {} for Station : {}", atonNumber, id);
