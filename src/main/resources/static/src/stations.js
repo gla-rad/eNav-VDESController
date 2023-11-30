@@ -124,11 +124,11 @@ $(function () {
             type: "POST",
             url: "./api/stations/dt",
             contentType: "application/json",
-            data: function (d) {
+            data: (d) => {
                 return JSON.stringify(d);
             },
-            error: function (jqXHR, ajaxOptions, thrownError) {
-                console.error(thrownError);
+            error: (response, status, more) => {
+                error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
             }
         },
         columns: stationsColumnDefs,
@@ -200,7 +200,9 @@ $(function () {
                     geometry: null
                 }),
                 success: success,
-                error: error
+                error: (response, status, more) => {
+                    error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
+                }
             });
         },
         onDeleteRow: function (datatable, selectedRows, success, error) {
@@ -210,7 +212,9 @@ $(function () {
                     type: 'DELETE',
                     crossDomain: true,
                     success: success,
-                    error: error
+                    error: (response, status, more) => {
+                        error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
+                    }
                 });
             });
         },
@@ -239,7 +243,9 @@ $(function () {
                     geometry: geometry
                 }),
                 success: success,
-                error: error
+                error: (response, status, more) => {
+                    error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
+                }
             });
         }
     });
@@ -373,11 +379,11 @@ function loadStationMessages(event, table, button, config) {
             crossDomain: true,
             dataType: "json",
             cache: false,
-            dataSrc: function (json) {
+            dataSrc: (json) => {
                 return json;
             },
-            error: function (jqXHR, ajaxOptions, thrownError) {
-                console.error(thrownError);
+            error: (response, status, more) => {
+                showErrorDialog(response.getResponseHeader("X-vdesCtrl-error"));
             }
         },
         columns: messageColumnDefs,
@@ -440,7 +446,9 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
         contentType: 'application/json; charset=utf-8',
         crossDomain: true,
         success: () => {stationMessagesTable.ajax.reload();},
-        error: () => {console.error("error");}
+        error: (response, status, more) => {
+            showErrorDialog(response.getResponseHeader("X-vdesCtrl-error"));
+        }
     });
 }
 
@@ -472,7 +480,9 @@ function saveGeometry() {
             dataType: 'json',
             data: JSON.stringify(station),
             success: () => {console.log("success")},
-            error: () => {console.error("error")}
+            error: (response, status, more) => {
+                showErrorDialog(response.getResponseHeader("X-vdesCtrl-error"));
+            }
         });
     }
 }
