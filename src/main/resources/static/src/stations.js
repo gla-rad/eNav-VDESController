@@ -98,7 +98,7 @@ var messageColumnDefs = [{
     placeholder: "Whether the message is blacklisted",
     width: "20%",
     className: 'dt-body-center',
-    render: function ( data, type, row ) {
+    render: ( data, type, row ) => {
         return (data ?
             `<i class="fa-solid fa-circle-check" style="color:red"></i>`:
             `<i class="fa-solid fa-circle-xmark" style="color:green"></i>`);
@@ -110,13 +110,13 @@ var messageColumnDefs = [{
     hoverMsg: "The Message Content",
     placeholder: "The Message Content",
     width: "55%",
-    render: function (data, type, row) {
+    render: (data, type, row) => {
         return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
     }
 }];
 
 // Run when the document is ready
-$(function () {
+$(() => {
     stationsTable = $('#stations_table').DataTable({
         processing: true,
         serverSide: true,
@@ -179,10 +179,10 @@ $(function () {
                 disconnectConsole();
             }
         }],
-        onAddRow: function (datatable, rowdata, success, error) {
+        onAddRow: (datatable, rowdata, success, error) => {
             $.ajax({
-                url: './api/stations',
                 type: 'POST',
+                url: './api/stations',
                 contentType: 'application/json; charset=utf-8',
                 crossDomain: true,
                 dataType: 'json',
@@ -205,27 +205,14 @@ $(function () {
                 }
             });
         },
-        onDeleteRow: function (datatable, selectedRows, success, error) {
-            selectedRows.every(function (rowIdx, tableLoop, rowLoop) {
-                $.ajax({
-                    url: `./api/stations/${this.data()["id"]}`,
-                    type: 'DELETE',
-                    crossDomain: true,
-                    success: success,
-                    error: (response, status, more) => {
-                        error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
-                    }
-                });
-            });
-        },
-        onEditRow: function (datatable, rowdata, success, error) {
+        onEditRow: (datatable, rowdata, success, error) => {
             // The geometry is not read correctly so we need to access it in-direclty
             var idx = stationsTable.cell('.selected', 0).index();
             var data = stationsTable.rows(idx.row).data();
             var geometry = data[0].geometry;
             $.ajax({
-                url: `./api/stations/${rowdata["id"]}`,
                 type: 'PUT',
+                url: `./api/stations/${rowdata["id"]}`,
                 contentType: 'application/json; charset=utf-8',
                 crossDomain: true,
                 dataType: 'json',
@@ -246,8 +233,19 @@ $(function () {
                 error: (response, status, more) => {
                     error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
                 }
+            }),
+        },
+        onDeleteRow: (datatable, rowdata, success, error) => {
+            $.ajax({
+                type: 'DELETE',
+                url: `./api/stations/${rowdata["id"]}`,
+                crossDomain: true,
+                success: success,
+                error: (response, status, more) => {
+                    error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
+                }
             });
-        }
+        },
     });
 
     // We also need to link the station areas toggle button with the the modal
@@ -297,7 +295,7 @@ $(function () {
         }
     });
 
-    stationsMap.on('draw:created', function (e) {
+    stationsMap.on('draw:created', (e) => {
         var type = e.layerType;
         var layer = e.layer;
 
@@ -306,8 +304,8 @@ $(function () {
     });
 
     // Invalidate the map size on show to fix the presentation
-    $('#stationAreasPanel').on('shown.bs.modal', function() {
-        setTimeout(function() {
+    $('#stationAreasPanel').on('shown.bs.modal', () => {
+        setTimeout(() => {
             stationsMap.invalidateSize();
         }, 10);
     });
@@ -343,7 +341,7 @@ function loadStationGeometry(event, table, button, config) {
 // Would benefit from https://github.com/Leaflet/Leaflet/issues/4461
 function addNonGroupLayers(sourceLayer, targetGroup) {
     if (sourceLayer instanceof L.LayerGroup) {
-        sourceLayer.eachLayer(function(layer) {
+        sourceLayer.eachLayer((layer) => {
             addNonGroupLayers(layer, targetGroup);
         });
     } else {
@@ -501,8 +499,8 @@ function connectConsole() {
         if(stompClient == null) {
             var socket = new SockJS(window.location.pathname + 'vdes-ctrl-websocket');
             stompClient = Stomp.over(socket);
-            stompClient.connect({}, function (frame) {
-                stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, function (msg) {
+            stompClient.connect({}, (frame) => {
+                stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, (msg) => {
                     $('#stationConsoleTextArea').val($('#stationConsoleTextArea').val() + msg.body);
                 });
             });
