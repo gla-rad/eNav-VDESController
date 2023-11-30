@@ -236,7 +236,7 @@ $(() => {
             });
         },
         onDeleteRow: (datatable, selectedRows, success, error) => {
-            selectedRows.every((rowIdx, tableLoop, rowLoop) => {
+            selectedRows.every(function(rowIdx, tableLoop, rowLoop) {
                 $.ajax({
                     type: 'DELETE',
                     url: `./api/stations/${this.data()["id"]}`,
