@@ -235,17 +235,19 @@ $(() => {
                 }
             });
         },
-        onDeleteRow: (datatable, rowdata, success, error) => {
-            $.ajax({
-                type: 'DELETE',
-                url: `./api/stations/${rowdata["id"]}`,
-                crossDomain: true,
-                success: success,
-                error: (response, status, more) => {
-                    error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
-                }
+        onDeleteRow: (datatable, selectedRows, success, error) => {
+            selectedRows.every((rowIdx, tableLoop, rowLoop) => {
+                $.ajax({
+                    type: 'DELETE',
+                    url: `./api/stations/${this.data()["id"]}`,
+                    crossDomain: true,
+                    success: success,
+                    error: (response, status, more) => {
+                        error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
+                    }
+                });
             });
-        },
+        }
     });
 
     // We also need to link the station areas toggle button with the the modal
