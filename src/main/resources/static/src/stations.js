@@ -233,7 +233,7 @@ $(() => {
                 error: (response, status, more) => {
                     error({"responseText" : response.getResponseHeader("X-vdesCtrl-error")}, status, more);
                 }
-            }),
+            });
         },
         onDeleteRow: (datatable, rowdata, success, error) => {
             $.ajax({
