@@ -51,7 +51,6 @@ Platform ([MCP](https://maritimeconnectivity.net/)) provides an actual
 implementation of a decentralised framework that supports SECOM.
 
 ## What is the GRAD e-Navigation Service Architecture
-
 The GLA follow the developments on e-Navigation closely, contributing through
 their role as an IALA member whenever possible. As part of their efforts, a
 prototype GLA e-Navigation Service Architecture is being developed by the GLA
@@ -73,7 +72,6 @@ Sometimes, microservices are even considered as an extension or a more
 fine-grained version of SOA.
 
 ## The e-Navigation VDES Controller Service
-
 the GLA identified the provision of VAtoN as one of the top priority use-cases
 for their future e-Navigation applications. The use-case requirements stated
 that the transmission must be performed over AIS/VDES, therefore the
@@ -90,7 +88,6 @@ to send AIS messages using the Ettus E320 software-defined radio USRP platform
 in a similar manner.
 
 ## How to use this image
-
 This image can be used in two ways (based on the use or not of the Spring Cloud
 Config server).
 * Enabling the cloud config client and using the configurations located in an
@@ -99,7 +96,6 @@ Config server).
   locally.
 
 ### Cloud Config Configuration
-
 In order to run the image in a **Cloud Config** configuration, you just need
 to provide the environment variables that allow is to connect to the cloud
 config server. This is assumed to be provided the GRAD e-Navigation Service
@@ -142,7 +138,6 @@ use the following command:
         <image-id>
 
 ### Local Config Configuration
-
 In order to run the image in a **Local Config** configuration, you just need
 to mount a local configuration directory that contains the necessary
 **.properties** files (including bootstrap) into the **/conf** directory of the
@@ -269,9 +264,8 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     gla.rad.vdes-ctrl.info.copyright=\u00A9 2023 GLA Research & Development
 
 ## Operation
-
-Initially an AIS/VDES station like VDES1000 needs to be registered with the *
-*VDES Controller** using the service’s own configuration web-interface (GUI).
+Initially an AIS/VDES station like VDES1000 needs to be registered with the
+**VDES Controller** using the service’s own configuration web-interface (GUI).
 The configuration parameters for each station are briefly presented in the
 following table. In addition, each station needs to be allocated to a specific
 area in order to activate its transmission capabilities over it. For each of the
