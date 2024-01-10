@@ -87,7 +87,7 @@ appropriate transmission format. For testing purposes, the service is also able
 to send AIS messages using the Ettus E320 software-defined radio USRP platform
 in a similar manner.
 
-### Development Setup
+## Development Setup
 
 To start developing just open the repository with the IDE of your choice. The
 original code has been generated using
@@ -100,7 +100,7 @@ Provide the URL of the current repository and the local directory you want.
 You don't have to use it if you have another preference. Just make sure you
 update the *.gitignore* file appropriately.
 
-### Build Setup
+## Build Setup
 
 The project is using the latest OpenJDK 21 to build, although earlier versions
 should also work.
@@ -110,7 +110,7 @@ IDE. Nothing exotic about the goals, just clean and install should do:
 
     mvn clean package
 
-### How to Run
+## How to Run
 
 This service can be used in two ways (based on the use or not of the Spring Cloud
 Config server).
@@ -119,7 +119,7 @@ Config server).
 * Disabling the cloud config client and using the configuration provided
   locally.
 
-#### Cloud Config Configuration
+### Cloud Config Configuration
 
 In order to run the service in a **Cloud Config** configuration, you just need
 to provide the environment variables that allow is to connect to the cloud
@@ -161,7 +161,7 @@ use the following command:
         -DENAV_CLOUD_CONFIG_PASSWORD='<config config repository passord>' \
         <vdes-controller.jar>
 
-#### Local Config Configuration
+### Local Config Configuration
 
 In order to run the service in a **Local Config** configuration, you just need
 to provide a local configuration directory that contains the necessary
@@ -286,7 +286,7 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     gla.rad.vdes-ctrl.info.operatorUrl=https://www.gla-rad.org/
     gla.rad.vdes-ctrl.info.copyright=\u00A9 2023 GLA Research & Development
 
-### Operation
+## Operation
 
 Initially an AIS/VDES station like VDES1000 needs to be registered with the
 **VDES Controller** using the service’s own configuration web-interface (GUI).
