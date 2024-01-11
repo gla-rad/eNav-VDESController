@@ -125,6 +125,8 @@
             </div>
         </div>
         <div th:replace="~{fragments/general.html :: footer}"></div>
+        <div th:replace="~{fragments/general.html :: confirmation-dialog}"></div>
+        <div th:replace="~{fragments/general.html :: error-dialog}"></div>
     </div>
     <!-- We need to refresh the session due to our AJAX calls -->
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
