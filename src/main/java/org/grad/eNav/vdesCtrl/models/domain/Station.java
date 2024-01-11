@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2021 GLA Research and Development Directorate
+ * Copyright (c) 2024 GLA Research and Development Directorate
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,6 +37,7 @@ import java.util.Set;
 /**
  * The type Station.
  */
+@SuppressWarnings("LombokSetterMayBeUsed")
 @Entity
 @Table(name = "station")
 @Cacheable
@@ -95,6 +96,11 @@ public class Station implements Serializable {
     @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "channel", columnDefinition = "varchar(4) default 'A'")
     private AISChannelPref channel;
+
+    @Enumerated(EnumType.STRING)
+    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
+    @Column(name = "signatureMode", columnDefinition = "varchar(30) default 'NONE'")
+    private SignatureMode signatureMode;
 
     @JsonSerialize(using = GeometryJSONSerializer.class)
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
@@ -272,6 +278,24 @@ public class Station implements Serializable {
      */
     public void setChannel(AISChannelPref channel) {
         this.channel = channel;
+    }
+
+    /**
+     * Gets signature mode.
+     *
+     * @return the signature mode
+     */
+    public SignatureMode getSignatureMode() {
+        return signatureMode;
+    }
+
+    /**
+     * Sets signature mode.
+     *
+     * @param signatureMode the signature mode
+     */
+    public void setSignatureMode(SignatureMode signatureMode) {
+        this.signatureMode = signatureMode;
     }
 
     /**

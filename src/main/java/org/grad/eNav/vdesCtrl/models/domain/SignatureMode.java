@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grad.eNav.vdesCtrl.models.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -21,24 +20,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * The MCP Entity Type Enum.
+ * The Signature Mode Enum.
  * <p/>
- * The enum that describes the type of the entity being advertised, in
- * accordance with the categories available through the MCP MIR.
- * <p/>
- * For more information please refer to the
- * <a href="https://maritimeconnectivity.net/mcp-documents/#MIR">
- *     MCP MIR documentation
- * </a>.
+ * The enumeration that describes the supported mode in which the advertised
+ * messages can provide an associated signature message. This is usually
+ * provided through the cKeeper microservice.
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public enum McpEntityType {
-    DEVICE("device"),
-    SERVICE("service"),
-    USER("user"),
-    VESSEL("vessel"),
-    ROLE("role");
+public enum SignatureMode {
+    NONE("NONE"),
+    AIS("AIS"),
+    VDE("VDE");
 
     // Enum Variables
     private final String value;
@@ -48,7 +41,7 @@ public enum McpEntityType {
      *
      * @param value the enum value
      */
-    McpEntityType(final String value) {
+    SignatureMode(final String value) {
         this.value = value;
     }
 
@@ -66,8 +59,8 @@ public enum McpEntityType {
      * @param value the enum value
      * @return The respective enum entry
      */
-    public static McpEntityType fromValue(String value) {
-        return Arrays.stream(McpEntityType.values())
+    public static SignatureMode fromValue(String value) {
+        return Arrays.stream(SignatureMode.values())
                 .filter(t -> t.getValue().compareTo(value)==0)
                 .findFirst()
                 .orElse(null);

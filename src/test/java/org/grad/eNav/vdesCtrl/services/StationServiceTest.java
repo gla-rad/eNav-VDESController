@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.services;
 
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
@@ -128,6 +129,7 @@ class StationServiceTest {
             station.setId(BigInteger.valueOf(i));
             station.setName("Station Name");
             station.setChannel(AISChannelPref.A);
+            station.setSignatureMode(SignatureMode.NONE);
             station.setMmsi("12345678" + i);
             station.setIpAddress("10.0.0." + i);
             station.setType(StationType.VDES_1000);
@@ -143,6 +145,7 @@ class StationServiceTest {
         this.newStation = new Station();
         this.newStation.setName("New Station Name");
         this.newStation.setChannel(AISChannelPref.A);
+        this.newStation.setSignatureMode(SignatureMode.NONE);
         this.newStation.setMmsi("111111111");
         this.newStation.setIpAddress("10.0.0.1");
         this.newStation.setType(StationType.VDES_1000);
@@ -155,6 +158,7 @@ class StationServiceTest {
         this.existingStation.setId(BigInteger.ONE);
         this.existingStation.setName("Existing Station Name");
         this.existingStation.setChannel(AISChannelPref.B);
+        this.existingStation.setSignatureMode(SignatureMode.NONE);
         this.existingStation.setMmsi("222222222");
         this.existingStation.setIpAddress("10.0.0.2");
         this.existingStation.setType(StationType.GNU_RADIO);

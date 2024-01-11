@@ -53,6 +53,14 @@ var stationsColumnDefs = [{
     placeholder: "AIS Channel preference of the station",
     required: true
 }, {
+      data: "signatureMode",
+      title: "Signature Mode",
+      type: "select",
+      options: ["NONE","AIS", "VDE"],
+      hoverMsg: "Enable message signatures using the preferred mode (AIS/VDE)",
+      placeholder: "Enable message signatures using the preferred mode (AIS/VDE)",
+      required: true
+}, {
     data: "port",
     title: "Port",
     hoverMsg: "Port of the station",
@@ -192,6 +200,7 @@ $(() => {
                     ipAddress: rowdata["ipAddress"],
                     type: rowdata["type"],
                     channel: rowdata["channel"],
+                    signatureMode: rowdata["signatureMode"],
                     port: rowdata["port"],
                     broadcastPort: rowdata["broadcastPort"],
                     fwdIpAddress: rowdata["fwdIpAddress"],
@@ -222,6 +231,7 @@ $(() => {
                     ipAddress: rowdata["ipAddress"],
                     type: rowdata["type"],
                     channel: rowdata["channel"],
+                    signatureMode: rowdata["signatureMode"],
                     port: rowdata["port"],
                     broadcastPort: rowdata["broadcastPort"],
                     fwdIpAddress: rowdata["fwdIpAddress"],
