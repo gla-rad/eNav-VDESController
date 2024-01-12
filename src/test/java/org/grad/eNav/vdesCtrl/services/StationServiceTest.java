@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
+import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
 import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
@@ -328,6 +329,23 @@ class StationServiceTest {
         // Make sure all the relevant services have been reloaded
         verify(this.grAisService, times(1)).reload();
         verify(this.vdes1000Service, times(1)).reload();
+    }
+
+    /**
+     * Test that if we try to assign a VDE mode to a GNURadio-based station
+     * a ValidationException will be thrown since this is an invalid
+     * configuration.
+     */
+    @Test
+    void testSaveGNURadioWithVDEMode() {
+        // Set the station as GNURadio with VDE mode
+        this.newStation.setType(StationType.GNU_RADIO);
+        this.newStation.setSignatureMode(SignatureMode.VDE);
+
+        // Perform the service call
+        assertThrows(ValidationException.class, () ->
+                this.stationService.save(this.newStation)
+        );
     }
 
     /**

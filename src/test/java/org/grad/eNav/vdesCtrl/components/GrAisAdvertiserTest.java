@@ -19,6 +19,7 @@ package org.grad.eNav.vdesCtrl.components;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
@@ -93,6 +94,7 @@ class GrAisAdvertiserTest {
         this.station.setId(BigInteger.ONE);
         this.station.setName("Existing Station Name");
         this.station.setChannel(AISChannelPref.B);
+        this.station.setSignatureMode(SignatureMode.NONE);
         this.station.setMmsi("222222222");
         this.station.setIpAddress("10.0.0.2");
         this.station.setType(StationType.GNU_RADIO);
@@ -101,7 +103,7 @@ class GrAisAdvertiserTest {
 
         // Read a valid S125 content to generate the S125Node message for.
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
-        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8.name());
+        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 
         // Also create a GeoJSON point geometry for our S125 message
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
@@ -157,7 +159,6 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.station = this.station;
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = false;
         this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
@@ -179,7 +180,6 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.station = this.station;
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = false;
         this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
@@ -191,11 +191,14 @@ class GrAisAdvertiserTest {
     /**
      * Test that the GNURadio AIS advertiser can actually read the station
      * messages from the message service and advertise the connected GNURadio
-     * station. It will also send a second message containing the signature
-     * of the first, if that feature is enabled.
+     * station. It will also send a second message over AIS containing the
+     * signature of the first, if that feature is enabled.
      */
     @Test
-    void testAdvertiseAtonsWithSignature() throws IOException {
+    void testAdvertiseAtonsWithSignatureAIS() throws IOException {
+        // Enable AIS signatures for this station
+        this.station.setSignatureMode(SignatureMode.AIS);
+
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
         doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
@@ -203,7 +206,6 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.station = this.station;
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = true;
         this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
         this.grAisAdvertiser.advertiseAtons();
@@ -213,11 +215,41 @@ class GrAisAdvertiserTest {
     }
 
     /**
+     * Test that the GNURadio AIS advertiser can actually read the station
+     * messages from the message service and try to advertise the connected
+     * GNURadio station. If however a VDE signature is selected, an error
+     * will be thrown and no signature will be transmitted since this station
+     * type only supported AIS signatures.
+     */
+    @Test
+    void testAdvertiseAtonsWithSignatureVDE() throws IOException {
+        // Enable VDE signature for this station
+        this.station.setSignatureMode(SignatureMode.VDE);
+
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
+
+        // Initialise the advertiser and perform the component call
+        this.grAisAdvertiser.station = this.station;
+        this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
+        this.grAisAdvertiser.aisInterval = 1000L;
+        this.grAisAdvertiser.signatureAlgorithm = "algorithm";
+        this.grAisAdvertiser.signatureDestMmmsi = 123456789;
+        this.grAisAdvertiser.advertiseAtons();
+
+        // Make sure the UDP packet was sent to the GRURadio station
+        verify(this.gnuRadioSocket, times(1)).send(any());
+    }
+
+    /**
      * Test that the GNURadio AIS advertiser will not actually send anything
      * if an empty/null S125 message is received
      */
     @Test
-    void testAdvertiseAtonsEmptyMessage() throws IOException, InterruptedException {
+    void testAdvertiseAtonsEmptyMessage() throws IOException {
+        // Enable signature for this station
+        this.station.setSignatureMode(SignatureMode.AIS);
+
         this.atonMessageDto.setContent(null);
         doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
@@ -225,7 +257,6 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.station = this.station;
         this.grAisAdvertiser.gnuRadioSocket = this.gnuRadioSocket;
         this.grAisAdvertiser.aisInterval = 1000L;
-        this.grAisAdvertiser.enableSignatures = true;
         this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
 

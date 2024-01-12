@@ -20,9 +20,11 @@ import jakarta.annotation.PreDestroy;
 import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
+import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -52,7 +54,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The VDES-1000 Advertiser Component.
@@ -66,12 +67,6 @@ import java.util.stream.Collectors;
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
 public class Vdes1000Advertiser {
-
-    /**
-     * Whether to enable signature messages
-     */
-    @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.enableSignatures:false}")
-    Boolean enableSignatures;
 
     /**
      * The Signature Message Destination MMSI
@@ -182,7 +177,11 @@ public class Vdes1000Advertiser {
                 })
                 .filter(Objects::nonNull)
                 .filter(AISMessage21::getVaton) // Only transmit Virtual AtoNs
-                .collect(Collectors.toList());
+                .toList();
+
+        // Get the signature mode for this station - NONE by default
+        final SignatureMode stationSignatureMode = Optional.ofNullable(station.getSignatureMode())
+                .orElse(SignatureMode.NONE);
 
         // Now create the AIS advertisements - wait in between
         try {
@@ -191,30 +190,38 @@ public class Vdes1000Advertiser {
                 log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
                 this.getVdes1000Conn().sendMessage(message, this.station.getChannel());
 
-                // If signature messages are enabled, send one
-                if (this.enableSignatures) {
+                // If signature messages are enabled for this station, send one
+                if (stationSignatureMode != SignatureMode.NONE) {
                     // Get the signature for the message sent
-                    AbstractMessage signature = this.getSignature(message);
+                    final AbstractMessage signature = this.getSignatureMessage(message);
 
                     // If we have a signature and it's valid
                     if (Objects.nonNull(signature)) {
-                        this.getVdes1000Conn().sendMessageWithBBM(signature, this.station.getChannel());
+                        switch(stationSignatureMode) {
+                            case SignatureMode.AIS -> this.getVdes1000Conn().sendMessageWithBBM(signature, this.station.getChannel());
+                            case SignatureMode.VDE -> throw new ValidationException("The VDE mode is not yet supported for this station.");
+                            default -> throw new ValidationException("Unrecognised signature transmission mode.");
+                        }
+
+                        // Also log the signature transmission
+                        log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
                     }
                 }
             }
-        } catch (VDES1000ConnException ex) {
-            this.log.error(ex.getMessage());
+        } catch (ValidationException | VDES1000ConnException ex) {
+            log.error(ex.getMessage());
         }
     }
 
     /**
      * This function will generate a signature message for the AIS Message 21
-     * combined with the transmission UNIX timestamp and send this as an AIS
-     * Message 6/8 to the VDES-1000 UDP port as well.
+     * combined with the transmission UNIX timestamp. The output will then get
+     * packaged into a generic message (AIS-8, AIS-8, VDE) depending on
+     * the operation requirements and returned back.
      *
      * @param aisMessage21 the AIS message 21 that was transmitted
      */
-    private AbstractMessage getSignature(AISMessage21 aisMessage21) {
+    private AbstractMessage getSignatureMessage(AISMessage21 aisMessage21) {
         // Sanity check
         if(Objects.isNull(aisMessage21)) {
             return null;
@@ -248,8 +255,8 @@ public class Vdes1000Advertiser {
     }
 
     /**
-     * Handle the received message.
-     *
+     * Handles the received messages.
+     * <p/>
      * Messages coming from a VDES-1000 station are always string, such as NMEA
      * sentences.
      *

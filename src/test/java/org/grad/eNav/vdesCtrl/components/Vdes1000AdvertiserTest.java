@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
@@ -111,6 +112,7 @@ class Vdes1000AdvertiserTest {
         this.station.setId(BigInteger.ONE);
         this.station.setName("Existing Station Name");
         this.station.setChannel(AISChannelPref.B);
+        this.station.setSignatureMode(SignatureMode.NONE);
         this.station.setMmsi("222222222");
         this.station.setIpAddress("10.0.0.2");
         this.station.setType(StationType.VDES_1000);
@@ -119,7 +121,7 @@ class Vdes1000AdvertiserTest {
 
         // Read a valid S125 content to generate the S125Node message for.
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
-        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8.name());
+        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 
         // Also create a GeoJSON point geometry for our S125 message
         JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
@@ -182,7 +184,6 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.enableSignatures = false;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
@@ -203,7 +204,6 @@ class Vdes1000AdvertiserTest {
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.enableSignatures = false;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
@@ -216,18 +216,20 @@ class Vdes1000AdvertiserTest {
     /**
      * Test that the VDES-1000 advertiser can actually read the station
      * messages from the message service and advertise the connected VDES-1000
-     * station. It will also send a second message containing the signature
-     * of the first, if that feature is enabled.
+     * station. It will also send a second message over AIS, containing the
+     * signature of the first, if that feature is enabled.
      */
     @Test
-    void testAdvertiseAtonsWithSignature() throws VDES1000ConnException {
+    void testAdvertiseAtonsWithSignatureAIS() throws VDES1000ConnException {
+        // Enable AIS signatures for this station
+        this.station.setSignatureMode(SignatureMode.AIS);
+
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
         doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
@@ -238,17 +240,45 @@ class Vdes1000AdvertiserTest {
     }
 
     /**
+     * Test that the VDES-1000 advertiser can actually read the station
+     * messages from the message service and advertise the connected VDES-1000
+     * station. It will also send a second message over VDE, containing the
+     * signature of the first, if that feature is enabled.
+     */
+    @Test
+    void testAdvertiseAtonsWithSignatureVDE() throws VDES1000ConnException {
+        // Enable VDE signatures for this station
+        this.station.setSignatureMode(SignatureMode.VDE);
+
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        doReturn(Collections.singletonList(this.atonMessageDto)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
+        doReturn(this.signature).when(this.cKeeperClient).generateEntitySignature(any(String.class), any(String.class), any(String.class), eq(McpEntityType.DEVICE.getValue()), any(byte[].class));
+
+        // Initialise the advertiser and perform the component call
+        this.vdes1000Advertiser.station = this.station;
+        this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
+        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.advertiseAtons();
+
+        // Make sure the UDP packet was sent to the GRURadio station
+        verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, times(0)).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+    }
+
+    /**
      * Test that the VDES-1000 advertiser will not actually send anything
      * if an empty/null S125 message is received
      */
     @Test
     void testAdvertiseAtonsEmptyMessage() throws VDES1000ConnException {
+        // Enable signature for this station
+        this.station.setSignatureMode(SignatureMode.AIS);
+
         this.atonMessageDto.setContent(null);
         doReturn(Collections.singletonList(null)).when(this.stationService).findMessagesForStation(eq(this.station.getId()), eq(Boolean.FALSE));
 
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
-        this.vdes1000Advertiser.enableSignatures = true;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
 

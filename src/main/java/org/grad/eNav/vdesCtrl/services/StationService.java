@@ -20,7 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.Sort;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
+import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
@@ -161,10 +163,15 @@ public class StationService {
     public Station save(Station station) {
         log.debug("Request to save Station : {}", station);
 
+        // Validate the signature mode - no VDE is GNURadio
+        if(station.getType() == StationType.GNU_RADIO && station.getSignatureMode() == SignatureMode.VDE) {
+            throw new ValidationException("VDE is not a valid mode for GNURadio-based stations.");
+        }
+
         // Copy the existing blacklist IDs if available
         Optional.of(station)
                 .map(Station::getId)
-                .map(this.stationRepo::getById)
+                .map(this.stationRepo::getReferenceById)
                 .map(Station::getBlacklistedUids)
                 .ifPresent(station::setBlacklistedUids);
 

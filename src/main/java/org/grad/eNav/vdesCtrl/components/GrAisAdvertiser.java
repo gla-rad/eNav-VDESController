@@ -20,8 +20,10 @@ import jakarta.annotation.PreDestroy;
 import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
+import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
+import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
@@ -47,7 +49,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * The GNURadio AIS Advertiser Component Class
@@ -69,12 +70,6 @@ public class GrAisAdvertiser {
      */
     @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.ais-interval:500}")
     Long aisInterval;
-
-    /**
-     * Whether to enable signature messages
-     */
-    @Value("${gla.rad.vdes-ctrl.gr-ais-advertiser.enableSignatures:false}")
-    Boolean enableSignatures;
 
     /**
      * The sSignature Message Destination MMSI
@@ -156,67 +151,57 @@ public class GrAisAdvertiser {
                 })
                 .filter(Objects::nonNull)
                 .filter(AISMessage21::getVaton) // Only transmit Virtual AtoNs
-                .collect(Collectors.toList());
+                .toList();
+
+        // Get the signature mode for this station - NONE by default
+        final SignatureMode stationSignatureMode = Optional.ofNullable(station.getSignatureMode())
+                .orElse(SignatureMode.NONE);
 
         // Now create the AIS advertisements - wait in between
         try {
             for (AISMessage21 message : messages) {
                 // First send the message right away and then check if to create a signature for it
-                this.sendMsg21Datagram(station.getIpAddress(), station.getPort(), message);
+                log.info("Station {} sending an advertisement AtoN {}", station.getName(), message.getUid());
+                this.sendDatagram(station.getIpAddress(), station.getPort(), message);
 
                 // If signature messages are enabled, send one
-                if (this.enableSignatures) {
-                    this.sendSignatureDatagram(station.getIpAddress(), station.getPort(), message);
+                if (stationSignatureMode != SignatureMode.NONE) {
+                    // Get the signature for the message sent
+                    final AbstractMessage signature = this.getSignatureMessage(message);
+
+                    // If we have a signature and it's valid
+                    if (Objects.nonNull(signature)) {
+                        switch(stationSignatureMode) {
+                            case SignatureMode.AIS -> this.sendDatagram(station.getIpAddress(), station.getPort(), signature);
+                            case SignatureMode.VDE -> throw new ValidationException("The VDE mode is not supported for GNU_Radio stations");
+                            default -> throw new ValidationException("Unrecognised signature transmission mode.");
+                        }
+
+                        // Also log the signature transmission
+                        log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
+                    }
                 }
 
                 // Wait to give enough time for the AIS TDMA slot
                 Thread.sleep(this.aisInterval);
             }
-        } catch (InterruptedException ex) {
-            this.log.error(ex.getMessage());
-        }
-    }
-
-    /**
-     * The main function that sends the UDP package to the GNURadio station.
-     *
-     * @param address the address to send the datagram to
-     * @param port the port to send the datagram to
-     * @param aisMessage21 the AIS message 21 to be transmitted
-     */
-    private void sendMsg21Datagram(String address, int port, AISMessage21 aisMessage21) {
-        // Sanity check
-        if(Objects.isNull(aisMessage21)) {
-            return;
-        }
-
-        // Log the operation
-        log.info("Station {} sending an advertisement AtoN {}", station.getName(), aisMessage21.getUid());
-
-        // Create and send the UDP datagram packet
-        byte[] buffer = (aisMessage21.getBinaryMessageString() +'\n').getBytes();
-        try {
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    InetAddress.getByName(address), port);
-            this.gnuRadioSocket.send(packet);
-        } catch (IOException e) {
-            log.error(e.getMessage());
+        } catch (ValidationException | InterruptedException ex) {
+            log.error(ex.getMessage());
         }
     }
 
     /**
      * This function will generate a signature message for the AIS Message 21
-     * combined with the transmission UNIX timestamp and send this as an AIS
-     * Message 6/8 to the GNURadio UDP port as well.
+     * combined with the transmission UNIX timestamp. The output will then get
+     * packaged into a generic message (AIS-8, AIS-8, VDE) depending on
+     * the operation requirements and returned back.
      *
-     * @param address the address to send the datagram to
-     * @param port the port to send the datagram to
      * @param aisMessage21 the AIS message 21 that was transmitted
      */
-    private void sendSignatureDatagram(String address, int port, AISMessage21 aisMessage21) {
+    private AbstractMessage getSignatureMessage(AISMessage21 aisMessage21) {
         // Sanity check
         if(Objects.isNull(aisMessage21)) {
-            return;
+            return null;
         }
 
         // Construct the NMEA sentence of message 21 to be signed
@@ -239,6 +224,25 @@ public class GrAisAdvertiser {
                     .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature));
         } catch (IOException ex) {
             log.error(ex.getMessage());
+            return null;
+        }
+
+        // Return the constructed message
+        return abstractMessage;
+    }
+
+    /**
+     * Sends the provided message as a UDP datagram to the specified address and
+     * port. Any exceptions will be handled internally and an error message will
+     * be logged.
+     *
+     * @param address the IP address to send the UDP package to
+     * @param port the UDP port number to direct the package to
+     * @param abstractMessage the message to be sent
+     */
+    private void sendDatagram(String address, int port, AbstractMessage abstractMessage) {
+        // Sanity check
+        if(Objects.isNull(abstractMessage)) {
             return;
         }
 
@@ -251,9 +255,6 @@ public class GrAisAdvertiser {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-
-        // Generate some debug information
-        log.debug(String.format("Signature NMEA sentence sent: %s", new String(abstractMessage.getBinaryMessage(true))));
     }
 
 }

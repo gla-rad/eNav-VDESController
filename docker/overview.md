@@ -254,12 +254,8 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     gla.rad.vdes-ctrl.web-socket.name=vdes-ctrl-websocket
     gla.rad.vdes-ctrl.web-socket.prefix=topic
     
-    # VDES-1000 AIS Message Advertiser Configuration
-    gla.rad.vdes-ctrl.vdes-1000-advertiser.enableSignatures=true
-    
     # GRURadio AIS Message Advertiser Configuration
     gla.rad.vdes-ctrl.gr-ais-advertiser.ais-interval=1000
-    gla.rad.vdes-ctrl.gr-ais-advertiser.enableSignatures=true
     gla.rad.vdes-ctrl.gr-ais-advertiser.destMmsi=111111111
     
     # Front-end Information
