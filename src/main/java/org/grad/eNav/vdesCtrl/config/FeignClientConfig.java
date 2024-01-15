@@ -16,21 +16,12 @@
 
 package org.grad.eNav.vdesCtrl.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Logger;
 import feign.RequestInterceptor;
-import feign.codec.Decoder;
-import feign.jackson.JacksonDecoder;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
-import org.springframework.cloud.openfeign.support.PageJacksonModule;
-import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
-import org.springframework.cloud.openfeign.support.SortJacksonModule;
-import org.springframework.cloud.openfeign.support.SpringDecoder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.client.*;
@@ -53,6 +44,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
+@Configuration
+@ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
 public class FeignClientConfig {
 
     @Bean
