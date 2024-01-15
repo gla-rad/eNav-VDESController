@@ -2,7 +2,7 @@
 
 The VDES controller repository contains the implementation of a service
 controlling VDES AIS stations. This entails reading messages through the
-[Geomesa](https://www.geomesa.org/documentation/stable/index.html) library and
+[AtoN Service](https://github.com/gla-rad/eNav-AtoNService) and
 converting them to AIS messages before passing them down to the VDES stations
 through UDP. The core micro-service is built using the Springboot framework.
 
