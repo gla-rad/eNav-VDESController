@@ -28,10 +28,10 @@ import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
-import org.grad.vdes1000.ais.messages.AISMessage21;
-import org.grad.vdes1000.ais.messages.AISMessage6;
-import org.grad.vdes1000.ais.messages.AISMessage8;
-import org.grad.vdes1000.generic.AbstractMessage;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
+import org.grad.vdes1000.formats.ais.messages.AISMessage6;
+import org.grad.vdes1000.formats.ais.messages.AISMessage8;
+import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -173,8 +173,7 @@ public class GrAisAdvertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> this.sendDatagram(station.getIpAddress(), station.getPort(), signature);
-                            case SignatureMode.VDE -> throw new ValidationException("The VDE mode is not supported for GNU_Radio stations");
-                            default -> throw new ValidationException("Unrecognised signature transmission mode.");
+                            default -> throw new ValidationException("Only the AIS signature transmission mode is supported for GNU_Radio stations");
                         }
 
                         // Also log the signature transmission

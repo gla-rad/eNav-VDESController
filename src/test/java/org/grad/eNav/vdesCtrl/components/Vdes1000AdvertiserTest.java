@@ -29,7 +29,7 @@ import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
-import org.grad.vdes1000.generic.AISChannelPref;
+import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

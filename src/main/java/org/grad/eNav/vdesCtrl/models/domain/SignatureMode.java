@@ -31,6 +31,7 @@ import java.util.Arrays;
 public enum SignatureMode {
     NONE("NONE"),
     AIS("AIS"),
+    ASM("ASM"),
     VDE("VDE");
 
     // Enum Variables

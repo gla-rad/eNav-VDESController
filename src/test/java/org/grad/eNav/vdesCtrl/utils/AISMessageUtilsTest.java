@@ -17,8 +17,8 @@
 package org.grad.eNav.vdesCtrl.utils;
 
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.vdes1000.ais.messages.AISMessage21;
-import org.grad.vdes1000.generic.AtonType;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
+import org.grad.vdes1000.formats.generic.AtonType;
 import org.junit.jupiter.api.Test;
 
 import jakarta.xml.bind.JAXBException;

@@ -29,13 +29,13 @@ import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
-import org.grad.vdes1000.ais.messages.AISMessage21;
-import org.grad.vdes1000.ais.messages.AISMessage6;
-import org.grad.vdes1000.ais.messages.AISMessage8;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
+import org.grad.vdes1000.formats.ais.messages.AISMessage6;
+import org.grad.vdes1000.formats.ais.messages.AISMessage8;
+import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
-import org.grad.vdes1000.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -199,7 +199,8 @@ public class Vdes1000Advertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> this.getVdes1000Conn().sendMessageWithBBM(signature, this.station.getChannel());
-                            case SignatureMode.VDE -> throw new ValidationException("The VDE mode is not yet supported for this station.");
+                            case SignatureMode.ASM -> this.getVdes1000Conn().sendDataWithASM(signature.getPayload(), this.station.getChannel());
+                            case SignatureMode.VDE -> this.getVdes1000Conn().sendDataWithVDE(signature.getPayload());
                             default -> throw new ValidationException("Unrecognised signature transmission mode.");
                         }
 
