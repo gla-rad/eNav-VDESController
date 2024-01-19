@@ -177,7 +177,7 @@ public class GrAisAdvertiser {
                         }
 
                         // Also log the signature transmission
-                        log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
+                        log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getPayload())));
                     }
                 }
 
