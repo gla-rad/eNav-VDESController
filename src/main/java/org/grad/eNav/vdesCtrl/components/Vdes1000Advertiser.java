@@ -200,10 +200,10 @@ public class Vdes1000Advertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> {
-                                var abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
+                                final var msg = Optional.ofNullable(this.signatureDestMmmsi)
                                         .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
                                         .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
-                                this.getVdes1000Conn().sendMessageWithBBM(abstractMessage, this.station.getChannel());
+                                this.getVdes1000Conn().sendMessageWithBBM(msg, this.station.getChannel());
                             }
                             case SignatureMode.ASM ->
                                     this.getVdes1000Conn().sendDataWithASM(signature, this.station.getChannel());

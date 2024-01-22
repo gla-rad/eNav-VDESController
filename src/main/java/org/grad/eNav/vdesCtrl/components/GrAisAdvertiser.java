@@ -174,10 +174,10 @@ public class GrAisAdvertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> {
-                                var abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
+                                final var msg = Optional.ofNullable(this.signatureDestMmmsi)
                                         .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
                                         .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
-                                this.sendDatagram(station.getIpAddress(), station.getPort(), abstractMessage);
+                                this.sendDatagram(station.getIpAddress(), station.getPort(), msg);
                             }
                             default -> throw new ValidationException("Only the AIS signature transmission mode is supported for GNU_Radio stations");
                         }
