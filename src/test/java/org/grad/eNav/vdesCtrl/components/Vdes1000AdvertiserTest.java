@@ -29,7 +29,7 @@ import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
-import org.grad.vdes1000.generic.AISChannelPref;
+import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -187,9 +187,10 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
-        // Make sure the UDP packet was sent to the GRURadio station
+        // Make sure the UDP packet was sent to the AIS station
         verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
-        verify(this.vdes1000Conn, never()).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
+        verify(this.vdes1000Conn, never()).sendDataWithVDE(any());
     }
 
     /**
@@ -207,9 +208,10 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
-        // Make sure the UDP packet was sent to the GRURadio station
+        // Make sure the UDP packet was sent to the AIS station
         verify(this.vdes1000Conn, never()).sendMessage(any(), eq(this.station.getChannel()));
-        verify(this.vdes1000Conn, never()).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
+        verify(this.vdes1000Conn, never()).sendDataWithVDE(any());
     }
 
     /**
@@ -233,9 +235,10 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
-        // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
-        verify(this.vdes1000Conn, times(1)).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+        // Make sure the UDP packet was sent to the AIS station
+        verify(this.vdes1000Conn, times(2)).sendMessage(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
+        verify(this.vdes1000Conn, never()).sendDataWithVDE(any());
     }
 
     /**
@@ -259,9 +262,10 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
-        // Make sure the UDP packet was sent to the GRURadio station
+        // Make sure the UDP packet was sent to the AIS station
         verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
-        verify(this.vdes1000Conn, times(0)).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
+        verify(this.vdes1000Conn, times(1)).sendDataWithVDE(any());
     }
 
     /**
@@ -286,6 +290,8 @@ class Vdes1000AdvertiserTest {
 
         // Make sure no UDP packet was sent to the GRURadio station
         verify(this.vdes1000Conn, never()).sendMessage(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
+        verify(this.vdes1000Conn, never()).sendDataWithVDE(any());
     }
 
     /**

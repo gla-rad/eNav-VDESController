@@ -28,11 +28,12 @@ import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
-import org.grad.vdes1000.ais.messages.AISMessage21;
-import org.grad.vdes1000.ais.messages.AISMessage6;
-import org.grad.vdes1000.ais.messages.AISMessage8;
-import org.grad.vdes1000.generic.AbstractMessage;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
+import org.grad.vdes1000.formats.ais.messages.AISMessage6;
+import org.grad.vdes1000.formats.ais.messages.AISMessage8;
+import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
+import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -167,18 +168,22 @@ public class GrAisAdvertiser {
                 // If signature messages are enabled, send one
                 if (stationSignatureMode != SignatureMode.NONE) {
                     // Get the signature for the message sent
-                    final AbstractMessage signature = this.getSignatureMessage(message);
+                    final byte[] signature = this.getSignature(message);
 
                     // If we have a signature and it's valid
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
-                            case SignatureMode.AIS -> this.sendDatagram(station.getIpAddress(), station.getPort(), signature);
-                            case SignatureMode.VDE -> throw new ValidationException("The VDE mode is not supported for GNU_Radio stations");
-                            default -> throw new ValidationException("Unrecognised signature transmission mode.");
+                            case SignatureMode.AIS -> {
+                                final var msg = Optional.ofNullable(this.signatureDestMmmsi)
+                                        .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
+                                        .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
+                                this.sendDatagram(station.getIpAddress(), station.getPort(), msg);
+                            }
+                            default -> throw new ValidationException("Only the AIS signature transmission mode is supported for GNU_Radio stations");
                         }
 
                         // Also log the signature transmission
-                        log.debug(String.format("Signature NMEA sentence sent: %s", new String(signature.getBinaryMessage(true))));
+                        log.debug(String.format("Message signature sent: %s", new String(StringBinUtils.convertBytes(signature, true))));
                     }
                 }
 
@@ -191,14 +196,14 @@ public class GrAisAdvertiser {
     }
 
     /**
-     * This function will generate a signature message for the AIS Message 21
+     * This function will generate a signature byte-array for the AIS Message 21
      * combined with the transmission UNIX timestamp. The output will then get
      * packaged into a generic message (AIS-8, AIS-8, VDE) depending on
      * the operation requirements and returned back.
      *
-     * @param aisMessage21 the AIS message 21 that was transmitted
+     * @param aisMessage21 the generated signature
      */
-    private AbstractMessage getSignatureMessage(AISMessage21 aisMessage21) {
+    private byte[] getSignature(AISMessage21 aisMessage21) {
         // Sanity check
         if(Objects.isNull(aisMessage21)) {
             return null;
@@ -209,26 +214,22 @@ public class GrAisAdvertiser {
 
         // Construct the UDP message for the VDES station
         final AbstractMessage abstractMessage;
+        final byte[] signature;
         try {
             // Combine the AIS message and the timestamp into a hash
             log.debug(String.format("Stamping AIS message with timestamp %d", aisMessage21.getUnixTxTimestamp()));
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp());
 
             // Get the signature
-            byte[] signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
+            signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
-
-            // And generate the signature message
-            abstractMessage = Optional.ofNullable(this.signatureDestMmmsi)
-                    .map(destMmsi -> (AbstractMessage) new AISMessage6(aisMessage21.getMmsi(), destMmsi, signature))
-                    .orElseGet(() -> (AbstractMessage) new AISMessage8(aisMessage21.getMmsi(), signature));
         } catch (IOException ex) {
             log.error(ex.getMessage());
             return null;
         }
 
         // Return the constructed message
-        return abstractMessage;
+        return signature;
     }
 
     /**
