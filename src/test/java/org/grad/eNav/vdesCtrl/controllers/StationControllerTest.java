@@ -28,7 +28,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
-import org.grad.vdes1000.generic.AISChannelPref;
+import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;

@@ -26,7 +26,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
-import org.grad.vdes1000.generic.AISChannelPref;
+import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

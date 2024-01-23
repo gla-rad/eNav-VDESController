@@ -25,8 +25,8 @@ import _net.opengis.gml.profiles.*;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.s125.utils.S125Utils;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.vdes1000.ais.messages.AISMessage21;
-import org.grad.vdes1000.generic.AtonType;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
+import org.grad.vdes1000.formats.generic.AtonType;
 import org.locationtech.jts.geom.*;
 import org.springframework.cglib.core.ReflectUtils;
 
