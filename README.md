@@ -339,5 +339,5 @@ for more information.
 
 Nikolaos Vastardis - Nikolaos.Vastardis@gla-rad.org
 
-
+For information about VDES technology, contact Jan Safar at Jan.Safar@gla-rad.org.
 
