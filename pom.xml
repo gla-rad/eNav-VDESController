@@ -209,8 +209,7 @@
 		<dependency>
 			<groupId>org.grad.eNav</groupId>
 			<artifactId>S125</artifactId>
-			<version>0.5.54</version>
-			<classifier>jakarta</classifier>
+			<version>0.5.58</version>
 		</dependency>
 
 		<!-- VDES-1000 -->

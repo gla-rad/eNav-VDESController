@@ -16,12 +16,14 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import _int.iala_aism.s125.gml._0_0.*;
-import _int.iho.s100.gml.base._5_0.CurveProperty;
-import _int.iho.s100.gml.base._5_0.PointProperty;
-import _int.iho.s100.gml.base._5_0.S100SpatialAttributeType;
-import _int.iho.s100.gml.base._5_0.SurfaceProperty;
-import _net.opengis.gml.profiles.*;
+import _int.iho.s100.gml.base._5_0.CurveType;
+import _int.iho.s100.gml.base._5_0.PointType;
+import _int.iho.s100.gml.base._5_0.SurfaceType;
+import _int.iho.s100.gml.base._5_0.*;
+import _int.iho.s100.gml.profiles._5_0.*;
+import _int.iho.s125.gml.cs0._1.*;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.s125.utils.S125Utils;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
@@ -30,16 +32,16 @@ import org.grad.vdes1000.formats.generic.AtonType;
 import org.locationtech.jts.geom.*;
 import org.springframework.cglib.core.ReflectUtils;
 
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.JAXBException;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * The S-100 Utility Class.
@@ -67,21 +69,23 @@ public class AISMessageUtils {
 
         // Extract the S125 Member NavAid Information
         Optional.ofNullable(dataset)
-                .map(Dataset::getImembersAndMembers)
-                .filter(((Predicate<List<AbstractFeatureMemberType>>) List::isEmpty).negate())
-                .map(l -> l.get(0))
-                .filter(MemberType.class::isInstance)
-                .map(MemberType.class::cast)
-                .map(MemberType::getAbstractFeature)
-                .map(JAXBElement::getValue)
+                .map(S125Utils::getDatasetMembers)
+                .orElse(Collections.emptyList())
+                .stream()
                 .filter(AidsToNavigationType.class::isInstance)
                 .map(AidsToNavigationType.class::cast)
+                .findFirst()
                 .ifPresent(s125Aton -> {
                     Optional.of(s125Aton)
                             .map(AidsToNavigationType::getIdCode)
                             .ifPresent(aisMessage21::setUid);
                     Optional.of(s125Aton)
-                            .map(AidsToNavigationType::getTextualDescription)
+                            .map(AidsToNavigationType::getFeatureNames)
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .filter(FeatureNameType::isDisplayName)
+                            .map(FeatureNameType::getName)
+                            .findFirst()
                             .ifPresent(aisMessage21::setName);
                     Optional.of(s125Aton)
                             .map(AISMessageUtils::s125FeatureTypeToAtonType)
@@ -109,7 +113,7 @@ public class AISMessageUtils {
                     aisMessage21.setLength((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "length", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setWidth((int)Math.round(Optional.ofNullable(AISMessageUtils.s125FeatureTypeField(s125Aton, "width", BigDecimal.class)).map(BigDecimal::doubleValue).orElse(0.0)));
                     aisMessage21.setRaim(false);
-                    aisMessage21.setVaton(s125Aton instanceof VirtualAISAidToNavigationType);
+                    aisMessage21.setVaton(s125Aton instanceof VirtualAISAidToNavigation);
                     aisMessage21.setTimestamp(LocalDateTime.now());
                 });
 
@@ -127,61 +131,61 @@ public class AISMessageUtils {
     protected static AtonType s125FeatureTypeToAtonType(AidsToNavigationType aidsToNavigationType) {
         // Try to figure our the type of the feature and determine the AtoN
         // type accordingly
-        if(aidsToNavigationType instanceof BeaconSafeWaterType) {
+        if(aidsToNavigationType instanceof BeaconSafeWater) {
             return AtonType.BEACON_SAFE_WATER;
-        } else if(aidsToNavigationType instanceof BeaconIsolatedDangerType) {
+        } else if(aidsToNavigationType instanceof BeaconIsolatedDanger) {
             return AtonType.BEACON_ISOLATED_DANGER;
-        } else if(aidsToNavigationType instanceof BeaconLateralType) {
-            switch(((BeaconLateralType)aidsToNavigationType).getCategoryOfLateralMark()) {
+        } else if(aidsToNavigationType instanceof BeaconLateral) {
+            switch(((BeaconLateral)aidsToNavigationType).getCategoryOfLateralMark()) {
                 case PORT_HAND_LATERAL_MARK: return AtonType.PORT_HAND_MARK;
                 case STARBOARD_HAND_LATERAL_MARK: return AtonType.STARBOARD_HAND_MARK;
                 case PREFERRED_CHANNEL_TO_PORT_LATERAL_MARK: return AtonType.PREFERRED_PORT;
                 case PREFERRED_CHANNEL_TO_STARBOARD_LATERAL_MARK: return AtonType.PREFERRED_STARBOARD;
                 default: return AtonType.DEFAULT;
             }
-        } else if(aidsToNavigationType instanceof BeaconCardinalType) {
-            switch(((BeaconCardinalType)aidsToNavigationType).getCategoryOfCardinalMark()) {
+        } else if(aidsToNavigationType instanceof BeaconCardinal) {
+            switch(((BeaconCardinal)aidsToNavigationType).getCategoryOfCardinalMark()) {
                 case NORTH_CARDINAL_MARK: return AtonType.CARDINAL_NORTH;
                 case EAST_CARDINAL_MARK: return AtonType.CARDINAL_EAST;
                 case SOUTH_CARDINAL_MARK: return AtonType.CARDINAL_SOUTH;
                 case WEST_CARDINAL_MARK: return AtonType.CARDINAL_WEST;
                 default: return AtonType.DEFAULT;
             }
-        } else if(aidsToNavigationType instanceof BeaconSpecialPurposeGeneralType) {
+        } else if(aidsToNavigationType instanceof BeaconSpecialPurposeGeneral) {
             return AtonType.BEACON_SPECIAL_MARK;
-        } else if(aidsToNavigationType instanceof BuoySafeWaterType) {
+        } else if(aidsToNavigationType instanceof BuoySafeWater) {
             return AtonType.SAFE_WATER;
-        } else if(aidsToNavigationType instanceof BuoyIsolatedDangerType) {
+        } else if(aidsToNavigationType instanceof BuoyIsolatedDanger) {
             return AtonType.ISOLATED_DANGER;
-        } else if(aidsToNavigationType instanceof BuoyLateralType) {
-            switch(((BuoyLateralType)aidsToNavigationType).getCategoryOfLateralMark()) {
+        } else if(aidsToNavigationType instanceof BuoyLateral) {
+            switch(((BuoyLateral)aidsToNavigationType).getCategoryOfLateralMark()) {
                 case PORT_HAND_LATERAL_MARK: return AtonType.PORT_HAND_MARK;
                 case STARBOARD_HAND_LATERAL_MARK: return AtonType.STARBOARD_HAND_MARK;
                 case PREFERRED_CHANNEL_TO_PORT_LATERAL_MARK: return AtonType.PREFERRED_PORT;
                 case PREFERRED_CHANNEL_TO_STARBOARD_LATERAL_MARK: return AtonType.PREFERRED_STARBOARD;
                 default: return AtonType.DEFAULT;
             }
-        } else if(aidsToNavigationType instanceof BuoyCardinalType) {
-            switch(((BuoyCardinalType)aidsToNavigationType).getCategoryOfCardinalMark()) {
+        } else if(aidsToNavigationType instanceof BuoyCardinal) {
+            switch(((BuoyCardinal)aidsToNavigationType).getCategoryOfCardinalMark()) {
                 case NORTH_CARDINAL_MARK: return AtonType.CARDINAL_NORTH;
                 case EAST_CARDINAL_MARK: return AtonType.CARDINAL_EAST;
                 case SOUTH_CARDINAL_MARK: return AtonType.CARDINAL_SOUTH;
                 case WEST_CARDINAL_MARK: return AtonType.CARDINAL_WEST;
                 default: return AtonType.DEFAULT;
             }
-        } else if(aidsToNavigationType instanceof BuoySpecialPurposeGeneralType) {
+        } else if(aidsToNavigationType instanceof BuoySpecialPurposeGeneral) {
             return AtonType.SPECIAL_MARK;
-        } else if(aidsToNavigationType instanceof BuoyInstallationType) {
+        } else if(aidsToNavigationType instanceof BuoyInstallation) {
             return AtonType.SPECIAL_MARK;
-        } else if(aidsToNavigationType instanceof LighthouseType) {
-            return ((LighthouseType)aidsToNavigationType).getColours().size() <= 1 ?
+        } else if(aidsToNavigationType instanceof Lighthouse) {
+            return ((Lighthouse)aidsToNavigationType).getColours().size() <= 1 ?
                     AtonType.LIGHT_WITHOUT_SECTORS : AtonType.LIGHT_WITH_SECTORS;
-        } else if(aidsToNavigationType instanceof OffshorePlatformType) {
+        } else if(aidsToNavigationType instanceof OffshorePlatform) {
             return AtonType.FIXED_STRUCTURE_OFFSHORE;
-        } else if(aidsToNavigationType instanceof LightFloatType) {
+        } else if(aidsToNavigationType instanceof LightFloat) {
             return AtonType.LIGHT_VESSEL;
-        } else if(aidsToNavigationType instanceof VirtualAISAidToNavigationType) {
-            switch(((VirtualAISAidToNavigationType)aidsToNavigationType).getVirtualAISAidToNavigationType()) {
+        } else if(aidsToNavigationType instanceof VirtualAISAidToNavigation) {
+            switch(((VirtualAISAidToNavigation)aidsToNavigationType).getVirtualAISAidToNavigationType()) {
                 case NEW_DANGER_MARKING: return AtonType.WRECK;
                 case NORTH_CARDINAL: return AtonType.CARDINAL_NORTH;
                 case EAST_CARDINAL: return AtonType.CARDINAL_EAST;
