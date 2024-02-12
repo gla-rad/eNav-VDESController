@@ -12,7 +12,7 @@
 
 	<groupId>org.grad</groupId>
 	<artifactId>vdes-controller</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>VDESController</name>
 	<description>GRAD e-Navigation VDES Controller Microservice</description>
 
@@ -209,8 +209,7 @@
 		<dependency>
 			<groupId>org.grad.eNav</groupId>
 			<artifactId>S125</artifactId>
-			<version>0.5.54</version>
-			<classifier>jakarta</classifier>
+			<version>0.5.58</version>
 		</dependency>
 
 		<!-- VDES-1000 -->
