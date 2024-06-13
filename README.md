@@ -72,7 +72,7 @@ fine-grained version of SOA.
 
 ## The e-Navigation VDES Controller Service
 
-the GLA identified the provision of VAtoN as one of the top priority use-cases
+The GLA identified the provision of VAtoN as one of the top priority use-cases
 for their future e-Navigation applications. The use-case requirements stated
 that the transmission must be performed over AIS/VDES, therefore the
 architecture should include a component that provides this capability.
