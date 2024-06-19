@@ -242,7 +242,7 @@ public class StationService {
                 .map(Page::getContent)
                 .orElseGet(Collections::emptyList)
                 .stream()
-                .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getAtonNumber())))
+                .map(s125 -> new AtonMessageDto(s125, station.getBlacklistedUids().contains(s125.getIdCode())))
                 .filter(msg -> includeBlacklisted || !msg.isBlacklisted())
                 .collect(Collectors.toList());
     }

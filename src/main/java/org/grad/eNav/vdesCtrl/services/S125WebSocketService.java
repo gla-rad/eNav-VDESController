@@ -110,7 +110,7 @@ public class S125WebSocketService implements MessageHandler {
             S125Node s125Node = (S125Node) message.getPayload();
 
             // A simple debug message;
-            log.debug(String.format("Received AtoN Message with AtoN Number: %s.", s125Node.getAtonNumber()));
+            log.debug(String.format("Received AtoN Message with AtoN ID: %s.", s125Node.getIdCode()));
 
             // Now push the aton node down the web-socket stream
             this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "s125", address, port), s125Node);

@@ -31,7 +31,7 @@ import java.util.Objects;
 public class S125Node extends S100AbstractNode {
 
     // Class Variables
-    private String atonNumber;
+    private String idCode;
 
     /**
      * Empty Constructor
@@ -43,31 +43,31 @@ public class S125Node extends S100AbstractNode {
     /**
      * The Fully Populated  Constructor.
      *
-     * @param atonNumber    The AtoN Number
+     * @param idCode        The AtoN ID code
      * @param geometry      The object geometry
      * @param content       The XML content
      */
-    public S125Node(String atonNumber, JsonNode geometry, String content) {
+    public S125Node(String idCode, JsonNode geometry, String content) {
         super(geometry, content);
-        this.atonNumber = atonNumber;
+        this.idCode = idCode;
     }
 
     /**
-     * Gets aton number.
+     * Gets AtoN ID code.
      *
-     * @return the aton number
+     * @return the AtoN ID code
      */
-    public String getAtonNumber() {
-        return atonNumber;
+    public String getIdCode() {
+        return idCode;
     }
 
     /**
-     * Sets aton number.
+     * Sets the AtoN ID code.
      *
-     * @param atonNumber the aton number
+     * @param idCode the AtoN ID code
      */
-    public void setAtonNumber(String atonNumber) {
-        this.atonNumber = atonNumber;
+    public void setIdCode(String idCode) {
+        this.idCode = idCode;
     }
 
     /** {@inheritDoc} */
@@ -77,13 +77,13 @@ public class S125Node extends S100AbstractNode {
         if (!(o instanceof S125Node)) return false;
         if (!super.equals(o)) return false;
         S125Node s125Node = (S125Node) o;
-        return Objects.equals(atonNumber, s125Node.atonNumber);
+        return Objects.equals(idCode, s125Node.idCode);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), atonNumber);
+        return Objects.hash(super.hashCode(), idCode);
     }
 
 }

@@ -117,7 +117,7 @@ class StationServiceTest {
         this.messages = new ArrayList<>();
         for(long i=0; i<10; i++) {
             AtonMessageDto message = new AtonMessageDto();
-            message.setAtonNumber("AtonNumber" + i);
+            message.setIdCode("AtoNIdCode" + i);
             message.setGeometry(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
             message.setContent("Node Message");
             this.messages.add(message);
@@ -417,7 +417,7 @@ class StationServiceTest {
         // Blacklist all messages
         this.existingStation.setBlacklistedUids(this.messages.stream()
                 .map(AtonMessageDto.class::cast)
-                .map(AtonMessageDto::getAtonNumber)
+                .map(AtonMessageDto::getIdCode)
                 .collect(Collectors.toSet()));
 
         Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());

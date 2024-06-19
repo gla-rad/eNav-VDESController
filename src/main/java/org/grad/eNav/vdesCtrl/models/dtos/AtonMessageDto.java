@@ -19,7 +19,7 @@ package org.grad.eNav.vdesCtrl.models.dtos;
 /**
  * The Blacklist UID DTO class.
  * <p>
- * This class is use to transfer information for the station's allocated
+ * This class is used to transfer information for the station's allocated
  * messages, which is based on the S125Node class, with additional blacklisting
  * information
  *
@@ -43,7 +43,7 @@ public class AtonMessageDto extends S125Node {
      * @param blacklisted whether the entry has been blacklisted
      */
     public AtonMessageDto(S125Node s125Node, boolean blacklisted) {
-        super(s125Node.getAtonNumber(), s125Node.getGeometry(), s125Node.getContent());
+        super(s125Node.getIdCode(), s125Node.getGeometry(), s125Node.getContent());
         this.blacklisted = blacklisted;
     }
 

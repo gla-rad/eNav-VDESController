@@ -94,10 +94,10 @@ var stationsColumnDefs = [{
  * @type {Array}
  */
 var messageColumnDefs = [{
-    data: "atonNumber",
-    title: "AtoN Number",
-    hoverMsg: "The AtoN Number",
-    placeholder: "The AtoN Number",
+    data: "idCode",
+    title: "ID",
+    hoverMsg: "The AtoN ID",
+    placeholder: "The AtoN ID",
     width: "25%"
 }, {
     data: "blacklisted",
