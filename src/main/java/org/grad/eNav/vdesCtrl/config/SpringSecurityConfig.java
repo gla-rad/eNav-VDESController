@@ -64,8 +64,13 @@ import java.util.*;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
 class SpringSecurityConfig {
+
+    /**
+     * Whether keycloak authentication should be enabled.
+     */
+    @Value("${keycloak.enabled:true}")
+    private boolean keycloakEnabled;
 
     /**
      * The default application name.
@@ -144,17 +149,6 @@ class SpringSecurityConfig {
     }
 
     /**
-     * Define a logout handler for handling Keycloak logouts.
-     *
-     * @param restTemplate the REST template
-     * @return the Keycloak logout handler
-     */
-    @Bean
-    protected KeycloakLogoutHandler keycloakLogoutHandler(RestTemplate restTemplate) {
-        return new KeycloakLogoutHandler(restTemplate);
-    }
-
-    /**
      * Define the session authentication strategy which uses a simple session
      * registry to store our current sessions.
      *
@@ -208,8 +202,14 @@ class SpringSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           ClientRegistrationRepository clientRegistrationRepository,
+//                                           ClientRegistrationRepository clientRegistrationRepository,
                                            RestTemplate restTemplate) throws Exception {
+
+        // If we choose not to enable keycloak, just return
+        if(!this.keycloakEnabled) {
+            return http.build();
+        }
+
         // Authenticate through configured OpenID Provider
         http.oauth2Login(login -> login
                 .loginPage("/oauth2/authorization/keycloak")
@@ -222,7 +222,7 @@ class SpringSecurityConfig {
         // Also, logout at the OpenID Connect provider
         http.logout(logout -> logout
                 .deleteCookies("JSESSIONID")
-                .addLogoutHandler(keycloakLogoutHandler(restTemplate))
+                .addLogoutHandler(new KeycloakLogoutHandler(restTemplate))
                 .logoutSuccessUrl("/")
 //                .logoutSuccessHandler(new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository))
         );
