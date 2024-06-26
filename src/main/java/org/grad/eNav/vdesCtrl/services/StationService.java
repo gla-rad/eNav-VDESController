@@ -17,8 +17,13 @@
 package org.grad.eNav.vdesCtrl.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.search.Sort;
+import org.apache.commons.lang3.StringUtils;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.AtonServiceClient;
@@ -30,16 +35,12 @@ import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPage;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.DtPagingRequest;
 import org.grad.eNav.vdesCtrl.repos.StationRepo;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
-import org.hibernate.search.backend.lucene.LuceneExtension;
-import org.hibernate.search.engine.search.query.SearchQuery;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.scope.SearchScope;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,7 @@ import jakarta.persistence.EntityManager;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.function.Predicate.not;
 
@@ -100,9 +102,6 @@ public class StationService {
             "name",
             "ipAddress",
             "mmsi"
-    };
-    private final String[] searchFieldsWithSort = new String[] {
-            "id"
     };
 
     /**
@@ -257,17 +256,21 @@ public class StationService {
     @Transactional(readOnly = true)
     public DtPage<Station> handleDatatablesPagingRequest(DtPagingRequest dtPagingRequest) {
         // Create the search query
-        SearchQuery searchQuery = this.searchStationsQuery(
-                dtPagingRequest.getSearch().getValue(),
-                dtPagingRequest.getLucenceSort(Arrays.asList(searchFieldsWithSort))
+        TypedQuery<Station> searchQuery = this.searchStationsQuery(
+                dtPagingRequest.getSearch().getValue()
         );
 
-        // For some reason we need this casting otherwise JDK8 complains
+        // Set the pagination
+        final long totalCount = this.stationRepo.count();
+        final PageRequest pageRequest = dtPagingRequest.toPageRequest();
+        searchQuery.setFirstResult(pageRequest.getPageNumber()*pageRequest.getPageSize());
+        searchQuery.setMaxResults(pageRequest.getPageSize());
+
+        // Get the search query results
         return Optional.of(searchQuery)
-                .map(query -> query.fetch(dtPagingRequest.getStart(), dtPagingRequest.getLength()))
-                .map(searchResult -> new PageImpl<Station>(searchResult.hits(), dtPagingRequest.toPageRequest(), searchResult.total().hitCount()))
-                .map(Page.class::cast)
-                .map(page -> new DtPage<>((Page<Station>)page, dtPagingRequest))
+                .map(TypedQuery::getResultList)
+                .map(resultList -> new PageImpl<>(resultList, dtPagingRequest.toPageRequest(), totalCount))
+                .map(page -> new DtPage<>(page, dtPagingRequest))
                 .orElseGet(DtPage::new);
     }
 
@@ -314,20 +317,26 @@ public class StationService {
      * - MMSI
      *
      * @param searchText the text to be searched
-     * @param sort the sorting selection for the search query
      * @return the full text query
      */
-    protected SearchQuery<Station> searchStationsQuery(String searchText, Sort sort) {
-        SearchSession searchSession = Search.session( entityManager );
-        SearchScope<Station> scope = searchSession.scope( Station.class );
-        return searchSession.search( scope )
-                .extension(LuceneExtension.get())
-                .where( scope.predicate().wildcard()
-                        .fields( this.searchFields )
-                        .matching( Optional.ofNullable(searchText).map(st -> "*"+st).orElse("") + "*" )
-                        .toPredicate() )
-                .sort(f -> f.fromLuceneSort(sort))
-                .toQuery();
+    protected TypedQuery<Station> searchStationsQuery(String searchText) {
+        final CriteriaBuilder criteriaBuilder = this.entityManager.getCriteriaBuilder();
+        final CriteriaQuery<Station> criteriaQuery = criteriaBuilder.createQuery(Station.class);
+        final Root<Station> stationRoot = criteriaQuery.from(Station.class);
+
+        // Create the query predicates
+        final Predicate searchPredicate = Optional.ofNullable(searchText)
+                        .filter(StringUtils::isNotBlank)
+                        .map(input -> criteriaBuilder.or(Stream.of(this.searchFields)
+                                        .map(field -> criteriaBuilder.like(stationRoot.get(field), "%" + searchText + "%"))
+                                        .toArray(Predicate[]::new)))
+                        .orElseGet(criteriaBuilder::and);
+
+        // Now create the final criteria query
+        final CriteriaQuery<Station> searchQuery = criteriaQuery.where(searchPredicate);
+
+        // And return the final query
+        return this.entityManager.createQuery(searchQuery);
     }
 
 }

@@ -18,6 +18,7 @@ package org.grad.eNav.vdesCtrl.models.dtos.datatables;
 
 import org.springframework.data.domain.Page;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,8 +57,8 @@ public class DtPage<T> {
      * @param dtPagingRequest the datatables paging request
      */
     public DtPage(Page<T> page, DtPagingRequest dtPagingRequest) {
-        this(page.getContent().stream().collect(Collectors.toList()));
-        this.setRecordsFiltered((int)  page.getTotalElements());
+        this(new ArrayList<>(page.getContent()));
+        this.setRecordsFiltered((int)  page.getNumberOfElements());
         this.setRecordsTotal((int) page.getTotalElements());
         this.setDraw(dtPagingRequest.getDraw());
     }

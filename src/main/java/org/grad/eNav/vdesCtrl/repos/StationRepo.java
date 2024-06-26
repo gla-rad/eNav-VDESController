@@ -30,7 +30,14 @@ import java.util.List;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public interface StationRepo  extends JpaRepository<Station, BigInteger> {
+public interface StationRepo extends JpaRepository<Station, BigInteger> {
+
+    /**
+     * Count the total number of entries in the repo.
+     *
+     * @return the total number of entries in the repo
+     */
+    long count();
 
     /**
      * Find all stations of a specific type

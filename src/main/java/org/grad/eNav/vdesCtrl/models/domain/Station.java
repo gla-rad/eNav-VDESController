@@ -24,8 +24,6 @@ import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.*;
 import org.locationtech.jts.geom.Geometry;
 
 import jakarta.persistence.*;
@@ -41,64 +39,52 @@ import java.util.Set;
 @Entity
 @Table(name = "station")
 @Cacheable
-@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Station implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @ScaledNumberField(name = "id_sort", decimalScale=0, sortable = Sortable.YES)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "station_generator")
     @SequenceGenerator(name="station_generator", sequenceName = "station_seq", allocationSize=1)
     private BigInteger id;
 
     @NotNull
-    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "name")
     private String name;
 
     @NotNull
-    @KeywordField(sortable = Sortable.YES)
     @Column(name = "ipAddress", nullable = false)
     private String ipAddress;
 
     @NotNull
-    @GenericField(sortable = Sortable.YES)
     @Column(name = "port", nullable = false)
     private Integer port;
 
-    @GenericField(sortable = Sortable.YES)
     @Column(name = "broadcastPort")
     private Integer broadcastPort;
 
-    @KeywordField(sortable = Sortable.YES)
     @Column(name = "fwdIpAddress")
     private String fwdIpAddress;
 
-    @GenericField(sortable = Sortable.YES)
     @Column(name = "fwdPort")
     private Integer fwdPort;
 
     @NotNull
-    @KeywordField(sortable = Sortable.YES)
     @Column(name = "mmsi", nullable = false)
     private String mmsi;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
     private StationType type;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "channel", columnDefinition = "varchar(4) default 'A'")
     private AISChannelPref channel;
 
     @Enumerated(EnumType.STRING)
-    @KeywordField(normalizer = "lowercase", sortable = Sortable.YES)
     @Column(name = "signatureMode", columnDefinition = "varchar(30) default 'NONE'")
     private SignatureMode signatureMode;
 
@@ -107,7 +93,6 @@ public class Station implements Serializable {
     @Column(name = "geometry")
     private Geometry geometry;
 
-    @FullTextField
     @ElementCollection
     private Set<String> blacklistedUids;
 
