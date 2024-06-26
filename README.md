@@ -135,14 +135,14 @@ The available environment variables are:
     ENAV_CLOUD_CONFIG_PASSWORD=<The cloud configration server password>
 
 The parameters will be picked up and used to populate the default
-**bootstrap.properties** of the service that look as follows:
+**application.properties** of the service that look as follows:
 
     server.port=8762
     spring.application.name=vdes-ctrl
     spring.application.version=0.0.3
-   
+    
     # The Spring Cloud Discovery Config
-    spring.cloud.config.uri=${ENAV_CLOUD_CONFIG_URI}
+    spring.config.import=optional:configserver:${ENAV_CLOUD_CONFIG_URI}
     spring.cloud.config.username=${ENAV_CLOUD_CONFIG_USERNAME}
     spring.cloud.config.password=${ENAV_CLOUD_CONFIG_PASSWORD}
     spring.cloud.config.label=${ENAV_CLOUD_CONFIG_BRANCH}
@@ -174,22 +174,6 @@ This can be done in the following way:
         <vdes-controller.jar>
 
 Examples of the required properties files can be seen below.
-
-For bootstrapping, we need to disable the cloud config client, and clear our the
-environment variable inputs:
-
-    server.port=8762
-    spring.application.name=vdes-ctrl
-    spring.application.version=<application.version>
-    
-    # Disable the cloud config
-    spring.cloud.config.enabled=false
-    
-    # Clear out the environment variables
-    spring.cloud.config.uri=
-    spring.cloud.config.username=
-    spring.cloud.config.password=
-    spring.cloud.config.label=
 
 While the application properties need to provide the service with an OAuth2.0
 server like keycloak, logging configuration, the eureka client connection etc.:
