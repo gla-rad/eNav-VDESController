@@ -44,7 +44,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.EntityManager;
 import java.math.BigInteger;
@@ -99,7 +98,7 @@ class StationServiceTest {
     // Test Variables
     private List<Station> stations;
     private List<S100AbstractNode> messages;
-    private Pageable pageable;
+    private PageRequest pageable;
     private Station newStation;
     private Station existingStation;
 
@@ -389,15 +388,15 @@ class StationServiceTest {
      */
     @Test
     void testFindMessagesForStation() {
-        Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
+        List<S125Node> atonList = this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList());
         doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
-        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
+        doReturn(atonList).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
 
         // Perform the service call
         List<AtonMessageDto> result = this.stationService.findMessagesForStation(this.existingStation.getId());
 
         // Test the result
-        assertEquals(page.getSize(), result.size());
+        assertEquals(atonList.size(), result.size());
 
         // Test each of the result entries
         for(int i=0; i < result.size(); i++){
@@ -418,9 +417,9 @@ class StationServiceTest {
                 .map(AtonMessageDto::getIdCode)
                 .collect(Collectors.toSet()));
 
-        Page<S125Node> page = new PageImpl<>(this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList()), this.pageable, this.messages.size());
+        List<S125Node> atonList = this.messages.subList(0, 5).stream().map(S125Node.class::cast).collect(Collectors.toList());
         doReturn(Optional.of(this.existingStation)).when(this.stationRepo).findById(this.existingStation.getId());
-        doReturn(page).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
+        doReturn(atonList).when(this.atonServiceClient).getMessagesForGeometry(any(String.class));
 
         // Perform the service call
         List<AtonMessageDto> result = this.stationService.findMessagesForStation(this.existingStation.getId(), false);

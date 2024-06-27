@@ -16,15 +16,15 @@
 
 package org.grad.eNav.vdesCtrl.feign;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.config.FeignClientConfig;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * The Feign Interface For the AtoN Service Client.
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "aton-service", configuration = FeignClientConfig.class)
 public interface AtonServiceClient {
 
-    @RequestMapping(method = RequestMethod.GET, value = "/api/atons")
-    Page<S125Node> getMessagesForGeometry(@RequestParam("geometry") String geometryJson);
+    @RequestMapping(method = RequestMethod.GET, value = "/api/atons/list")
+    List<S125Node> getMessagesForGeometry(@RequestParam("geometry") String geometryJson);
 
 }
