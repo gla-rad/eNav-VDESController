@@ -115,7 +115,7 @@ class StationServiceTest {
         for(long i=0; i<10; i++) {
             AtonMessageDto message = new AtonMessageDto();
             message.setIdCode("AtoNIdCode" + i);
-            message.setGeometry(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i)));
             message.setContent("Node Message");
             this.messages.add(message);
         }
@@ -400,7 +400,7 @@ class StationServiceTest {
 
         // Test each of the result entries
         for(int i=0; i < result.size(); i++){
-            assertEquals(this.messages.get(i), result.get(i));
+            assertTrue(this.messages.get(i).equals(result.get(i)));
         }
     }
 

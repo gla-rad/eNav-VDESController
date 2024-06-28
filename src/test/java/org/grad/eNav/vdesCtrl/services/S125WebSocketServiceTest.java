@@ -24,6 +24,10 @@ import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -75,13 +79,16 @@ class S125WebSocketServiceTest {
      */
     @BeforeEach
     void setup() throws IOException {
+        // Create a temp geometry factory to get a test geometries
+        GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
+
         // First read a valid S125 content to generate the publish-subscribe
         // message for.
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8.name());
 
-        // Also create a GeoJSON point geometry for our S125 message
-        JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
+        // Also create a point geometry for our S125 message
+        final Point point = factory.createPoint(new Coordinate(53.61, 1.594));
 
         // Now create the S125 node object
         this.s125Node = new S125Node("test_aton", point, xml);

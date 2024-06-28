@@ -16,6 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PreDestroy;
 import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
@@ -171,7 +172,7 @@ public class Vdes1000Advertiser {
                     try {
                         return AISMessageUtils.s125ToAisMessage21(s125);
                     }
-                    catch (JAXBException ex) {
+                    catch (JsonProcessingException ex) {
                         log.error(ex.getMessage());
                         return null;
                     }
@@ -248,7 +249,11 @@ public class Vdes1000Advertiser {
             byte[] stampedAisMessage = GrAisUtils.getStampedAISMessage(aisMessage21.getBinaryMessage(false), aisMessage21.getUnixTxTimestamp());
 
             // Get the signature
-            signature = this.cKeeperClient.generateEntitySignature(aisMessage21.getUid(), String.valueOf(aisMessage21.getMmsi()), this.signatureAlgorithm, McpEntityType.DEVICE.getValue(), stampedAisMessage);
+            signature = this.cKeeperClient.generateEntitySignature(
+                    aisMessage21.getUid(),
+                    Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
+                    this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
+                    stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
         } catch (IOException ex) {
             log.error(ex.getMessage());

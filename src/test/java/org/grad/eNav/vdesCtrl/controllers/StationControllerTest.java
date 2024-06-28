@@ -102,7 +102,7 @@ class StationControllerTest {
         for(long i=0; i<2; i++) {
             AtonMessageDto message = new AtonMessageDto();
             message.setIdCode("AtoNIdCode" + i);
-            message.setGeometry(GeometryJSONConverter.convertFromGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i))));
+            message.setGeometry(factory.createPoint(new Coordinate(1.594 + i, 53.6 + i)));
             message.setContent("Node Message");
             this.messages.add(message);
         }

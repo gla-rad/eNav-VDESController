@@ -16,6 +16,11 @@
 
 package org.grad.eNav.vdesCtrl.models.dtos;
 
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+
 /**
  * The Blacklist UID DTO class.
  * <p>
@@ -44,7 +49,18 @@ public class AtonMessageDto extends S125Node {
      */
     public AtonMessageDto(S125Node s125Node, boolean blacklisted) {
         super(s125Node.getIdCode(), s125Node.getGeometry(), s125Node.getContent());
-        this.blacklisted = blacklisted;
+        this.setDateEnd(s125Node.getDateEnd());
+        this.setDateStart(s125Node.getDateStart());
+        this.setPeriodEnd(s125Node.getPeriodEnd());
+        this.setPeriodStart(s125Node.getPeriodStart());
+        this.setSeasonalActionRequireds(s125Node.getSeasonalActionRequireds());
+        this.setScaleMinimum(s125Node.getScaleMinimum());
+        this.setPictorialRepresentation(s125Node.getPictorialRepresentation());
+        this.setFeatureNames(s125Node.getFeatureNames());
+        this.setInformations(s125Node.getInformations());
+        this.setAtonType(s125Node.getAtonType());
+        this.setMmsiCode(s125Node.getMmsiCode());
+        this.setBlacklisted(blacklisted);
     }
 
     /**

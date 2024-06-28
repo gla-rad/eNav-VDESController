@@ -17,7 +17,12 @@
 package org.grad.eNav.vdesCtrl.models.dtos;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.grad.eNav.vdesCtrl.models.IJsonSerializable;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
+import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Objects;
 
@@ -33,7 +38,10 @@ import java.util.Objects;
 public abstract class S100AbstractNode implements IJsonSerializable {
 
     // Class Variables
-    private JsonNode geometry;
+    @JsonSerialize(using = GeometryJSONSerializer.class)
+    @JsonDeserialize(using = GeometryJSONDeserializer.class)
+    private Geometry geometry;
+
     private String content;
 
     /**
@@ -49,7 +57,7 @@ public abstract class S100AbstractNode implements IJsonSerializable {
      * @param geometry      The object geometry
      * @param content       The XML content
      */
-    public S100AbstractNode(JsonNode geometry, String content) {
+    public S100AbstractNode(Geometry geometry, String content) {
         this.geometry = geometry;
         this.content = content;
     }
@@ -77,7 +85,7 @@ public abstract class S100AbstractNode implements IJsonSerializable {
      *
      * @return the geometry
      */
-    public JsonNode getGeometry() {
+    public Geometry getGeometry() {
         return geometry;
     }
 
@@ -86,7 +94,7 @@ public abstract class S100AbstractNode implements IJsonSerializable {
      *
      * @param geometry the geometry
      */
-    public void setGeometry(JsonNode geometry) {
+    public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
     }
 
@@ -96,7 +104,7 @@ public abstract class S100AbstractNode implements IJsonSerializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         S100AbstractNode that = (S100AbstractNode) o;
-        return Objects.equals(geometry, that.geometry) && Objects.equals(content, that.content);
+        return Objects.equals(this.geometry, that.geometry) && Objects.equals(content, that.content);
     }
 
     /** {@inheritDoc} */

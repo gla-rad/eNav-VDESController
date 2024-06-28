@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.models.dtos;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Objects;
 
@@ -47,7 +48,7 @@ public class S124Node extends S100AbstractNode {
      * @param bbox          The object bounding box
      * @param content       The XML content
      */
-    public S124Node(String messageId, JsonNode bbox, String content) {
+    public S124Node(String messageId, Geometry bbox, String content) {
         super(bbox, content);
         this.messageId = messageId;
     }

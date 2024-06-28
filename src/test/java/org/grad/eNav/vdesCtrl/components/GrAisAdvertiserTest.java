@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -105,11 +106,12 @@ class GrAisAdvertiserTest {
         InputStream in = new ClassPathResource("s125-msg.xml").getInputStream();
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 
-        // Also create a GeoJSON point geometry for our S125 message
-        JsonNode point = GeoJSONUtils.createGeoJSONPoint(53.61, 1.594);
+        // Also create a GeoJSON geometry for our S125 message
+        final Point point = factory.createPoint(new Coordinate(53.61, 1.594));
 
         // Now create the S125 node object
         this.atonMessageDto = new AtonMessageDto(new S125Node("test_aton", point, xml), false);
+        this.atonMessageDto.setMmsiCode(BigInteger.valueOf(123456789));
 
         // Mock a signature
         this.signature = MessageDigest.getInstance("SHA-256").digest(("That's the signature?").getBytes());
