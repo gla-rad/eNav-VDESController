@@ -277,14 +277,14 @@ public class StationService {
      * Add the provided AtoN Number UID into the specified station's blacklist.
      *
      * @param id the ID of the station to add the blacklist entry
-     * @param atonNumber the AtoN Number of the entry to be added into the blacklist
+     * @param atonIdCode the AtoN Number of the entry to be added into the blacklist
      */
-    public void addBlacklistAtonNumber(BigInteger id, String atonNumber) {
+    public void addBlacklistAtonNumber(BigInteger id, String atonIdCode) {
         // First get the specified stations
         Station station = this.findOne(id);
 
         // Add the specified UID
-        station.getBlacklistedUids().add(atonNumber);
+        station.getBlacklistedUids().add(atonIdCode);
 
         // And save the list
         this.save(station);
@@ -294,14 +294,14 @@ public class StationService {
      * Removes a specific AtoN Number from the given station's blacklist.
      *
      * @param id the ID of the station to remove the blacklist entry
-     * @param atonNumber the AtoN Number of the entry be removed from the blacklist
+     * @param atonIdCode the AtoN Number of the entry be removed from the blacklist
      */
-    public void removeBlacklisAtonNumber(BigInteger id, String atonNumber) {
+    public void removeBlacklisAtonNumber(BigInteger id, String atonIdCode) {
         // First get the specified stations
         Station station = this.findOne(id);
 
         // Remove the specified UID
-        station.getBlacklistedUids().remove(atonNumber);
+        station.getBlacklistedUids().remove(atonIdCode);
 
         // And save the list
         this.save(station);

@@ -442,7 +442,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
     // Get the selected message UID
     let idx = table.cell('.selected', 0).index();
     let data = table.rows(idx.row).data();
-    let atonNumber = data[0].atonNumber;
+    let atonIdCode = data[0].idCode;
 
     // Get the selected station ID
     let stationIdx = stationsTable.cell('.selected', 0).index();
@@ -451,7 +451,7 @@ function toggleBlacklistUid(event, table, button, config, blacklist) {
 
     // And call the API to add the blacklist
     $.ajax({
-        url: `./api/stations/${stationId}/messages/${atonNumber}/blacklist`,
+        url: `./api/stations/${stationId}/messages/${atonIdCode}/blacklist`,
         type: blacklist ? 'PUT' : 'DELETE',
         contentType: 'application/json; charset=utf-8',
         crossDomain: true,

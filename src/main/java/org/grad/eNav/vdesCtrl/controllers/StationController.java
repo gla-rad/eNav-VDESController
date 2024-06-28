@@ -187,30 +187,30 @@ public class StationController {
     }
 
     /**
-     * PUT /api/stations/{id}/messages/{atonNumber}/blacklist : Add a specific
+     * PUT /api/stations/{id}/messages/{atonIdCode}/blacklist : Add a specific
      * AtoN Number in the blacklist for a given station.
      *
      * @return the ResponseEntity with status 200 (OK)
      */
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping(value = "/{id}/messages/{atonNumber}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<S100AbstractNode>> addBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonNumber) {
-        log.debug("REST request to blacklist AtoN Number {} for Station : {}", atonNumber, id);
-        this.stationService.addBlacklistAtonNumber(id, atonNumber);
+    @PutMapping(value = "/{id}/messages/{atonIdCode}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<S100AbstractNode>> addBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonIdCode) {
+        log.debug("REST request to blacklist AtoN ID Code {} for Station : {}", atonIdCode, id);
+        this.stationService.addBlacklistAtonNumber(id, atonIdCode);
         return ResponseEntity.ok().build();
     }
 
     /**
-     * DELETE /api/stations/{atonNumber}/messages/{uid}/blacklist : Removes a
+     * DELETE /api/stations/{atonIdCode}/messages/{uid}/blacklist : Removes a
      * specific AtoN Number from the blacklist for a given station.
      *
      * @return the ResponseEntity with status 200 (OK)
      */
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping(value = "/{id}/messages/{atonNumber}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<S100AbstractNode>> deleteBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonNumber) {
-        log.debug("REST request to blacklist AtoN Number {} for Station : {}", atonNumber, id);
-        this.stationService.removeBlacklisAtonNumber(id, atonNumber);
+    @DeleteMapping(value = "/{id}/messages/{atonIdCode}/blacklist", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<S100AbstractNode>> deleteBlacklistedAtoN(@PathVariable BigInteger id, @PathVariable String atonIdCode) {
+        log.debug("REST request to blacklist AtoN ID Code {} for Station : {}", atonIdCode, id);
+        this.stationService.removeBlacklisAtonNumber(id, atonIdCode);
         return ResponseEntity.ok().build();
     }
 
