@@ -123,7 +123,7 @@ The parameters will be picked up and used to populate the default
     spring.application.version=0.0.3
    
     # The Spring Cloud Discovery Config
-    spring.cloud.config.uri=${ENAV_CLOUD_CONFIG_URI}
+    spring.config.import=optional:configserver:${ENAV_CLOUD_CONFIG_URI}
     spring.cloud.config.username=${ENAV_CLOUD_CONFIG_USERNAME}
     spring.cloud.config.password=${ENAV_CLOUD_CONFIG_PASSWORD}
     spring.cloud.config.label=${ENAV_CLOUD_CONFIG_BRANCH}
@@ -147,8 +147,7 @@ use the following command:
 
 In order to run the image in a **Local Config** configuration, you just need
 to mount a local configuration directory that contains the necessary
-**.properties** files (including bootstrap) into the **/conf** directory of the
-image.
+**application.properties** files into the **/conf** directory of the image.
 
 This can be done in the following way:
 
@@ -158,22 +157,6 @@ This can be done in the following way:
         <image-id>
 
 Examples of the required properties files can be seen below.
-
-For bootstrapping, we need to disable the cloud config client, and clear our the
-environment variable inputs:
-
-    server.port=8762
-    spring.application.name=vdes-ctrl
-    spring.application.version=<application.version>
-    
-    # Disable the cloud config
-    spring.cloud.config.enabled=false
-    
-    # Clear out the environment variables
-    spring.cloud.config.uri=
-    spring.cloud.config.username=
-    spring.cloud.config.password=
-    spring.cloud.config.label=
 
 While the application properties need to provide the service with an OAuth2.0
 server like keycloak, logging configuration, the eureka client connection etc.:
@@ -186,6 +169,14 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     service.variable.keycloak.server.realm=<keycloak.realm>
     service.variable.database.server.name=<database.server.name>
     service.variable.database.server.port=<database.server.port>
+
+    # Service properties
+    server.port=vdes-ctrl
+    spring.application.name=vdes-ctrl
+    spring.application.version=0.0.3
+    
+    # Disable the cloud config
+    spring.cloud.config.enabled=false
     
     # Eureka Client Configuration
     eureka.client.service-url.defaultZone=http://${service.variable.eureka.server.name}:${service.variable.eureka.server.port}/eureka/

@@ -165,7 +165,7 @@ use the following command:
 
 In order to run the service in a **Local Config** configuration, you just need
 to provide a local configuration directory that contains the necessary
-**.properties** files (including bootstrap).
+**application.properties** files.
 
 This can be done in the following way:
 
@@ -186,6 +186,14 @@ server like keycloak, logging configuration, the eureka client connection etc.:
     service.variable.keycloak.server.realm=<keycloak.realm>
     service.variable.database.server.name=<database.server.name>
     service.variable.database.server.port=<database.server.port>
+
+    # Service properties
+    server.port=8762
+    spring.application.name=vdes-ctrl
+    spring.application.version=0.0.3
+    
+    # Disable the cloud config
+    spring.cloud.config.enabled=false
     
     # Eureka Client Configuration
     eureka.client.service-url.defaultZone=http://${service.variable.eureka.server.name}:${service.variable.eureka.server.port}/eureka/
