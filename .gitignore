@@ -36,3 +36,6 @@ build/
 ### Lucence Index ###
 /lucene/
 /lucene-test/
+
+### Inno Setup ###
+/inno/Output
