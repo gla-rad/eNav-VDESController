@@ -130,7 +130,7 @@ public class AISMessageUtils {
         } else if(Objects.equals(atonNodeType, "BeaconIsolatedDanger")) {
             return AtonType.BEACON_ISOLATED_DANGER;
         } else if(Objects.equals(atonNodeType, "BeaconLateral")) {
-            return switch (atonNode.get("categoryOfLateralMarkType").asText()) {
+            return switch (atonNode.get("categoryOfLateralMark").asText()) {
                     case "port-hand lateral mark" -> AtonType.PORT_HAND_MARK;
                     case "starboard-hand lateral mark" -> AtonType.STARBOARD_HAND_MARK;
                     case "preferred channel to starboard lateral mark" -> AtonType.PREFERRED_PORT;
@@ -138,7 +138,7 @@ public class AISMessageUtils {
                     default -> AtonType.DEFAULT;
             };
         } else if(Objects.equals(atonNodeType, "BeaconCardinal")) {
-            return switch (atonNode.get("categoryOfCardinalMarkType").asText()) {
+            return switch (atonNode.get("categoryOfCardinalMark").asText()) {
                 case "north cardinal mark" -> AtonType.CARDINAL_NORTH;
                 case "east cardinal mark" -> AtonType.CARDINAL_EAST;
                 case "south cardinal mark" -> AtonType.CARDINAL_SOUTH;
@@ -152,7 +152,7 @@ public class AISMessageUtils {
         } else if(Objects.equals(atonNodeType, "BuoyIsolatedDanger")) {
             return AtonType.ISOLATED_DANGER;
         } else if(Objects.equals(atonNodeType, "BuoyLateral")) {
-            return switch (atonNode.get("categoryOfLateralMarkType").asText()) {
+            return switch (atonNode.get("categoryOfLateralMark").asText()) {
                 case "port-hand lateral mark" -> AtonType.PORT_HAND_MARK;
                 case "starboard-hand lateral mark" -> AtonType.STARBOARD_HAND_MARK;
                 case "preferred channel to starboard lateral mark" -> AtonType.PREFERRED_PORT;
@@ -160,7 +160,7 @@ public class AISMessageUtils {
                 default -> AtonType.DEFAULT;
             };
         } else if(Objects.equals(atonNodeType, "BuoyCardinal")) {
-            return switch (atonNode.get("categoryOfCardinalMarkType").asText()) {
+            return switch (atonNode.get("categoryOfCardinalMark").asText()) {
                 case "north cardinal mark" -> AtonType.CARDINAL_NORTH;
                 case "east cardinal mark" -> AtonType.CARDINAL_EAST;
                 case "south cardinal mark" -> AtonType.CARDINAL_SOUTH;
