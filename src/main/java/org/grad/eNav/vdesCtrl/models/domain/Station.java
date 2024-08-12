@@ -77,20 +77,17 @@ public class Station implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", columnDefinition = "varchar(30)")
-    @ColumnDefault("VDES-1000")
-    private StationType type;
+    @Column(name = "type", length = 30)
+    private StationType type = StationType.VDES_1000;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "channel", columnDefinition = "varchar(4)")
-    @ColumnDefault("A")
-    private AISChannelPref channel;
+    @Column(name = "channel", length = 4)
+    private AISChannelPref channel = AISChannelPref.A;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "signatureMode", columnDefinition = "varchar(30)")
-    @ColumnDefault("NONE")
-    private SignatureMode signatureMode;
+    @Column(name = "signatureMode", length = 30)
+    private SignatureMode signatureMode = SignatureMode.NONE;
 
     @JsonSerialize(using = GeometryJSONSerializer.class)
     @JsonDeserialize(using = GeometryJSONDeserializer.class)
