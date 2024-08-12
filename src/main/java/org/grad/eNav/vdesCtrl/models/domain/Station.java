@@ -24,6 +24,7 @@ import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.ColumnDefault;
 import org.locationtech.jts.geom.Geometry;
 
 import jakarta.persistence.*;
@@ -76,16 +77,19 @@ public class Station implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", columnDefinition = "varchar(30) default 'VDES-1000'")
+    @Column(name = "type", columnDefinition = "varchar(30)")
+    @ColumnDefault("VDES-1000")
     private StationType type;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "channel", columnDefinition = "varchar(4) default 'A'")
+    @Column(name = "channel", columnDefinition = "varchar(4)")
+    @ColumnDefault("A")
     private AISChannelPref channel;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "signatureMode", columnDefinition = "varchar(30) default 'NONE'")
+    @Column(name = "signatureMode", columnDefinition = "varchar(30)")
+    @ColumnDefault("NONE")
     private SignatureMode signatureMode;
 
     @JsonSerialize(using = GeometryJSONSerializer.class)
