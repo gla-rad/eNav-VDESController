@@ -91,14 +91,14 @@ public class AISMessageUtils {
                 .map(Point.class::cast)
                 .map(Point::getCoordinate)
                 .map(Coordinate::getX)
-                .ifPresent(aisMessage21::setLongitude);
+                .ifPresent(aisMessage21::setLatitude);
         Optional.of(s125Node)
                 .map(S100AbstractNode::getGeometry)
                 .filter(Point.class::isInstance)
                 .map(Point.class::cast)
                 .map(Point::getCoordinate)
                 .map(Coordinate::getY)
-                .ifPresent(aisMessage21::setLatitude);
+                .ifPresent(aisMessage21::setLongitude);
         Optional.of(s125Node)
                 .map(S125Node::getMmsiCode)
                 .map(BigInteger::intValueExact)

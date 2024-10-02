@@ -82,7 +82,7 @@ class AISMessageUtilsTest {
         featureNameDto.setName("Test AtoN No 1");
         featureNameDto.setDisplayName(true);
         node.setFeatureNames(Collections.singleton(featureNameDto));
-        node.setGeometry(this.factory.createPoint(new Coordinate(1.594, 53.61)));
+        node.setGeometry(this.factory.createPoint(new Coordinate(53.61, 1.594)));
         node.setMmsiCode(BigInteger.valueOf(992359598));
 
         // Create the GR-AIS Message 21
@@ -112,7 +112,7 @@ class AISMessageUtilsTest {
         featureNameDto.setName("Test AtoN No 2");
         featureNameDto.setDisplayName(true);
         node.setFeatureNames(Collections.singleton(featureNameDto));
-        node.setGeometry(this.factory.createPoint(new Coordinate(53.61, 1.594)));
+        node.setGeometry(this.factory.createPoint(new Coordinate(1.594, 53.61)));
         node.setMmsiCode(BigInteger.valueOf(992359598));
 
         // Create the GR-AIS Message 21
@@ -142,7 +142,7 @@ class AISMessageUtilsTest {
         featureNameDto.setName("Test AtoN No 3");
         featureNameDto.setDisplayName(true);
         node.setFeatureNames(Collections.singleton(featureNameDto));
-        node.setGeometry(this.factory.createPoint(new Coordinate(1.594, 53.61)));
+        node.setGeometry(this.factory.createPoint(new Coordinate(53.61, 1.594)));
         node.setMmsiCode(BigInteger.valueOf(992359598));
 
         // Create the GR-AIS Message 21 Parameters

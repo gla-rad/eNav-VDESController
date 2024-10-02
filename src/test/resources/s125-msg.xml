@@ -2,8 +2,8 @@
 <ns4:Dataset xmlns:ns1="http://www.w3.org/1999/xlink" xmlns:ns2="http://www.iho.int/s100gml/5.0" xmlns:ns3="http://www.opengis.net/gml/3.2" xmlns:ns4="http://www.iho.int/S125/gml/cs0/1.0" ns3:id="CorkHoleTestDataset">
     <ns3:boundedBy>
         <ns3:Envelope srsName="EPSG:4326" srsDimension="1">
-            <ns3:lowerCorner>1.4233333 51.8916667</ns3:lowerCorner>
-            <ns3:upperCorner>1.4233333 51.8916667</ns3:upperCorner>
+            <ns3:lowerCorner>51.8916667 1.4233333</ns3:lowerCorner>
+            <ns3:upperCorner>51.8916667 1.4233333</ns3:upperCorner>
         </ns3:Envelope>
     </ns3:boundedBy>
     <ns2:DatasetIdentificationInformation>
@@ -31,8 +31,8 @@
         <ns4:VirtualAISAidToNavigation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns4:VirtualAISAidToNavigationType" ns3:id="ID001">
             <ns3:boundedBy>
                 <ns3:Envelope srsName="EPSG:4326" srsDimension="1">
-                    <ns3:lowerCorner>1.4233333 51.8916667</ns3:lowerCorner>
-                    <ns3:upperCorner>1.4233333 51.8916667</ns3:upperCorner>
+                    <ns3:lowerCorner>51.8916667 1.4233333</ns3:lowerCorner>
+                    <ns3:upperCorner>51.8916667 1.4233333</ns3:upperCorner>
                 </ns3:Envelope>
             </ns3:boundedBy>
             <ns4:dateEnd>
@@ -56,7 +56,7 @@
             <ns4:geometry>
                 <ns2:pointProperty>
                     <ns2:Point srsName="EPSG:4326" srsDimension="1" ns3:id="AtoNPoint1">
-                        <ns3:pos srsName="EPSG:4326" srsDimension="1">1.4233333 51.8916667</ns3:pos>
+                        <ns3:pos srsName="EPSG:4326" srsDimension="1">51.8916667 1.4233333</ns3:pos>
                     </ns2:Point>
                 </ns2:pointProperty>
             </ns4:geometry>
