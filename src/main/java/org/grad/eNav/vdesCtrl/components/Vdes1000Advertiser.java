@@ -21,6 +21,7 @@ import jakarta.annotation.PreDestroy;
 import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
+import org.grad.eNav.vdesCtrl.config.AISBaseStationConfigProperties;
 import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
@@ -101,6 +102,12 @@ public class Vdes1000Advertiser {
     @Autowired
     StationService stationService;
 
+    /**
+     * The Base Station Configuration Properties.
+     */
+    @Autowired(required = false)
+    AISBaseStationConfigProperties baseStationConfigProperties;
+
     // Component Variables
     protected Station station;
     protected VDES1000Conn vdes1000Conn;
@@ -113,11 +120,11 @@ public class Vdes1000Advertiser {
      *
      * @param station the station to send the advertisements from
      */
-    public void init(Station station) throws SocketException, UnknownHostException {
+    public void init(Station station) throws SocketException, UnknownHostException, VDES1000ConnException {
         this.station = station;
 
         // Create the VDES-1000 Connection
-        this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.TSA_VDM,
+        this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.VDM,
                 String.format("%04d", this.station.getId()),
                 InetAddress.getByName(this.station.getIpAddress()),
                 this.station.getPort(),
@@ -125,6 +132,18 @@ public class Vdes1000Advertiser {
 
         // Add logging capability to the VDES-1000 connection
         this.getVdes1000Conn().setLogger(this.log);
+
+        // Configure the VDES-1000 as a base stations, if a valid configuration is present
+        Optional.ofNullable(baseStationConfigProperties)
+                .filter(AISBaseStationConfigProperties::isValid)
+                .map(AISBaseStationConfigProperties::getVdesBaseStationConfig)
+                .ifPresent((conf) -> {
+                    try {
+                        this.getVdes1000Conn().configureBaseStation(conf);
+                    } catch (VDES1000ConnException ex) {
+                        this.log.error(ex.getMessage(), ex);
+                    }
+                });
 
         // Enable the connection monitoring
         this.getVdes1000Conn().addVdesListener(this::handleMessage);

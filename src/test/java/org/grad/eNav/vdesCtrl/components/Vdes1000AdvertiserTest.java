@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import org.grad.eNav.vdesCtrl.config.AISBaseStationConfigProperties;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
@@ -26,10 +26,10 @@ import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.grad.vdes1000.comm.VDES1000BaseStationConfiguration;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
-import org.grad.vdes1000.formats.generic.AISChannelPref;
+import org.grad.vdes1000.formats.generic.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,12 +92,19 @@ class Vdes1000AdvertiserTest {
     @Mock
     StationService stationService;
 
+    /**
+     * The Base Station Configuration Properties mock.
+     */
+    @Mock
+    AISBaseStationConfigProperties baseStationConfigProperties;
+
     // Test Variables
     private Station station;
     private AtonMessageDto atonMessageDto;
     private byte[] signature;
     private VDES1000Conn vdes1000Conn;
     private DatagramSocket fwdSocket;
+    private VDES1000BaseStationConfiguration config;
 
     /**
      * Common setup for all the tests.
@@ -138,13 +145,27 @@ class Vdes1000AdvertiserTest {
 
         // Finally moch the VDES-1000 UDP forward socket
         this.fwdSocket = mock(DatagramSocket.class);
+
+        // Make up some configuration for the base stations
+        this.config = new VDES1000BaseStationConfiguration();
+        this.config.setUniqueId("uniqueId");
+        this.config.setRxChannelA(2000);
+        this.config.setRxChannelB(2001);
+        this.config.setTxChannelA(2002);
+        this.config.setTxChannelB(2002);
+        this.config.setTxPowerA(VHFChannelPower.HIGH);
+        this.config.setTxPowerB(VHFChannelPower.LOW);
+        this.config.setVdlMessageRetries(VdlMessageRetries.NO_REBROADCAST);
+        this.config.setVdlMessageRepeatIndicator(VdlMessageRepeatIndicator.DO_NOT_REPEAT);
+        this.config.setRatdmaControl(RATDMAControl.OFF);
+        this.config.setAdsInterval(100);
     }
 
     /**
      * Test that the VDES-1000 advertiser can initialise correctly.
      */
     @Test
-    void testInit() throws SocketException, UnknownHostException {
+    void testInit() throws SocketException, UnknownHostException, VDES1000ConnException {
         // Perform the component call
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         this.vdes1000Advertiser.init(this.station);
@@ -154,6 +175,27 @@ class Vdes1000AdvertiserTest {
 
         // Make sure the monitoring will attempt to start
         verify(this.vdes1000Conn, times(1)).startMonitoring();
+        verify(this.vdes1000Conn, never()).configureBaseStation(any(VDES1000BaseStationConfiguration.class));
+    }
+
+    /**
+     * Test that the VDES-1000 advertiser can initialise correctly, even if a
+     * VDES-1000 AIS Base Station configuration is to be applied on boot.
+     */
+    @Test
+    void testInitWithBaseStationConfig() throws SocketException, UnknownHostException, VDES1000ConnException {
+        // Perform the component call
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        doReturn(Boolean.TRUE).when(baseStationConfigProperties).isValid();
+        doReturn(this.config).when(baseStationConfigProperties).getVdesBaseStationConfig();
+        this.vdes1000Advertiser.init(this.station);
+
+        assertEquals(this.station, this.vdes1000Advertiser.station);
+        assertNotNull(this.vdes1000Advertiser.vdes1000Conn);
+
+        // Make sure the monitoring will attempt to start
+        verify(this.vdes1000Conn, times(1)).startMonitoring();
+        verify(this.vdes1000Conn, times(1)).configureBaseStation(any(VDES1000BaseStationConfiguration.class));
     }
 
     /**
@@ -161,7 +203,7 @@ class Vdes1000AdvertiserTest {
      * will close its UDP connection to the GNURadio device.
      */
     @Test
-    void testDestroy() throws SocketException, UnknownHostException, InterruptedException {
+    void testDestroy() throws SocketException, UnknownHostException, VDES1000ConnException, InterruptedException {
         // Initialise the advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         this.vdes1000Advertiser.init(this.station);
@@ -306,7 +348,7 @@ class Vdes1000AdvertiserTest {
      * subscribe channel.
      */
     @Test
-    void testHandleMessage() throws IOException {
+    void testHandleMessage() throws IOException, VDES1000ConnException {
         // Initialise the advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         this.vdes1000Advertiser.init(this.station);
@@ -336,7 +378,7 @@ class Vdes1000AdvertiserTest {
      * has been defined.
      */
     @Test
-    void testHandleMessageWithForward() throws IOException {
+    void testHandleMessageWithForward() throws IOException, VDES1000ConnException {
         // Turn on the forwarding
         this.station.setFwdIpAddress("10.0.0.2");
         this.station.setFwdPort(8003);

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.components.Vdes1000Advertiser;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
+import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -83,7 +84,7 @@ public class VDES1000Service {
                     Vdes1000Advertiser vdes1000Advertiser = this.applicationContext.getBean(Vdes1000Advertiser.class);
                     try {
                         vdes1000Advertiser.init(station);
-                    } catch (SocketException | UnknownHostException ex) {
+                    } catch (SocketException | UnknownHostException | VDES1000ConnException ex) {
                         log.error(ex.getMessage());
                         return null;
                     }
