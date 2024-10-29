@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * The AIS Base Stations Configuration Properties Class.
+ * The VDES1000 Base Stations Configuration Properties Class.
  *
  * This class contains the configuration parameters that being picked up from
  * the configuration properties and used to setup the AIS base-stations
@@ -36,8 +36,8 @@ import java.util.Optional;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
-@ConfigurationProperties(prefix = "gla.rad.vdes-ctrl.ais-base-station")
-public class AISBaseStationConfigProperties {
+@ConfigurationProperties(prefix = "gla.rad.vdes-ctrl.vdes-1000-advertiser.base-station")
+public class Vdes1000BaseStationConfigProperties {
 
     // Class Variables
     private String uniqueId;

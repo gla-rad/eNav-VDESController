@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import org.grad.eNav.vdesCtrl.config.AISBaseStationConfigProperties;
+import org.grad.eNav.vdesCtrl.config.Vdes1000BaseStationConfigProperties;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
@@ -96,7 +96,7 @@ class Vdes1000AdvertiserTest {
      * The Base Station Configuration Properties mock.
      */
     @Mock
-    AISBaseStationConfigProperties baseStationConfigProperties;
+    Vdes1000BaseStationConfigProperties baseStationConfigProperties;
 
     // Test Variables
     private Station station;

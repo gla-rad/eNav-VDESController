@@ -18,10 +18,9 @@ package org.grad.eNav.vdesCtrl.components;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PreDestroy;
-import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.grad.eNav.vdesCtrl.config.AISBaseStationConfigProperties;
+import org.grad.eNav.vdesCtrl.config.Vdes1000BaseStationConfigProperties;
 import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
@@ -106,7 +105,7 @@ public class Vdes1000Advertiser {
      * The Base Station Configuration Properties.
      */
     @Autowired(required = false)
-    AISBaseStationConfigProperties baseStationConfigProperties;
+    Vdes1000BaseStationConfigProperties baseStationConfigProperties;
 
     // Component Variables
     protected Station station;
@@ -131,17 +130,20 @@ public class Vdes1000Advertiser {
                 this.station.getBroadcastPort()));
 
         // Add logging capability to the VDES-1000 connection
-        this.getVdes1000Conn().setLogger(this.log);
+        this.getVdes1000Conn().setLogger(log);
 
         // Configure the VDES-1000 as a base stations, if a valid configuration is present
         Optional.ofNullable(baseStationConfigProperties)
-                .filter(AISBaseStationConfigProperties::isValid)
-                .map(AISBaseStationConfigProperties::getVdesBaseStationConfig)
+                .filter(Vdes1000BaseStationConfigProperties::isValid)
+                .map(Vdes1000BaseStationConfigProperties::getVdesBaseStationConfig)
                 .ifPresent((conf) -> {
                     try {
                         this.getVdes1000Conn().configureBaseStation(conf);
                     } catch (VDES1000ConnException ex) {
-                        this.log.error(ex.getMessage(), ex);
+                        // If something goes wrong we can assume the base station
+                        // is already configured and continue. Do log the error
+                        // though just in case.
+                        log.error(ex.getMessage(), ex);
                     }
                 });
 
@@ -166,7 +168,7 @@ public class Vdes1000Advertiser {
         try {
             this.getVdes1000Conn().close();
         } catch (InterruptedException ex) {
-            this.log.error(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 

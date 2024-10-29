@@ -26,17 +26,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AISBaseStationConfigPropertiesTest {
+class Vdes1000BaseStationConfigPropertiesTest {
 
     //Test Variables
-    AISBaseStationConfigProperties config;
+    Vdes1000BaseStationConfigProperties config;
 
     /**
      * Setup some base data.
      */
     @BeforeEach
     void setup() {
-        this.config = new AISBaseStationConfigProperties();
+        this.config = new Vdes1000BaseStationConfigProperties();
     }
 
     /**
