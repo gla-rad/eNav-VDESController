@@ -16,8 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
@@ -67,7 +68,7 @@ public class GeoJSONUtils {
         ObjectMapper om = new ObjectMapper();
         try {
             return om.readTree(new GeoJsonWriter().write(point));
-        } catch (IOException e) {
+        } catch (JacksonException ex) {
             return null;
         }
     }

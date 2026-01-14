@@ -16,8 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.models.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonTypeId;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotNull;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONDeserializer;
 import org.grad.eNav.vdesCtrl.utils.GeometryJSONSerializer;

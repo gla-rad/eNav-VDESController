@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
@@ -25,7 +24,6 @@ import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

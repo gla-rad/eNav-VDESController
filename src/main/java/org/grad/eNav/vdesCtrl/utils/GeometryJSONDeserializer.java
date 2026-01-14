@@ -16,13 +16,13 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.locationtech.jts.geom.Geometry;
+import tools.jackson.databind.ValueDeserializer;
 
 import java.io.IOException;
 
@@ -31,13 +31,12 @@ import java.io.IOException;
  *
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
-public class GeometryJSONDeserializer extends JsonDeserializer<Geometry> {
+public class GeometryJSONDeserializer extends ValueDeserializer<Geometry> {
 
     @Override
     public Geometry deserialize(JsonParser jsonParser,
-                                DeserializationContext deserializationContext) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode node = mapper.readTree(jsonParser);
+                                DeserializationContext deserializationContext) throws JacksonException  {
+        JsonNode node = deserializationContext.readTree(jsonParser);
         return GeometryJSONConverter.convertToGeometry(node);
     }
 

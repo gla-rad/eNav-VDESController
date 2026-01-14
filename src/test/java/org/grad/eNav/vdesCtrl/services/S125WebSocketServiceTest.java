@@ -16,11 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.models.PubSubMsgHeaders;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

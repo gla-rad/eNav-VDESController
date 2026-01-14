@@ -16,10 +16,8 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import jakarta.xml.bind.JAXBException;
+import tools.jackson.core.JacksonException;
+//import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.dtos.FeatureNameDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
@@ -27,6 +25,8 @@ import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.AtonType;
 import org.locationtech.jts.geom.*;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -47,9 +47,8 @@ public class AISMessageUtils {
      * Constructors from an S125Node object.
      *
      * @param s125Node the S125Node object
-     * @throws JAXBException when the S125Node XML content cannot be parsed
      */
-    public static AISMessage21 s125ToAisMessage21(S125Node s125Node) throws JsonProcessingException {
+    public static AISMessage21 s125ToAisMessage21(S125Node s125Node) throws JacksonException {
         // Default at first
         final AISMessage21 aisMessage21 = new AISMessage21();
 
@@ -60,55 +59,58 @@ public class AISMessageUtils {
         // JSON and try to pick the minimal fields we are interested in.      //
         // ===================================================================//
         final JsonNode datasetNode = new XmlMapper().readTree(s125Node.getContent());
-        final Iterator<Map.Entry<String, JsonNode>> datasetMembers = datasetNode.get("members").fields();
+        final Set<Map.Entry<String, JsonNode>> datasetMembers = datasetNode.get("members").properties();
         // ===================================================================//
 
-        String atonNodeType;
-        JsonNode atonNode;
-        AtonType atonType;
-        do {
-            Map.Entry<String, JsonNode> atonNodeEntry = datasetMembers.next();
-            atonNodeType = atonNodeEntry.getKey();
-            atonNode = atonNodeEntry.getValue();
-            atonType = AISMessageUtils.s125TypeToAtonType(atonNodeType, atonNode);
-        } while(datasetMembers.hasNext() && atonType == AtonType.DEFAULT);
-
-        // Extract the AtoN Information
-        Optional.of(s125Node)
-                .map(S125Node::getIdCode)
-                .ifPresent(aisMessage21::setUid);
-        Optional.of(s125Node)
-                .map(S125Node::getFeatureNames)
-                .orElse(Collections.emptySet())
-                .stream()
-                .filter(FeatureNameDto::getDisplayName)
-                .map(FeatureNameDto::getName)
+        datasetMembers.stream()
+                .filter(entry -> {
+                    final String atonNodeType = entry.getKey();
+                    final JsonNode atonNode = entry.getValue();
+                    final AtonType atonType = AISMessageUtils.s125TypeToAtonType(atonNodeType, atonNode);
+                    return !Objects.equals(atonType, AtonType.DEFAULT);
+                })
                 .findFirst()
-                .ifPresent(aisMessage21::setName);
-        Optional.of(s125Node)
-                .map(S100AbstractNode::getGeometry)
-                .filter(Point.class::isInstance)
-                .map(Point.class::cast)
-                .map(Point::getCoordinate)
-                .map(Coordinate::getX)
-                .ifPresent(aisMessage21::setLatitude);
-        Optional.of(s125Node)
-                .map(S100AbstractNode::getGeometry)
-                .filter(Point.class::isInstance)
-                .map(Point.class::cast)
-                .map(Point::getCoordinate)
-                .map(Coordinate::getY)
-                .ifPresent(aisMessage21::setLongitude);
-        Optional.of(s125Node)
-                .map(S125Node::getMmsiCode)
-                .map(BigInteger::intValueExact)
-                .ifPresent(aisMessage21::setMmsi);
-        aisMessage21.setLength((int) Math.round(Optional.ofNullable(atonNode.get("length")).map(JsonNode::asDouble).orElse(0.0)));
-        aisMessage21.setWidth((int) Math.round(Optional.ofNullable(atonNode.get("width")).map(JsonNode::asDouble).orElse(0.0)));
-        aisMessage21.setRaim(false);
-        aisMessage21.setAtonType(AISMessageUtils.s125TypeToAtonType(atonNodeType, atonNode));
-        aisMessage21.setVaton(atonNodeType.equals("VirtualAISAidToNavigation"));
-        aisMessage21.setTimestamp(LocalDateTime.now());
+                .ifPresent(entry -> {
+                    final String atonNodeType = entry.getKey();
+                    final JsonNode atonNode = entry.getValue();
+
+                    // Extract the AtoN Information
+                    Optional.of(s125Node)
+                            .map(S125Node::getIdCode)
+                            .ifPresent(aisMessage21::setUid);
+                    Optional.of(s125Node)
+                            .map(S125Node::getFeatureNames)
+                            .orElse(Collections.emptySet())
+                            .stream()
+                            .filter(FeatureNameDto::getDisplayName)
+                            .map(FeatureNameDto::getName)
+                            .findFirst()
+                            .ifPresent(aisMessage21::setName);
+                    Optional.of(s125Node)
+                            .map(S100AbstractNode::getGeometry)
+                            .filter(Point.class::isInstance)
+                            .map(Point.class::cast)
+                            .map(Point::getCoordinate)
+                            .map(Coordinate::getX)
+                            .ifPresent(aisMessage21::setLatitude);
+                    Optional.of(s125Node)
+                            .map(S100AbstractNode::getGeometry)
+                            .filter(Point.class::isInstance)
+                            .map(Point.class::cast)
+                            .map(Point::getCoordinate)
+                            .map(Coordinate::getY)
+                            .ifPresent(aisMessage21::setLongitude);
+                    Optional.of(s125Node)
+                            .map(S125Node::getMmsiCode)
+                            .map(BigInteger::intValueExact)
+                            .ifPresent(aisMessage21::setMmsi);
+                    aisMessage21.setLength((int) Math.round(Optional.ofNullable(atonNode.get("length")).map(JsonNode::asDouble).orElse(0.0)));
+                    aisMessage21.setWidth((int) Math.round(Optional.ofNullable(atonNode.get("width")).map(JsonNode::asDouble).orElse(0.0)));
+                    aisMessage21.setRaim(false);
+                    aisMessage21.setAtonType(AISMessageUtils.s125TypeToAtonType(atonNodeType, atonNode));
+                    aisMessage21.setVaton(atonNodeType.equals("VirtualAISAidToNavigation"));
+                    aisMessage21.setTimestamp(LocalDateTime.now());
+                });
 
         //Return the populated AIS message
         return aisMessage21;
@@ -131,11 +133,11 @@ public class AISMessageUtils {
             return AtonType.BEACON_ISOLATED_DANGER;
         } else if(Objects.equals(atonNodeType, "BeaconLateral")) {
             return switch (atonNode.get("categoryOfLateralMark").asText()) {
-                    case "port-hand lateral mark" -> AtonType.PORT_HAND_MARK;
-                    case "starboard-hand lateral mark" -> AtonType.STARBOARD_HAND_MARK;
-                    case "preferred channel to starboard lateral mark" -> AtonType.PREFERRED_PORT;
-                    case "preferred channel to port lateral mark" -> AtonType.PREFERRED_STARBOARD;
-                    default -> AtonType.DEFAULT;
+                case "port-hand lateral mark" -> AtonType.PORT_HAND_MARK;
+                case "starboard-hand lateral mark" -> AtonType.STARBOARD_HAND_MARK;
+                case "preferred channel to starboard lateral mark" -> AtonType.PREFERRED_PORT;
+                case "preferred channel to port lateral mark" -> AtonType.PREFERRED_STARBOARD;
+                default -> AtonType.DEFAULT;
             };
         } else if(Objects.equals(atonNodeType, "BeaconCardinal")) {
             return switch (atonNode.get("categoryOfCardinalMark").asText()) {

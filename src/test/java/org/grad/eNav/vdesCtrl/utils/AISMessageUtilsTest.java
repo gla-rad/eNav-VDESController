@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.grad.eNav.vdesCtrl.models.dtos.FeatureNameDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import tools.jackson.core.JacksonException;
 
 import java.math.BigInteger;
 import java.util.Collections;
@@ -75,7 +75,7 @@ class AISMessageUtilsTest {
      * correctly picked up, for a test Virtual AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo1() throws JsonProcessingException {
+    public void testS125NodeConstructorNo1() throws JacksonException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, S125_NO_1_CONTENT);
         FeatureNameDto featureNameDto = new FeatureNameDto();
@@ -105,7 +105,7 @@ class AISMessageUtilsTest {
      * correctly picked up, for a different Virtual AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo2() throws JsonProcessingException {
+    public void testS125NodeConstructorNo2() throws JacksonException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_2", null, S125_NO_2_CONTENT);
         FeatureNameDto featureNameDto = new FeatureNameDto();
@@ -135,7 +135,7 @@ class AISMessageUtilsTest {
      * correctly picked up, for a real AtoN.
      */
     @Test
-    public void testS125NodeConstructorNo3() throws JsonProcessingException {
+    public void testS125NodeConstructorNo3() throws JacksonException {
         // Create an S125Node message
         S125Node node = new S125Node("aton.uk.test_aton_no_3", null, S125_NO_3_CONTENT);
         FeatureNameDto featureNameDto = new FeatureNameDto();
@@ -170,7 +170,7 @@ class AISMessageUtilsTest {
         S125Node node = new S125Node("aton.uk.test_aton_no_1", null, "Erroneous Content");
 
         // Create the GR-AIS Message 21 Parameters and see it fail
-        assertThrows(JsonProcessingException.class, () -> AISMessageUtils.s125ToAisMessage21(node));
+        assertThrows(JacksonException.class, () -> AISMessageUtils.s125ToAisMessage21(node));
     }
 
 }

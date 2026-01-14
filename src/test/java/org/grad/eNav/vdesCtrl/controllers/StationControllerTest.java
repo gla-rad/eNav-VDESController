@@ -16,7 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.grad.eNav.vdesCtrl.TestFeignSecurityConfig;
 import org.grad.eNav.vdesCtrl.TestingConfiguration;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
@@ -27,7 +27,6 @@ import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,17 +34,19 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -74,12 +75,12 @@ class StationControllerTest {
      * The JSON Object Mapper.
      */
     @Autowired
-    ObjectMapper objectMapper;
+    JsonMapper jsonMapper;
 
     /**
      * The Station Service mock.
      */
-    @MockBean
+    @MockitoBean
     StationService stationService;
 
     // Test Variables
@@ -94,6 +95,7 @@ class StationControllerTest {
      */
     @BeforeEach
     void setUp() {
+
         // Create a temp geometry factory to get a test geometries
         GeometryFactory factory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -167,7 +169,7 @@ class StationControllerTest {
                 .andReturn();
 
         // Parse and validate the response
-        Station[] result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Station[].class);
+        Station[] result = this.jsonMapper.readValue(mvcResult.getResponse().getContentAsString(), Station[].class);
         assertEquals(5, Arrays.asList(result).size());
     }
 
@@ -205,12 +207,12 @@ class StationControllerTest {
         // Perform the MVC request
         MvcResult mvcResult = this.mockMvc.perform(post("/api/stations/dt")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(this.objectMapper.writeValueAsString(dtPagingRequest)))
+                .content(this.jsonMapper.writeValueAsString(dtPagingRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
         // Parse and validate the response
-        DtPage<Station> result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), DtPage.class);
+        DtPage<Station> result = this.jsonMapper.readValue(mvcResult.getResponse().getContentAsString(), DtPage.class);
         assertEquals(this.stations.size(), result.getData().size());
     }
 
@@ -229,7 +231,7 @@ class StationControllerTest {
                 .andReturn();
 
         // Parse and validate the response
-        Station result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
+        Station result = this.jsonMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
         assertEquals(this.existingStation, result);
     }
 
@@ -257,16 +259,18 @@ class StationControllerTest {
         // Mock the service call for creating a new instance
         doReturn(this.existingStation).when(this.stationService).save(any());
 
+        this.jsonMapper.serializationConfig()
+                .with(SerializationFeature.INDENT_OUTPUT);
         // Perform the MVC request
         MvcResult mvcResult = this.mockMvc.perform(post("/api/stations")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(this.objectMapper.writeValueAsString(this.newStation)))
+                .content(this.jsonMapper.writeValueAsString(this.newStation)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
 
         // Parse and validate the response
-        Station result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
+        Station result = this.jsonMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
         assertEquals(this.existingStation, result);
     }
 
@@ -280,7 +284,7 @@ class StationControllerTest {
         // Perform the MVC request
         this.mockMvc.perform(post("/api/stations")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(this.objectMapper.writeValueAsString(this.existingStation)))
+                .content(this.jsonMapper.writeValueAsString(this.existingStation)))
                 .andExpect(status().isBadRequest())
                 .andExpect(header().exists("X-vdesCtrl-error"))
                 .andExpect(header().exists("X-vdesCtrl-params"))
@@ -299,13 +303,13 @@ class StationControllerTest {
         // Perform the MVC request
         MvcResult mvcResult = this.mockMvc.perform(put("/api/stations/{id}", this.existingStation.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(this.objectMapper.writeValueAsString(this.existingStation)))
+                .content(this.jsonMapper.writeValueAsString(this.existingStation)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
 
         // Parse and validate the response
-        Station result = this.objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
+        Station result = this.jsonMapper.readValue(mvcResult.getResponse().getContentAsString(), Station.class);
         assertEquals(this.existingStation, result);
     }
 
@@ -322,7 +326,7 @@ class StationControllerTest {
         // Perform the MVC request
         this.mockMvc.perform(put("/api/stations/{id}", this.existingStation.getId())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(this.objectMapper.writeValueAsString(this.existingStation)))
+                .content(this.jsonMapper.writeValueAsString(this.existingStation)))
                 .andExpect(status().isBadRequest())
                 .andExpect(header().exists("X-vdesCtrl-error"))
                 .andExpect(header().exists("X-vdesCtrl-params"))

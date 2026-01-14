@@ -16,8 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
@@ -47,7 +48,7 @@ public class GeometryJSONConverter {
         try {
             JsonNode node = om.readTree(new GeoJsonWriter().write(geometry));
             return node;
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             return null;
         }
     }
@@ -59,7 +60,7 @@ public class GeometryJSONConverter {
      * @return the geometry
      */
     public static Geometry convertToGeometry(JsonNode jsonNode) {
-        if (jsonNode == null  || jsonNode.toString() == "null" || jsonNode.asText() == "null") {
+        if (jsonNode == null  || (jsonNode.isString() && jsonNode.toString() == "null")) {
             return null;
         }
 

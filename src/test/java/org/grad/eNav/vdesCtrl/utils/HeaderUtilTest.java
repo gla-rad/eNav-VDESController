@@ -31,9 +31,9 @@ class HeaderUtilTest {
     void testCreateAlert() {
         HttpHeaders headers = HeaderUtil.createAlert("message", "param");
         assertNotNull(headers);
-        assertTrue(headers.containsKey("X-vdesCtrl-alert"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-alert"));
         assertEquals("[message]", headers.get("X-vdesCtrl-alert").toString());
-        assertTrue(headers.containsKey("X-vdesCtrl-params"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-params"));
         assertEquals("[param]", headers.get("X-vdesCtrl-params").toString());
     }
 
@@ -44,8 +44,8 @@ class HeaderUtilTest {
     void testCreateEntityCreationAlert() {
         HttpHeaders headers = HeaderUtil.createEntityCreationAlert("entity", "param");
         assertNotNull(headers);
-        assertTrue(headers.containsKey("X-vdesCtrl-alert"));
-        assertTrue(headers.containsKey("X-vdesCtrl-params"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-alert"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-params"));
         assertEquals("[param]", headers.get("X-vdesCtrl-params").toString());
     }
 
@@ -56,8 +56,8 @@ class HeaderUtilTest {
     void testCreateEntityUpdateAlert() {
         HttpHeaders headers = HeaderUtil.createEntityUpdateAlert("entity", "param");
         assertNotNull(headers);
-        assertTrue(headers.containsKey("X-vdesCtrl-alert"));
-        assertTrue(headers.containsKey("X-vdesCtrl-params"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-alert"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-params"));
         assertEquals("[param]", headers.get("X-vdesCtrl-params").toString());
     }
 
@@ -68,8 +68,8 @@ class HeaderUtilTest {
     void testCreateEntityDeletionAlert() {
         HttpHeaders headers = HeaderUtil.createEntityDeletionAlert("entity", "param");
         assertNotNull(headers);
-        assertTrue(headers.containsKey("X-vdesCtrl-alert"));
-        assertTrue(headers.containsKey("X-vdesCtrl-params"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-alert"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-params"));
         assertEquals("[param]", headers.get("X-vdesCtrl-params").toString());
     }
 
@@ -80,9 +80,9 @@ class HeaderUtilTest {
     void testCreateFailureAlert() {
         HttpHeaders headers = HeaderUtil.createFailureAlert("entity", "key", "message");
         assertNotNull(headers);
-        assertTrue(headers.containsKey("X-vdesCtrl-error"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-error"));
         assertEquals("[error.key]", headers.get("X-vdesCtrl-error").toString());
-        assertTrue(headers.containsKey("X-vdesCtrl-params"));
+        assertTrue(headers.containsHeader("X-vdesCtrl-params"));
         assertEquals("[entity]", headers.get("X-vdesCtrl-params").toString());
     }
 

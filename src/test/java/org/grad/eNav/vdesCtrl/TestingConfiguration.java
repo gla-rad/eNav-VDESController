@@ -16,9 +16,12 @@
 
 package org.grad.eNav.vdesCtrl;
 
+import org.grad.eNav.vdesCtrl.config.GlobalConfig;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.mockito.Mockito.mock;
 
@@ -29,6 +32,8 @@ import static org.mockito.Mockito.mock;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @TestConfiguration
+@Import(GlobalConfig.class)
+@TestPropertySource({"classpath:application.properties"})
 public class TestingConfiguration {
 
 	/**
