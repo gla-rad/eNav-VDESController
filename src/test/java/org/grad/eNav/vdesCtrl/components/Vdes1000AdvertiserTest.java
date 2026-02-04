@@ -228,7 +228,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
-        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.signatureDestMmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the AIS station
@@ -249,7 +249,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
-        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.signatureDestMmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the AIS station
@@ -277,7 +277,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
-        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.signatureDestMmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the AIS station
@@ -305,7 +305,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
-        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.signatureDestMmsi = 123456789;
         this.vdes1000Advertiser.advertiseAtons();
 
         // Make sure the UDP packet was sent to the AIS station
@@ -330,7 +330,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser and perform the component call
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
-        this.vdes1000Advertiser.signatureDestMmmsi = 123456789;
+        this.vdes1000Advertiser.signatureDestMmsi = 123456789;
 
         // Perform the component call
         this.vdes1000Advertiser.advertiseAtons();

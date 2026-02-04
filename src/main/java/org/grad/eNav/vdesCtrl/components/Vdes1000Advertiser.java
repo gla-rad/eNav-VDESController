@@ -33,10 +33,13 @@ import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.ais.messages.AISMessage6;
 import org.grad.vdes1000.formats.ais.messages.AISMessage8;
+import org.grad.vdes1000.formats.generic.AISChannel;
+import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
+import org.grad.vdes1000.formats.vde.messages.SignatureMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +77,7 @@ public class Vdes1000Advertiser {
      * The Signature Message Destination MMSI
      */
     @Value("${gla.rad.vdes-ctrl.vdes-1000-advertiser.destMmsi:}")
-    Integer signatureDestMmmsi;
+    Integer signatureDestMmsi;
 
     /**
      * The Signature Algorithm.
@@ -222,15 +225,18 @@ public class Vdes1000Advertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> {
-                                final var msg = Optional.ofNullable(this.signatureDestMmmsi)
+                                final var msg = Optional.ofNullable(this.signatureDestMmsi)
                                         .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
                                         .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
                                 this.getVdes1000Conn().sendMessageWithBBM(msg, this.station.getChannel());
                             }
                             case SignatureMode.ASM ->
                                     this.getVdes1000Conn().sendDataWithASM(signature, this.station.getChannel());
-                            case SignatureMode.VDE ->
-                                    this.getVdes1000Conn().sendDataWithVDE(signature);
+                            case SignatureMode.VDE -> {
+                                SignatureMessage signatureMessage = this.getVDESignature(message, this.station.getChannel().getAISChannel());
+                                assert signatureMessage != null;
+                                this.getVdes1000Conn().sendDataWithVDE(signatureMessage.getBinaryMessageBytes());
+                            }
                             default -> throw new ValidationException("Unrecognised signature transmission mode.");
                         }
 
@@ -283,6 +289,36 @@ public class Vdes1000Advertiser {
 
         // Return the constructed message
         return signature;
+    }
+
+    /**
+     * This function will generate a VDE authentication message for the AIS Message 21
+     *
+     * @param aisMessage21 the AIS message 21 that was transmitted
+     * @param channel the channel the original message was sent on
+     */
+    private SignatureMessage getVDESignature(AISMessage21 aisMessage21, AISChannel channel) {
+        // Sanity check
+        if(Objects.isNull(aisMessage21)) {
+            return null;
+        }
+
+        final SignatureMessage signature = new SignatureMessage(aisMessage21);
+        signature.setChannelId(channel);
+
+        log.debug("Generating signature for message: {}", new String(signature.toAuthString()));
+        signature.setSignature(
+                this.cKeeperClient.generateEntitySignature(
+                        aisMessage21.getUid(),
+                        Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
+                        this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
+                        signature.toAuthString()
+                )
+        );
+        log.debug("Signature sentence generated: {}", new String(signature.getSignature()));
+
+        return signature;
+
     }
 
     /**
