@@ -55,6 +55,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -311,7 +312,8 @@ public class Vdes1000Advertiser {
                 this.cKeeperClient.generateEntitySignature(
                         aisMessage21.getUid(),
                         Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
-                        this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
+                        this.signatureAlgorithm,
+                        McpEntityType.DEVICE.getValue(),
                         signatureMessage.toAuthString()
                 )
         );
