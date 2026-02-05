@@ -303,21 +303,21 @@ public class Vdes1000Advertiser {
             return null;
         }
 
-        final SignatureMessage signature = new SignatureMessage(aisMessage21);
-        signature.setChannelId(channel);
+        final SignatureMessage signatureMessage = new SignatureMessage(aisMessage21);
+        signatureMessage.setChannelId(channel);
 
-        log.debug("Generating signature for message: {}", new String(signature.toAuthString()));
-        signature.setSignature(
+        log.debug("Generating signature for message: {}", new String(signatureMessage.toAuthString()));
+        signatureMessage.setSignature(
                 this.cKeeperClient.generateEntitySignature(
                         aisMessage21.getUid(),
                         Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
                         this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
-                        signature.toAuthString()
+                        signatureMessage.toAuthString()
                 )
         );
-        log.debug("Signature sentence generated: {}", new String(signature.getSignature()));
+        log.debug("Signature sentence generated: {}", new String(signatureMessage.getSignature()));
 
-        return signature;
+        return signatureMessage;
 
     }
 
