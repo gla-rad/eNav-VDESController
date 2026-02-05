@@ -304,10 +304,13 @@ public class Vdes1000Advertiser {
             return null;
         }
 
+        // Construct a new VDES signature message
         final SignatureMessage signatureMessage = new SignatureMessage(aisMessage21);
         signatureMessage.setChannelId(channel);
 
         log.debug("Generating signature for message: {}", new String(signatureMessage.toAuthString()));
+
+        // And add the signature
         signatureMessage.setSignature(
                 this.cKeeperClient.generateEntitySignature(
                         aisMessage21.getUid(),
@@ -317,10 +320,10 @@ public class Vdes1000Advertiser {
                         signatureMessage.toAuthString()
                 )
         );
+
         log.debug("Signature sentence generated: {}", new String(signatureMessage.getSignature()));
 
         return signatureMessage;
-
     }
 
     /**
