@@ -309,7 +309,8 @@ public class Vdes1000Advertiser {
         final SignatureMessage signatureMessage = new SignatureMessage(aisMessage21);
         signatureMessage.setChannelId(channel);
 
-        log.debug("Generating signature for message: {}", Base64.encode(signatureMessage.toAuthString()));
+        log.debug("Generating signature for AIS binary string: {}", signatureMessage.getAisMessage().getBinaryMessageString());
+        log.debug("Generating signature for message: {} with size {}", Base64.encode(signatureMessage.toAuthString()), signatureMessage.toAuthString().length);
 
         // And add the signature
         signatureMessage.setSignature(
