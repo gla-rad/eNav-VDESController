@@ -17,6 +17,7 @@
 package org.grad.eNav.vdesCtrl.components;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.nimbusds.jose.util.Base64;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
@@ -308,7 +309,7 @@ public class Vdes1000Advertiser {
         final SignatureMessage signatureMessage = new SignatureMessage(aisMessage21);
         signatureMessage.setChannelId(channel);
 
-        log.debug("Generating signature for message: {}", new String(signatureMessage.toAuthString()));
+        log.debug("Generating signature for message: {}", Base64.encode(signatureMessage.toAuthString()));
 
         // And add the signature
         signatureMessage.setSignature(
