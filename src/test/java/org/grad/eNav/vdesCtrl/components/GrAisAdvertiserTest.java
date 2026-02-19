@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
 import org.grad.eNav.vdesCtrl.models.domain.McpEntityType;
 import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
@@ -25,8 +24,10 @@ import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.GeoJSONUtils;
+import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
+import org.grad.vdes1000.utils.StringBinUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,24 +35,26 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -195,6 +198,7 @@ class GrAisAdvertiserTest {
      * messages from the message service and advertise the connected GNURadio
      * station. It will also send a second message over AIS containing the
      * signature of the first, if that feature is enabled.
+     *
      */
     @Test
     void testAdvertiseAtonsWithSignatureAIS() throws IOException {
@@ -210,10 +214,32 @@ class GrAisAdvertiserTest {
         this.grAisAdvertiser.aisInterval = 1000L;
         this.grAisAdvertiser.signatureAlgorithm = "algorithm";
         this.grAisAdvertiser.signatureDestMmmsi = 123456789;
-        this.grAisAdvertiser.advertiseAtons();
+
+        // Construct a test AIS Message 21 with all 1s in the two least significant bytes
+        final AISMessage21 testMsg = AISMessageUtils.s125ToAisMessage21(this.atonMessageDto);
+        testMsg.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(65535), ZoneOffset.UTC));
+
+        // Now mock the construction of Message 21, to return the test message
+        try (MockedStatic<AISMessageUtils> utilities = Mockito.mockStatic(AISMessageUtils.class)) {
+            utilities.when(() -> AISMessageUtils.s125ToAisMessage21(any())).thenReturn(testMsg);
+            this.grAisAdvertiser.advertiseAtons();
+        }
 
         // Make sure the UDP packet was sent to the GRURadio station
-        verify(this.gnuRadioSocket, times(2)).send(any());
+        ArgumentCaptor<DatagramPacket> datagramArgument = ArgumentCaptor.forClass(DatagramPacket.class);
+        verify(this.gnuRadioSocket, times(2)).send(datagramArgument.capture());
+
+        // Test the send packets
+        List<DatagramPacket> datagramPackets = datagramArgument.getAllValues();
+        assertNotNull(datagramPackets);
+        assertEquals(2, datagramPackets.size());
+        // Test the Message 21 packet
+        assertNotNull(datagramPackets.getFirst());
+        // Test the signature packet
+        assertNotNull(datagramPackets.getLast());
+        assertNotNull(datagramPackets.getLast().getData());
+        assertTrue(new String(datagramPackets.getLast().getData()).contains(StringBinUtils.convertBytesToBinary(this.signature, false)));
+        assertTrue(new String(datagramPackets.getLast().getData()).endsWith("1111111111111111\n"));
     }
 
     /**

@@ -47,6 +47,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -175,9 +177,20 @@ public class GrAisAdvertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> {
+                                // In AIS add the 2 least significant bytes of
+                                // the timestamp in the signature. These should
+                                // be added in the least significant part of
+                                // the signature in a bit endian manner.
+                                final byte[] signatureWithTimestamp = ByteBuffer.allocate(signature.length + 2)
+                                        .put(signature)
+                                        .putShort((short) (message.getUnixTxTimestamp() & 0xFFFFL))
+                                        .order(ByteOrder.LITTLE_ENDIAN)
+                                        .array();
+                                // Now construct the message
                                 final var msg = Optional.ofNullable(this.signatureDestMmmsi)
-                                        .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
-                                        .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
+                                        .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signatureWithTimestamp))
+                                        .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signatureWithTimestamp));
+                                // And send as a UDP packet
                                 this.sendDatagram(station.getIpAddress(), station.getPort(), msg);
                             }
                             default -> throw new ValidationException("Only the AIS signature transmission mode is supported for GNU_Radio stations");
@@ -185,6 +198,7 @@ public class GrAisAdvertiser {
 
                         // Also log the signature transmission
                         log.debug(String.format("Message signature sent: %s", new String(StringBinUtils.convertBytes(signature, true))));
+                        log.debug(String.format("Message signature timestamp: %d", message.getUnixTxTimestamp()));
                     }
                 }
 
@@ -225,7 +239,8 @@ public class GrAisAdvertiser {
             signature = this.cKeeperClient.generateEntitySignature(
                     aisMessage21.getUid(),
                     Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
-                    this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
+                    this.signatureAlgorithm,
+                    McpEntityType.DEVICE.getValue(),
                     stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
         } catch (IOException ex) {

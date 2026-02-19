@@ -26,10 +26,13 @@ import org.grad.eNav.vdesCtrl.models.domain.StationType;
 import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
+import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
 import org.grad.vdes1000.comm.VDES1000BaseStationConfiguration;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
+import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.*;
+import org.grad.vdes1000.utils.StringBinUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,10 +40,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.integration.channel.PublishSubscribeChannel;
@@ -57,10 +57,13 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -266,7 +269,7 @@ class Vdes1000AdvertiserTest {
      * signature of the first, if that feature is enabled.
      */
     @Test
-    void testAdvertiseAtonsWithSignatureAIS() throws VDES1000ConnException {
+    void testAdvertiseAtonsWithSignatureAIS() throws VDES1000ConnException, IOException {
         // Enable AIS signatures for this station
         this.station.setSignatureMode(SignatureMode.AIS);
 
@@ -278,13 +281,29 @@ class Vdes1000AdvertiserTest {
         this.vdes1000Advertiser.station = this.station;
         this.vdes1000Advertiser.signatureAlgorithm = "algorithm";
         this.vdes1000Advertiser.signatureDestMmsi = 123456789;
-        this.vdes1000Advertiser.advertiseAtons();
+
+        // Construct a test AIS Message 21 with all 1s in the two least significant bytes
+        final AISMessage21 testMsg = AISMessageUtils.s125ToAisMessage21(this.atonMessageDto);
+        testMsg.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(65535), ZoneOffset.UTC));
+
+        // Now mock the construction of Message 21, to return the test message
+        try (MockedStatic<AISMessageUtils> utilities = Mockito.mockStatic(AISMessageUtils.class)) {
+            utilities.when(() -> AISMessageUtils.s125ToAisMessage21(any())).thenReturn(testMsg);
+            this.vdes1000Advertiser.advertiseAtons();
+        }
 
         // Make sure the UDP packet was sent to the AIS station
+        ArgumentCaptor<AbstractMessage> msgArgument = ArgumentCaptor.forClass(AbstractMessage.class);
         verify(this.vdes1000Conn, times(1)).sendMessage(any(), eq(this.station.getChannel()));
-        verify(this.vdes1000Conn, times(1)).sendMessageWithBBM(any(), eq(this.station.getChannel()));
+        verify(this.vdes1000Conn, times(1)).sendMessageWithBBM(msgArgument.capture(), eq(this.station.getChannel()));
         verify(this.vdes1000Conn, never()).sendDataWithASM(any(), any());
         verify(this.vdes1000Conn, never()).sendDataWithVDE(any());
+
+        // Test the signature message
+        assertNotNull(msgArgument.getValue());
+        assertNotNull(msgArgument.getValue().getPayload());
+        assertTrue(msgArgument.getValue().getBinaryMessageString().contains(StringBinUtils.convertBytesToBinary(this.signature, false)));
+        assertTrue(msgArgument.getValue().getBinaryMessageString().endsWith("1111111111111111"));
     }
 
     /**

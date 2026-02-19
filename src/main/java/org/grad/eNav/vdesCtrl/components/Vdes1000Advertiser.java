@@ -35,7 +35,6 @@ import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.ais.messages.AISMessage6;
 import org.grad.vdes1000.formats.ais.messages.AISMessage8;
 import org.grad.vdes1000.formats.generic.AISChannel;
-import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
@@ -56,7 +55,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.*;
-import java.time.Instant;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -211,7 +211,7 @@ public class Vdes1000Advertiser {
         final SignatureMode stationSignatureMode = Optional.ofNullable(station.getSignatureMode())
                 .orElse(SignatureMode.NONE);
 
-        // Now create the AIS advertisements - wait in between
+        // Now create the VDES advertisements
         try {
             for (AISMessage21 message : messages) {
                 // First send the message right away and then check if to create a signature for it
@@ -227,15 +227,27 @@ public class Vdes1000Advertiser {
                     if (Objects.nonNull(signature)) {
                         switch(stationSignatureMode) {
                             case SignatureMode.AIS -> {
+                                // In AIS add the 2 least significant bytes of
+                                // the timestamp in the signature. These should
+                                // be added in the least significant part of
+                                // the signature in a bit endian manner.
+                                final byte[] signatureWithTimestamp = ByteBuffer.allocate(signature.length + 2)
+                                        .put(signature)
+                                        .putShort((short) (message.getUnixTxTimestamp() & 0xFFFFL))
+                                        .order(ByteOrder.LITTLE_ENDIAN)
+                                        .array();
+                                // Now construct the message
                                 final var msg = Optional.ofNullable(this.signatureDestMmsi)
-                                        .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signature))
-                                        .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signature));
+                                        .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signatureWithTimestamp))
+                                        .orElseGet(() -> (AbstractMessage) new AISMessage8(message.getMmsi(), signatureWithTimestamp));
+                                // And send as a UDP packet
                                 this.getVdes1000Conn().sendMessageWithBBM(msg, this.station.getChannel());
                             }
-                            case SignatureMode.ASM ->
+                            case SignatureMode.ASM -> {
                                     this.getVdes1000Conn().sendDataWithASM(signature, this.station.getChannel());
+                            }
                             case SignatureMode.VDE -> {
-                                SignatureMessage signatureMessage = this.getVDESignature(message, this.station.getChannel().getAISChannel());
+                                final SignatureMessage signatureMessage = this.getVDESignatureMessage(message, this.station.getChannel().getAISChannel());
                                 assert signatureMessage != null;
                                 this.getVdes1000Conn().sendDataWithVDE(signatureMessage.getBinaryMessageBytes());
                             }
@@ -244,6 +256,7 @@ public class Vdes1000Advertiser {
 
                         // Also log the signature transmission
                         log.debug(String.format("Message signature sent: %s", new String(StringBinUtils.convertBytes(signature, true))));
+                        log.debug(String.format("Message signature timestamp: %d", message.getUnixTxTimestamp()));
                     }
                 }
             }
@@ -281,7 +294,8 @@ public class Vdes1000Advertiser {
             signature = this.cKeeperClient.generateEntitySignature(
                     aisMessage21.getUid(),
                     Optional.of(aisMessage21).map(AISMessage21::getMmsi).map(String::valueOf).orElse("0"),
-                    this.signatureAlgorithm, McpEntityType.DEVICE.getValue(),
+                    this.signatureAlgorithm,
+                    McpEntityType.DEVICE.getValue(),
                     stampedAisMessage);
             log.debug(String.format("Signature sentence generated: %s", Hex.encodeHexString(signature)));
         } catch (IOException ex) {
@@ -299,7 +313,7 @@ public class Vdes1000Advertiser {
      * @param aisMessage21 the AIS message 21 that was transmitted
      * @param channel the channel the original message was sent on
      */
-    private SignatureMessage getVDESignature(AISMessage21 aisMessage21, AISChannel channel) {
+    private SignatureMessage getVDESignatureMessage(AISMessage21 aisMessage21, AISChannel channel) {
         // Sanity check
         if(Objects.isNull(aisMessage21)) {
             return null;
