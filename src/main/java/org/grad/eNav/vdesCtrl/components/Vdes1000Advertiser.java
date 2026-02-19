@@ -234,7 +234,7 @@ public class Vdes1000Advertiser {
                                 final byte[] signatureWithTimestamp = ByteBuffer.allocate(signature.length + 2)
                                         .put(signature)
                                         .putShort((short) (message.getUnixTxTimestamp() & 0xFFFFL))
-                                        .order(ByteOrder.LITTLE_ENDIAN)
+                                        .order(ByteOrder.BIG_ENDIAN)
                                         .array();
                                 // Now construct the message
                                 final var msg = Optional.ofNullable(this.signatureDestMmsi)
