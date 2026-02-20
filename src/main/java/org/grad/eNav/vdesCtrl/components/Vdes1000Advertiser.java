@@ -236,6 +236,9 @@ public class Vdes1000Advertiser {
                                         .putShort((short) (message.getUnixTxTimestamp() & 0xFFFFL))
                                         .order(ByteOrder.BIG_ENDIAN)
                                         .array();
+                                log.info(String.format("Additional timestamp bytes added to signature: %d, %d",
+                                        signatureWithTimestamp[signatureWithTimestamp.length-2] & 0xFFL,
+                                        signatureWithTimestamp[signatureWithTimestamp.length-1] & 0xFFL));
                                 // Now construct the message
                                 final var msg = Optional.ofNullable(this.signatureDestMmsi)
                                         .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signatureWithTimestamp))

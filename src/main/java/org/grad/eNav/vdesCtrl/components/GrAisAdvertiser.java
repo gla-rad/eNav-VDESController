@@ -186,6 +186,10 @@ public class GrAisAdvertiser {
                                         .putShort((short) (message.getUnixTxTimestamp() & 0xFFFFL))
                                         .order(ByteOrder.BIG_ENDIAN)
                                         .array();
+                                // Print the byte values
+                                log.info(String.format("Additional timestamp bytes added to signature: %d, %d",
+                                        signatureWithTimestamp[signatureWithTimestamp.length-2] & 0xFFL,
+                                        signatureWithTimestamp[signatureWithTimestamp.length-1] & 0xFFL));
                                 // Now construct the message
                                 final var msg = Optional.ofNullable(this.signatureDestMmmsi)
                                         .map(destMmsi -> (AbstractMessage) new AISMessage6(message.getMmsi(), destMmsi, signatureWithTimestamp))
