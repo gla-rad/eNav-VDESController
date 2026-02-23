@@ -16,9 +16,7 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PreDestroy;
-import jakarta.xml.bind.JAXBException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
@@ -41,6 +39,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -148,7 +147,7 @@ public class GrAisAdvertiser {
                     try {
                         return AISMessageUtils.s125ToAisMessage21(s125);
                     }
-                    catch (JsonProcessingException ex) {
+                    catch (JacksonException ex) {
                         log.error(ex.getMessage());
                         return null;
                     }

@@ -31,14 +31,5 @@ import static org.mockito.Mockito.mock;
 @TestConfiguration
 public class TestFeignSecurityConfig {
 
-    /**
-     * The HTTP Security mock.
-     *
-     * @return the HTTP security mock
-     */
-    @Bean
-    HttpSecurity httpSecurity() {
-        return mock(HttpSecurity.class);
-    }
 
 }

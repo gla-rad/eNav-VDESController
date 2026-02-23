@@ -31,13 +31,4 @@ import static org.mockito.Mockito.mock;
 @TestConfiguration
 public class TestingConfiguration {
 
-	/**
-	 * The registration listener for feign registers the client inside a
-	 * client repository which is also needed, hence mocked.
-	 */
-	@Bean
-	public ClientRegistrationRepository clientRegistrationRepository() {
-		return mock(ClientRegistrationRepository.class);
-	}
-
 }
