@@ -24,8 +24,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
-import java.io.IOException;
-
 /**
  * The type Geometry JSON converter.
  *
