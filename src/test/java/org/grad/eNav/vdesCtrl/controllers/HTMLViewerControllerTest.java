@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.controllers;
 
-import org.grad.eNav.vdesCtrl.TestFeignSecurityConfig;
 import org.grad.eNav.vdesCtrl.TestingConfiguration;
 import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.domain.StationType;
@@ -44,7 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = HTMLViewerController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
-@Import({TestingConfiguration.class, TestFeignSecurityConfig.class})
+@Import(TestingConfiguration.class)
 class HTMLViewerControllerTest {
 
     /**

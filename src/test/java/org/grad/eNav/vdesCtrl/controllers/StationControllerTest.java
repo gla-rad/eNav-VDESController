@@ -17,7 +17,6 @@
 package org.grad.eNav.vdesCtrl.controllers;
 
 import tools.jackson.databind.ObjectMapper;
-import org.grad.eNav.vdesCtrl.TestFeignSecurityConfig;
 import org.grad.eNav.vdesCtrl.TestingConfiguration;
 import org.grad.eNav.vdesCtrl.exceptions.DataNotFoundException;
 import org.grad.eNav.vdesCtrl.models.domain.SignatureMode;
@@ -27,7 +26,6 @@ import org.grad.eNav.vdesCtrl.models.dtos.AtonMessageDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
 import org.grad.eNav.vdesCtrl.models.dtos.datatables.*;
 import org.grad.eNav.vdesCtrl.services.StationService;
-import org.grad.eNav.vdesCtrl.utils.GeometryJSONConverter;
 import org.grad.vdes1000.formats.generic.AISChannelPref;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +59,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = StationController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
-@Import({TestingConfiguration.class, TestFeignSecurityConfig.class})
+@Import(TestingConfiguration.class)
 class StationControllerTest {
 
     /**
