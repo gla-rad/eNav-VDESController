@@ -14,8 +14,8 @@
 # the conf-folder and point to them in application.properties.
 #
 
-# Use the official OpenJDK 21 image as the base image
-FROM eclipse-temurin:21-jre-alpine
+# Use the official OpenJDK 25 image as the base image
+FROM eclipse-temurin:25-jre-alpine
 
 LABEL org.opencontainers.image.source="https://github.com/gla-rad/eNav-VDESController"
 
@@ -23,7 +23,7 @@ LABEL org.opencontainers.image.source="https://github.com/gla-rad/eNav-VDESContr
 WORKDIR /app
 
 # Copy the Spring Boot JAR file into the container
-COPY target/vdes-controller-0.0.5-SNAPSHOT.jar .
+COPY target/vdes-controller-0.0.6-SNAPSHOT.jar .
 
 # Create a modules path just in case
 ENV LOADER_PATH /modules
@@ -37,4 +37,4 @@ ENV CONFIG_DIR=/conf
 
 EXPOSE 8762
 
-CMD ["java", "-jar", "vdes-controller-0.0.5-SNAPSHOT.jar", "--spring.config.location=optional:classpath:/,optional:file:${CONFIG_DIR}/"]
+CMD ["java", "-jar", "vdes-controller-0.0.6-SNAPSHOT.jar", "--spring.config.location=optional:classpath:/,optional:file:${CONFIG_DIR}/"]

@@ -33,20 +33,4 @@ import static org.mockito.Mockito.mock;
 @TestConfiguration
 public class TestingConfiguration {
 
-    /**
-     * Support for Jackson Page Deserialization.
-     */
-    @Bean
-    public PageJacksonModule pageJacksonModule() {
-        return new PageJacksonModule();
-    }
-
-    /**
-     * Support for Jackson Page Sorting Deserialization.
-     */
-    @Bean
-    public SortJacksonModule sortJacksonModule() {
-        return new SortJacksonModule();
-    }
-
 }

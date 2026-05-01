@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.models.dtos;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.locationtech.jts.geom.Geometry;
 
 import java.util.Objects;
