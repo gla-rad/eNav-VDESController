@@ -32,7 +32,7 @@ import java.util.List;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
-@FeignClient(name = "aton-service", configuration = FeignClientConfig.class)
+@FeignClient(/*url = "https://rnavlab.gla-rad.org/enav/aton-service",*/ name = "aton-service", configuration = FeignClientConfig.class)
 public interface AtonServiceClient {
 
     @RequestMapping(method = RequestMethod.GET, value = "/api/atons/list")

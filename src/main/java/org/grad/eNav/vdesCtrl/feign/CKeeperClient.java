@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Nikolaos Vastardis (email: Nikolaos.Vastardis@gla-rad.org)
  */
 @Component
-@FeignClient(name = "ckeeper", configuration = FeignClientConfig.class)
+@FeignClient(/*url = "https://rnavlab.gla-rad.org/enav/ckeeper",*/ name = "ckeeper", configuration = FeignClientConfig.class)
 public interface CKeeperClient {
 
     @RequestMapping(method = RequestMethod.POST, value = "/api/signature/entity/generate/{entityName}", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
