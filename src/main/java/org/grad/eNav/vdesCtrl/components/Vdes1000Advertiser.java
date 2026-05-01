@@ -16,7 +16,6 @@
 
 package org.grad.eNav.vdesCtrl.components;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.nimbusds.jose.util.Base64;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +51,7 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 
 import java.io.IOException;
 import java.net.*;
@@ -198,7 +198,7 @@ public class Vdes1000Advertiser {
                     try {
                         return AISMessageUtils.s125ToAisMessage21(s125);
                     }
-                    catch (JsonProcessingException ex) {
+                    catch (JacksonException ex) {
                         log.error(ex.getMessage());
                         return null;
                     }

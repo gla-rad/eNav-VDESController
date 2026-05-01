@@ -16,10 +16,8 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import jakarta.xml.bind.JAXBException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.eNav.vdesCtrl.models.dtos.FeatureNameDto;
 import org.grad.eNav.vdesCtrl.models.dtos.S100AbstractNode;
@@ -27,6 +25,7 @@ import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.AtonType;
 import org.locationtech.jts.geom.*;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -47,9 +46,8 @@ public class AISMessageUtils {
      * Constructors from an S125Node object.
      *
      * @param s125Node the S125Node object
-     * @throws JAXBException when the S125Node XML content cannot be parsed
      */
-    public static AISMessage21 s125ToAisMessage21(S125Node s125Node) throws JsonProcessingException {
+    public static AISMessage21 s125ToAisMessage21(S125Node s125Node) throws JacksonException {
         // Default at first
         final AISMessage21 aisMessage21 = new AISMessage21();
 
@@ -60,7 +58,7 @@ public class AISMessageUtils {
         // JSON and try to pick the minimal fields we are interested in.      //
         // ===================================================================//
         final JsonNode datasetNode = new XmlMapper().readTree(s125Node.getContent());
-        final Iterator<Map.Entry<String, JsonNode>> datasetMembers = datasetNode.get("members").fields();
+        final Iterator<Map.Entry<String, JsonNode>> datasetMembers = datasetNode.get("members").properties().iterator();
         // ===================================================================//
 
         String atonNodeType;

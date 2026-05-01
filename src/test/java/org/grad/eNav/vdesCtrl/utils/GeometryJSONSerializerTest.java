@@ -16,8 +16,9 @@
 
 package org.grad.eNav.vdesCtrl.utils;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -60,9 +61,10 @@ class GeometryJSONSerializerTest {
      */
     @Test
     void testSerialize() throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        JsonGenerator jsonGenerator = this.objectMapper.createGenerator(os);
-        this.serializer.serialize(this.geometry, jsonGenerator, this.objectMapper.getSerializerProvider());
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try (JsonGenerator jsonGenerator = this.objectMapper.createGenerator(os)) {
+            this.serializer.serialize(this.geometry, jsonGenerator, this.objectMapper._serializationContext());
+        }
         assertEquals(this.json, os.toString("UTF-8"));
     }
 

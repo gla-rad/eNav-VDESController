@@ -26,7 +26,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.stream.Collectors;
 
 /**
  * The Home Viewer Controller.
