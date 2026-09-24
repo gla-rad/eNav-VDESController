@@ -108,8 +108,8 @@ var messageColumnDefs = [{
     className: 'dt-body-center',
     render: ( data, type, row ) => {
         return (data ?
-            `<i class="fa-solid fa-circle-check" style="color:red"></i>`:
-            `<i class="fa-solid fa-circle-xmark" style="color:green"></i>`);
+            `<i class="fa-solid fa-circle-check text-danger"></i>`:
+            `<i class="fa-solid fa-circle-xmark text-success"></i>`);
     },
  },{
     data: "content",
@@ -119,13 +119,13 @@ var messageColumnDefs = [{
     placeholder: "The Message Content",
     width: "55%",
     render: (data, type, row) => {
-        return "<textarea style=\"width: 100%; max-height: 300px\" readonly>" + data + "</textarea>";
+        return "<textarea class=\"form-control form-control-sm code-view\" style=\"max-height: 300px\" readonly>" + data + "</textarea>";
     }
 }];
 
 // Run when the document is ready
 $(() => {
-    stationsTable = $('#stations_table').DataTable({
+    stationsTable = $('#stations_table').DataTable($.extend(commonDatatableOptions(), {
         processing: true,
         serverSide: true,
         ajax: {
@@ -140,28 +140,25 @@ $(() => {
             }
         },
         columns: stationsColumnDefs,
-        dom: '<"d-flex"<"flex-start"B><"flex-middle p-1"l><"flex-end flex-fill"f>><"d-flex mt-1 mb-1"t><"d-flex w-100"<"flex-fill"i><"flex-end"p>>',
-        select: 'single',
-        lengthMenu: [10, 25, 50, 75, 100],
-        responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
-            text: '<i class="fa-solid fa-plus"></i>',
+            text: '<i class="fa-solid fa-circle-plus"></i><span class="dt-button-text">New</span>',
             titleAttr: 'Add Station',
             name: 'add' // do not change name
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fa-solid fa-pen-to-square"></i>',
+            text: '<i class="fa-solid fa-pen-to-square"></i><span class="dt-button-text">Edit</span>',
             titleAttr: 'Edit Station',
             name: 'edit' // do not change name
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fa-solid fa-trash"></i>',
+            text: '<i class="fa-solid fa-trash"></i><span class="dt-button-text">Delete</span>',
             titleAttr: 'Delete Station',
-            name: 'delete' // do not change name
+            name: 'delete', // do not change name
+            className: 'btn-danger-soft'
         }, {
            extend: 'selected', // Bind to Selected row
-           text: '<i class="fa-solid fa-map-location-dot"></i>',
+           text: '<i class="fa-solid fa-map-location-dot"></i><span class="dt-button-text">Area</span>',
            titleAttr: 'Define Station Area',
            name: 'stationArea', // do not change name
            className: 'station-area-toggle',
@@ -170,7 +167,7 @@ $(() => {
            }
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fa-solid fa-table"></i>',
+            text: '<i class="fa-solid fa-table"></i><span class="dt-button-text">Nodes</span>',
             titleAttr: 'Station Nodes',
             name: 'stationNodes', // do not change name
             className: 'station-messages-toggle',
@@ -179,7 +176,7 @@ $(() => {
             }
         }, {
             extend: 'selected', // Bind to Selected row
-            text: '<i class="fa-solid fa-terminal"></i>',
+            text: '<i class="fa-solid fa-terminal"></i><span class="dt-button-text">Console</span>',
             titleAttr: 'Station Console',
             name: 'stationConsole', // do not change name
             className: 'station-console-toggle',
@@ -258,7 +255,7 @@ $(() => {
                 });
             });
         }
-    });
+    }));
 
     // We also need to link the station areas toggle button with the the modal
     // panel so that by clicking the button the panel pops up. It's easier done
@@ -382,7 +379,7 @@ function loadStationMessages(event, table, button, config) {
     }
 
     // And re-initialise it
-    stationMessagesTable = $('#station_messages_table').DataTable({
+    stationMessagesTable = $('#station_messages_table').DataTable($.extend(commonDatatableOptions(), {
         ajax: {
             type: "GET",
             url: `./api/stations/${stationId}/messages`,
@@ -397,14 +394,10 @@ function loadStationMessages(event, table, button, config) {
             }
         },
         columns: messageColumnDefs,
-        dom: '<"d-flex"<"flex-start"B><"flex-middle p-1"l><"flex-end flex-fill"f>><"d-flex mt-1 mb-1"t><"d-flex w-100"<"flex-fill"i><"flex-end"p>>',
-        select: 'single',
-        lengthMenu: [10, 25, 50, 75, 100],
-        responsive: true,
         altEditor: true, // Enable altEditor
         buttons: [{
            extend: 'selected', // Bind to Selected row
-           text: '<i class="fa-solid fa-circle-play"></i>',
+           text: '<i class="fa-solid fa-circle-play"></i><span class="dt-button-text">Whitelist</span>',
            titleAttr: 'Whitelist Message',
            name: 'whitelist', // do not change name
            action: (e, dt, node, config) => {
@@ -412,7 +405,7 @@ function loadStationMessages(event, table, button, config) {
            }
        }, {
           extend: 'selected', // Bind to Selected row
-          text: '<i class="fa-solid fa-circle-stop"></i>',
+          text: '<i class="fa-solid fa-circle-stop"></i><span class="dt-button-text">Blacklist</span>',
           titleAttr: 'Blacklist Message',
           name: 'blacklist', // do not change name
           action: (e, dt, node, config) => {
@@ -427,7 +420,7 @@ function loadStationMessages(event, table, button, config) {
        drawCallback: (settings) => {
            setTimeout(() => $('#station_messages_table').DataTable().columns.adjust(), 100);
        }
-    });
+    }));
 }
 
 /**

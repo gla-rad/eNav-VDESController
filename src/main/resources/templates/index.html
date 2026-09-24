@@ -17,135 +17,133 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <th:block th:insert="~{fragments/general.html :: headerfiles}"></th:block>
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/3.1.2/css/buttons.bootstrap5.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/3.0.3/css/responsive.bootstrap5.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/2.1.0/css/select.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" integrity="sha512-gc3xjCmIy673V6MyOAZhIW93xhM9ei1I+gLbmFjUHIjocENRsLX/QUE1htk5q1XV2D/iie/VQ8DXI6Vu8bexvQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <th:block th:replace="~{fragments/general.html :: headerfiles}"></th:block>
+    <th:block th:replace="~{fragments/general.html :: datatable-styles}"></th:block>
+    <th:block th:replace="~{fragments/general.html :: map-styles}"></th:block>
 </head>
-<body>
-    <div class="d-flex flex-column vh-100">
-        <div th:replace="~{fragments/general.html :: navbar}"></div>
-        <div class="flex-fill flex-grow-1 flex-shrink-0 sky-bg" >
-            <div id="main-content" class="container mt-3">
-                <div th:replace="~{fragments/general.html :: login-card}"></div>
-                <div class="card shadow" sec:authorize="isAuthenticated()">
-                    <div class="card-header">
-                        <h2>Stations Dashboard</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="col-12 m-1">
-                            <table id="stations_table" class="table table-sm table-striped row-border hover w-100">
-                            </table>
-                        </div>
-                    </div>
+<body class="app-shell sky-bg">
+    <noscript>
+        <div class="alert alert-danger rounded-0 mb-0 text-center">
+            This application relies on JavaScript being enabled. Please enable it and reload the page.
+        </div>
+    </noscript>
+    <th:block th:replace="~{fragments/general.html :: navbar}"></th:block>
+    <main class="app-main">
+        <div class="container-fluid app-container">
+            <th:block th:replace="~{fragments/general.html :: login-card}"></th:block>
+            <th:block th:replace="~{fragments/general.html :: page-header(
+                'fa-tower-broadcast',
+                'Stations Dashboard',
+                'Manage the AIS and VDES stations that broadcast the Aids to Navigation messages')}"></th:block>
+
+            <div class="card app-card" sec:authorize="isAuthenticated()">
+                <div class="card-header">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <h2>Registered stations</h2>
                 </div>
-            </div>
-            <div class="modal fade" id="stationAreasPanel" tabindex="-1" role="dialog" aria-labelledby="stationAreasPanelHeader"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="stationAreasPanelHeader">Station Area</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- map container -->
-                            <div id="stationMap" class="map border shadow"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="float-right">
-                                <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fa-solid fa-xmark"></i>
-                                    <span class="btn-label"> Close</span>
-                                </button>
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" title="Save Changes" onclick="saveGeometry()">
-                                    <i class="fa-solid fa-floppy-disk"></i>
-                                    <span class="btn-label"> Save</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="stationConsolePanel" tabindex="-1" role="dialog" aria-labelledby="stationConsolePanelHeader"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="stationConsolePanelHeader">Station Console</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <textarea class="form-control form-control-sm" id="stationConsoleTextArea" rows="20" readonly></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="float-right">
-                                <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fa-solid fa-xmark"></i>
-                                    <span class="btn-label"> Close</span>
-                                </button>
-                                <button type="button" class="btn btn-primary" id="consoleConnectButton" title="Connect" onclick="connectConsole()">
-                                    <i class="fa-solid fa-plug"></i>
-                                    <span class="btn-label"> Connect</span>
-                                </button>
-                                <button type="button" class="btn btn-warning" id="consoleDisconnectButton" title="Disconnect" onclick="disconnectConsole()" style="display: none">
-                                    <i class="fa-solid fa-door-closed"></i>
-                                    <span class="btn-label"> Disconnect</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="stationMessagesPanel" tabindex="-1" role="dialog" aria-labelledby="stationMessagesPanelHeader"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-slideout modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="stationMessagesPanelHeader">Station Nodes</h5>
-                            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <table id="station_messages_table" class="table table-striped table-bordered table-sm row-border hover w-100">
-                            </table>
-                        </div>
-                        <div class="modal-footer">
-                            <div class="float-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" title="Cancel Changes">
-                                    <i class="fa-solid fa-xmark"></i>
-                                    <span class="btn-label"> Close</span>
-                                </button>
-                            </div>
-                        </div>
+                <div class="card-body">
+                    <div class="table-shell">
+                        <table id="stations_table" class="table table-sm table-striped row-border hover w-100"></table>
                     </div>
                 </div>
             </div>
         </div>
-        <div th:replace="~{fragments/general.html :: footer}"></div>
-        <div th:replace="~{fragments/general.html :: confirmation-dialog}"></div>
-        <div th:replace="~{fragments/general.html :: error-dialog}"></div>
+    </main>
+    <th:block th:replace="~{fragments/general.html :: footer}"></th:block>
+
+    <div class="modal fade" id="stationAreasPanel" tabindex="-1" role="dialog" aria-labelledby="stationAreasPanelHeader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stationAreasPanelHeader">
+                        <i class="fa-solid fa-map-location-dot"></i>Station Area
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="cell-muted small mb-3">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Use the drawing tools on the left of the map to define the area covered by this station,
+                        then save your changes.
+                    </p>
+                    <!-- map container -->
+                    <div id="stationMap" class="map border"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Cancel Changes">
+                        <i class="fa-solid fa-xmark"></i><span class="btn-label">Close</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" title="Save Changes" onclick="saveGeometry()">
+                        <i class="fa-solid fa-floppy-disk"></i><span class="btn-label">Save</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- We need to refresh the session due to our AJAX calls -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.min.js" integrity="sha512-nKXmKvJyiGQy343jatQlzDprflyB5c+tKCzGP3Uq67v+lmzfnZUi/ZT+fc6ITZfSC5HhaBKUIvr/nTLCV+7F+Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <div class="modal fade" id="stationConsolePanel" tabindex="-1" role="dialog" aria-labelledby="stationConsolePanelHeader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stationConsolePanelHeader">
+                        <i class="fa-solid fa-terminal"></i>Station Console
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control form-control-sm code-view" id="stationConsoleTextArea" rows="24" readonly></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Close">
+                        <i class="fa-solid fa-xmark"></i><span class="btn-label">Close</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="consoleConnectButton" title="Connect" onclick="connectConsole()">
+                        <i class="fa-solid fa-plug"></i><span class="btn-label">Connect</span>
+                    </button>
+                    <button type="button" class="btn btn-warning" id="consoleDisconnectButton" title="Disconnect" onclick="disconnectConsole()" style="display: none">
+                        <i class="fa-solid fa-plug-circle-xmark"></i><span class="btn-label">Disconnect</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="stationMessagesPanel" tabindex="-1" role="dialog" aria-labelledby="stationMessagesPanelHeader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-slideout modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stationMessagesPanelHeader">
+                        <i class="fa-solid fa-table"></i>Station Nodes
+                    </h5>
+                    <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-shell">
+                        <table id="station_messages_table" class="table table-sm table-striped row-border hover w-100"></table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="float-end">
+                        <button type="button" class="btn btn-default" data-bs-dismiss="modal" title="Close">
+                            <i class="fa-solid fa-xmark"></i><span class="btn-label">Close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments/general.html :: confirmation-dialog}"></th:block>
+    <th:block th:replace="~{fragments/general.html :: error-dialog}"></th:block>
+
+    <th:block th:replace="~{fragments/general.html :: core-scripts}"></th:block>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js" integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/3.1.2/js/dataTables.buttons.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/buttons/3.1.2/js/buttons.bootstrap5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/responsive/3.0.3/js/dataTables.responsive.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/responsive/3.0.3/js/responsive.bootstrap5.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/select/2.1.0/js/dataTables.select.min.js"></script>
-    <script th:src="@{/lib/dataTables.altEditor.free.js}"></script>
-    <script th:src="@{/src/common.js}"></script>
+    <th:block th:replace="~{fragments/general.html :: map-scripts}"></th:block>
+    <th:block th:replace="~{fragments/general.html :: datatable-scripts}"></th:block>
     <script th:src="@{/src/stations.js}"></script>
 </body>
 </html>
