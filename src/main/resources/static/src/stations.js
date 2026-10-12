@@ -342,7 +342,7 @@ function loadStationGeometry(event, table, button, config) {
     // Recreate the drawn items feature group
     drawnItems.clearLayers();
     if(geometry) {
-        var geomLayer = L.geoJson(geometry, {coordsToLatLng: (coords)=>coords});
+        var geomLayer = L.geoJson(geometry);
         addNonGroupLayers(geomLayer, drawnItems);
         stationsMap.setView(geomLayer.getBounds().getCenter(), 5);
     }
@@ -473,8 +473,7 @@ function saveGeometry() {
             type: "GeometryCollection",
             geometries: []
         };
-        L.geoJson(drawnItems.toGeoJSON(), {coordsToLatLng: (coords)=>coords})
-            .toGeoJSON()
+        drawnItems.toGeoJSON()
             .features
             .forEach(feature => {
                station.geometry.geometries.push(feature.geometry);
