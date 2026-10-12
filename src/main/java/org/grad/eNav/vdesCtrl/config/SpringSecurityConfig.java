@@ -45,6 +45,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
@@ -252,6 +253,14 @@ class SpringSecurityConfig {
                     );
                 })
         );
+
+        // Explicitly allow the browser to send the origin as Referer for cross-origin
+        // HTTPS requests (e.g. Leaflet fetching OSM tiles). Without this the reverse
+        // proxy's restrictive Referrer-Policy causes OSM to reject tile requests with 403.
+        http.headers(headers -> headers
+                .referrerPolicy(referrer -> referrer
+                        .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                ));
 
         // Build and return
         return http.build();
