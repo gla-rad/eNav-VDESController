@@ -130,9 +130,7 @@ public class Vdes1000Advertiser {
         // Create the VDES-1000 Connection
         this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.VDM,
                 String.format("%04d", this.station.getId()),
-                InetAddress.getByName(this.station.getIpAddress()),
-                this.station.getPort(),
-                this.station.getBroadcastPort()));
+                InetAddress.getByName(this.station.getIpAddress())));
 
         // Add logging capability to the VDES-1000 connection
         this.getVdes1000Conn().setLogger(log);
