@@ -389,10 +389,40 @@ class Vdes1000AdvertiserTest {
 
         // Verify that a correct message was published
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
-        assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(String.class, messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
         assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
         assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
         assertEquals("This is a test message", messageArgument.getValue().getPayload());
+
+        // Verify that no forwarding took place
+        verify(this.fwdSocket, never()).send(any());
+    }
+
+    /**
+     * Test that the VDES-1000 connection monitoring handler will pick up
+     * the received messages and attempt to publish them in the publish
+     * subscribe channel.
+     */
+    @Test
+    void testHandleBinaryMessage() throws IOException, VDES1000ConnException {
+        // Initialise the vdes1000 advertiser
+        doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+        }
+
+        // Spy on the publish/subscribe channel to pick up the published message
+        ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
+
+        // Perform the component call
+        this.vdes1000Advertiser.handleBinaryMessage("This is a test message".getBytes(StandardCharsets.UTF_8));
+
+        // Verify that a correct message was published
+        verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
+        assertEquals(byte[].class, messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
+        assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
+        assertArrayEquals("This is a test message".getBytes(StandardCharsets.UTF_8), (byte[]) messageArgument.getValue().getPayload());
 
         // Verify that no forwarding took place
         verify(this.fwdSocket, never()).send(any());
@@ -428,7 +458,7 @@ class Vdes1000AdvertiserTest {
 
         // Verify that a correct message was published
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
-        assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(String.class, messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
         assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
         assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
         assertEquals("This is a test message", messageArgument.getValue().getPayload());

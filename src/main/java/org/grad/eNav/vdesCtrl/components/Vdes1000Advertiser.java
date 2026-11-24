@@ -31,6 +31,7 @@ import org.grad.eNav.vdesCtrl.models.domain.Station;
 import org.grad.eNav.vdesCtrl.models.dtos.S125Node;
 import org.grad.eNav.vdesCtrl.services.StationService;
 import org.grad.eNav.vdesCtrl.utils.AISMessageUtils;
+import org.grad.vdes1000.comm.VDES1000ConnListener;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.ais.messages.AISMessage6;
 import org.grad.vdes1000.formats.ais.messages.AISMessage8;
@@ -60,6 +61,7 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -73,7 +75,7 @@ import java.util.*;
 @Slf4j
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Component
-public class Vdes1000Advertiser {
+public class Vdes1000Advertiser implements VDES1000ConnListener {
 
     /**
      * The Signature Message Destination MMSI
@@ -159,7 +161,7 @@ public class Vdes1000Advertiser {
                 });
 
         // Enable the connection monitoring
-        this.getVdes1000Conn().addVdesListener(this::handleMessage);
+        this.getVdes1000Conn().addVdesListener(this);
         this.getVdes1000Conn().startMonitoring();
 
         // If we also have a forward address, open a forward port
@@ -362,7 +364,7 @@ public class Vdes1000Advertiser {
     public void handleMessage(String message) {
         // Send the packet to our pub-sub messaging bus
         this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
-                .setHeader(MessageHeaders.CONTENT_TYPE, this.station.getType())
+                .setHeader(MessageHeaders.CONTENT_TYPE, String.class)
                 .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
                 .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
                 .build());
@@ -371,8 +373,43 @@ public class Vdes1000Advertiser {
         if(Objects.nonNull(this.getFwdSocket())) {
             try {
                 this.getFwdSocket().send(new DatagramPacket(
-                        message.getBytes(),
+                        message.getBytes(StandardCharsets.UTF_8),
                         message.length(),
+                        Optional.of(this.station)
+                                .map(Station::getFwdIpAddress)
+                                .map(ip -> { try { return InetAddress.getByName(ip); } catch (UnknownHostException ex) { return null; } })
+                                .orElse(null),
+                        Optional.of(this.station)
+                                .map(Station::getFwdPort)
+                                .orElse(-1)
+                ));
+            } catch (IOException ex) {
+                this.log.error(ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Handles the received binary messages.
+     * <p/>
+     * Binary Messages coming from a VDES-1000 station are always byte arrays.
+     *
+     * @param message   The message to be handled.
+     */
+    public void handleBinaryMessage(byte[] message) {
+        // Send the packet to our pub-sub messaging bus
+        this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
+                .setHeader(MessageHeaders.CONTENT_TYPE, byte[].class)
+                .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
+                .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
+                .build());
+
+        // If we also have a forward address, send it there too
+        if(Objects.nonNull(this.getFwdSocket())) {
+            try {
+                this.getFwdSocket().send(new DatagramPacket(
+                        message,
+                        message.length,
                         Optional.of(this.station)
                                 .map(Station::getFwdIpAddress)
                                 .map(ip -> { try { return InetAddress.getByName(ip); } catch (UnknownHostException ex) { return null; } })

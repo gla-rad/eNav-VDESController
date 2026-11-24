@@ -32,12 +32,14 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+
+import java.util.HexFormat;
 import java.util.Objects;
 
 /**
- * The S125 Web-Socket Service Class
+ * The Web-Socket Service Class
  *
- * This class implements a handler for the AtoN messages coming into a Spring
+ * This class implements a handler for the messages coming into a Spring
  * Integration channel. It basically just publishes them to another channel,
  * which happens to be a web-socket implementation.
  *
@@ -45,7 +47,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-public class S125WebSocketService implements MessageHandler {
+public class WebSocketService implements MessageHandler {
 
     /**
      * The General Destination Prefix
@@ -100,29 +102,30 @@ public class S125WebSocketService implements MessageHandler {
     @Override
     public void handleMessage(Message<?> message) throws MessagingException {
         // Get the headers of the incoming message
-        String contentType = Objects.toString(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        Class<?> contentType = (Class<?>)(message.getHeaders().get(MessageHeaders.CONTENT_TYPE));
         String address = Objects.toString(message.getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
         Integer port = (Integer) (message.getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
 
         // Handle only messages that seem valid
-        if(message.getPayload() instanceof S125Node) {
+        if(contentType == byte[].class) {
             // Get the payload of the incoming message
-            S125Node s125Node = (S125Node) message.getPayload();
+            byte[] payload = (byte[]) message.getPayload();
+            String payloadHex = HexFormat.of().withUpperCase().formatHex(payload);
 
             // A simple debug message;
-            log.debug(String.format("Received AtoN Message with AtoN ID: %s.", s125Node.getIdCode()));
+            log.debug(String.format("Received binary pub-sub message: %s.", payloadHex));
 
-            // Now push the aton node down the web-socket stream
-            this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "s125", address, port), s125Node);
+            // Now push the binary message down the web-socket stream
+            this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "messages", address, port), payloadHex);
         }
-        else if(message.getPayload() instanceof String) {
+        else if(contentType == String.class) {
             // Get the header and payload of the incoming message
             String payload = (String) message.getPayload();
 
             // A simple debug message;
             log.debug(String.format("Received a simple pub/sub message: %s.", payload));
 
-            // Now push the message down the web-socket stream
+            // Now push the string message down the web-socket stream
             this.publishMessage(this.webSocket, String.format("/%s/%s/%s:%d", prefix, "messages", address, port), payload);
 
         }
