@@ -61,9 +61,6 @@ public class Station implements Serializable {
     @Column(name = "port", nullable = false)
     private Integer port;
 
-    @Column(name = "broadcastPort")
-    private Integer broadcastPort;
-
     @Column(name = "fwdIpAddress")
     private String fwdIpAddress;
 
@@ -174,25 +171,6 @@ public class Station implements Serializable {
     public void setPort(Integer port) {
         this.port = port;
     }
-
-    /**
-     * Gets broadcast port.
-     *
-     * @return the broadcast port
-     */
-    public Integer getBroadcastPort() {
-        return broadcastPort;
-    }
-
-    /**
-     * Sets broadcast port.
-     *
-     * @param broadcastPort the broadcast port
-     */
-    public void setBroadcastPort(Integer broadcastPort) {
-        this.broadcastPort = broadcastPort;
-    }
-
     /**
      * Gets fwd ip address.
      *

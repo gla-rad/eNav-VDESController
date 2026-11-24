@@ -86,7 +86,6 @@ class VDES1000ServiceTest {
             station.setIpAddress("10.0.0." + i);
             station.setType(StationType.VDES_1000);
             station.setPort(8000 + (int)i);
-            station.setBroadcastPort(9000 + (int)i);
             station.setGeometry(factory.createPoint(new Coordinate(52.001, 1.002)));
             this.stations.add(station);
         }

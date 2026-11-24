@@ -67,11 +67,6 @@ var stationsColumnDefs = [{
     placeholder: "Port of the station",
     required: true
 }, {
-     data: "broadcastPort",
-     title: "Broadcast Port",
-     hoverMsg: "Broadcast port of the station",
-     placeholder: "Broadcast port of the station"
- }, {
     data: "fwdIpAddress",
     title: "Forward IP Address",
     hoverMsg: "Forward IP Address for the station messages",
@@ -199,7 +194,6 @@ $(() => {
                     channel: rowdata["channel"],
                     signatureMode: rowdata["signatureMode"],
                     port: rowdata["port"],
-                    broadcastPort: rowdata["broadcastPort"],
                     fwdIpAddress: rowdata["fwdIpAddress"],
                     fwdPort: rowdata["fwdPort"],
                     mmsi: rowdata["mmsi"],
@@ -230,7 +224,6 @@ $(() => {
                     channel: rowdata["channel"],
                     signatureMode: rowdata["signatureMode"],
                     port: rowdata["port"],
-                    broadcastPort: rowdata["broadcastPort"],
                     fwdIpAddress: rowdata["fwdIpAddress"],
                     fwdPort: rowdata["fwdPort"],
                     mmsi: rowdata["mmsi"],
@@ -508,7 +501,7 @@ function connectConsole() {
             var socket = new SockJS(window.location.pathname + 'vdes-ctrl-websocket');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, (frame) => {
-                stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.broadcastPort, (msg) => {
+                stompClient.subscribe('/topic/messages/' + station.ipAddress + ':' + station.port, (msg) => {
                     $('#stationConsoleTextArea').val($('#stationConsoleTextArea').val() + msg.body);
                 });
             });

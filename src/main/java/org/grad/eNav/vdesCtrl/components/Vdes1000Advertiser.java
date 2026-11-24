@@ -20,6 +20,7 @@ import com.nimbusds.jose.util.Base64;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.util.IPAddress;
 import org.grad.eNav.vdesCtrl.config.Vdes1000BaseStationConfigProperties;
 import org.grad.eNav.vdesCtrl.exceptions.ValidationException;
 import org.grad.eNav.vdesCtrl.feign.CKeeperClient;
@@ -38,8 +39,10 @@ import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
+import org.grad.vdes1000.formats.iec63514.IEC63514TransmissionGroup;
 import org.grad.vdes1000.formats.vde.messages.SignatureMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
+import org.grad.vdes1000.utils.NetworkUtils;
 import org.grad.vdes1000.utils.StringBinUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,10 +60,7 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The VDES-1000 Advertiser Component.
@@ -125,12 +125,20 @@ public class Vdes1000Advertiser {
      * @param station the station to send the advertisements from
      */
     public void init(Station station) throws SocketException, UnknownHostException, VDES1000ConnException {
+        // Collect the station and networking information
         this.station = station;
+        final InetAddress stationAddress = InetAddress.getByName(this.station.getIpAddress());
+        final NetworkInterface networkInterface = NetworkUtils.findInterfaceFor(stationAddress);
 
         // Create the VDES-1000 Connection
-        this.setVdes1000Conn(new VDES1000Conn(VDESBroadcastMethod.VDM,
-                String.format("%04d", this.station.getId()),
-                InetAddress.getByName(this.station.getIpAddress())));
+        this.setVdes1000Conn(
+                new VDES1000Conn(VDESBroadcastMethod.VDM,
+                        String.format("VC%04d", this.station.getId()),
+                        InetAddress.getByName(this.station.getIpAddress()),
+                        networkInterface,
+                        List.of(IEC63514TransmissionGroup.values())
+                )
+        );
 
         // Add logging capability to the VDES-1000 connection
         this.getVdes1000Conn().setLogger(log);
@@ -356,7 +364,6 @@ public class Vdes1000Advertiser {
         this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
                 .setHeader(MessageHeaders.CONTENT_TYPE, this.station.getType())
                 .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
-                .setHeader(PubSubMsgHeaders.PORT.getHeader(), this.station.getBroadcastPort())
                 .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
                 .build());
 

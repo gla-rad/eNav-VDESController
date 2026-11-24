@@ -32,6 +32,7 @@ import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.*;
+import org.grad.vdes1000.utils.NetworkUtils;
 import org.grad.vdes1000.utils.StringBinUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,10 +51,7 @@ import org.springframework.messaging.MessageHeaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -169,9 +167,12 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testInit() throws SocketException, UnknownHostException, VDES1000ConnException {
-        // Perform the component call
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        this.vdes1000Advertiser.init(this.station);
+
+        // Perform the component call
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+        }
 
         assertEquals(this.station, this.vdes1000Advertiser.station);
         assertNotNull(this.vdes1000Advertiser.vdes1000Conn);
@@ -187,11 +188,14 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testInitWithBaseStationConfig() throws SocketException, UnknownHostException, VDES1000ConnException {
-        // Perform the component call
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(Boolean.TRUE).when(baseStationConfigProperties).isValid();
         doReturn(this.config).when(baseStationConfigProperties).getVdesBaseStationConfig();
-        this.vdes1000Advertiser.init(this.station);
+
+        // Perform the component call
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+        }
 
         assertEquals(this.station, this.vdes1000Advertiser.station);
         assertNotNull(this.vdes1000Advertiser.vdes1000Conn);
@@ -209,10 +213,13 @@ class Vdes1000AdvertiserTest {
     void testDestroy() throws SocketException, UnknownHostException, VDES1000ConnException, InterruptedException {
         // Initialise the advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        this.vdes1000Advertiser.init(this.station);
 
-        // Perform the service class
-        this.vdes1000Advertiser.destroy();
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+
+            // Perform the service class
+            this.vdes1000Advertiser.destroy();
+        }
 
         // Assert that the UDP socket was closed
         verify(this.vdes1000Conn, times(1)).close();
@@ -368,9 +375,11 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testHandleMessage() throws IOException, VDES1000ConnException {
-        // Initialise the advertiser
+        // Initialise the vdes1000 advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
-        this.vdes1000Advertiser.init(this.station);
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+        }
 
         // Spy on the publish/subscribe channel to pick up the published message
         ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
@@ -382,7 +391,6 @@ class Vdes1000AdvertiserTest {
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
         assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
         assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
-        assertEquals(this.station.getBroadcastPort(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
         assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
         assertEquals("This is a test message", messageArgument.getValue().getPayload());
 
@@ -405,7 +413,9 @@ class Vdes1000AdvertiserTest {
         // Initialise the advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         doReturn(this.fwdSocket).when(vdes1000Advertiser).getFwdSocket();
-        this.vdes1000Advertiser.init(this.station);
+        try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
+            this.vdes1000Advertiser.init(this.station);
+        }
 
         // Spy on the publish/subscribe channel to pick up the published message
         ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
@@ -420,7 +430,6 @@ class Vdes1000AdvertiserTest {
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
         assertEquals(this.station.getType(), messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
         assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
-        assertEquals(this.station.getBroadcastPort(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.PORT.getHeader()));
         assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
         assertEquals("This is a test message", messageArgument.getValue().getPayload());
 
@@ -429,6 +438,17 @@ class Vdes1000AdvertiserTest {
         assertEquals(this.station.getFwdIpAddress(), datagramPacketArgument.getValue().getAddress().getHostAddress());
         assertEquals(this.station.getFwdPort(), datagramPacketArgument.getValue().getPort());
         assertEquals("This is a test message", new String(datagramPacketArgument.getValue().getData()));
+    }
+
+    /*--------------------------------------------------------------------*/
+    /*                          Helper Functions                          */
+    /*--------------------------------------------------------------------*/
+
+    private static MockedStatic<NetworkUtils> mockNetworkUtils(String... addresses) throws SocketException {
+        final MockedStatic<NetworkUtils> mocked = mockStatic(NetworkUtils.class);
+        final NetworkInterface ni = mock(NetworkInterface.class);
+        mocked.when(() -> NetworkUtils.findInterfaceFor(any())).thenAnswer(inv -> ni);
+        return mocked;
     }
 
 }
