@@ -86,7 +86,6 @@ public class VDES1000Service {
                         vdes1000Advertiser.init(station);
                     } catch (SocketException | UnknownHostException | VDES1000ConnException ex) {
                         log.error(ex.getMessage(), ex);
-                        return null;
                     }
                     return vdes1000Advertiser;
                 })

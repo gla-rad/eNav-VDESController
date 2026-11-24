@@ -132,7 +132,18 @@ public class Vdes1000Advertiser implements VDES1000ConnListener {
         // Collect the station and networking information
         this.station = station;
         final InetAddress stationAddress = InetAddress.getByName(this.station.getIpAddress());
-        final NetworkInterface networkInterface = NetworkUtils.findInterfaceFor(stationAddress);
+
+        // Try to find a network interface to monitor, but leave empty if not possible
+        final NetworkInterface networkInterface = Optional.ofNullable(stationAddress)
+                .map(ip -> {
+                    try {
+                        return NetworkUtils.findInterfaceFor(ip);
+                    } catch (Exception ex) {
+                        log.error(ex.getMessage(), ex);
+                        return null;
+                    }
+                })
+                .orElse(null);
 
         // Create the VDES-1000 Connection
         this.setVdes1000Conn(
