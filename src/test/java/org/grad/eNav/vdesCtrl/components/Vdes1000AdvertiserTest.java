@@ -412,7 +412,7 @@ class Vdes1000AdvertiserTest {
         // Initialise the transmitted message
         final IEC61162_450BinaryHeader iec61162450BinaryHeader = new IEC61162_450BinaryHeader(IEC61162_450Token.RAUDP,1,"source","dest", IEC61162_450BinaryType.DATA,0,0,0,1, 1);
         final AbstractPIBinaryMessage abstractPIBinaryMessage = mock(AbstractPIBinaryMessage.class);
-        doReturn("This is a test message".getBytes(StandardCharsets.UTF_8)).when(abstractPIBinaryMessage).getBinaryMessageBytes();
+        doReturn(new byte[]{0x01, 0x02, 0x0E, 0x0F}).when(abstractPIBinaryMessage).getBinaryMessageBytes();
         // Initialise the vdes1000 advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
@@ -427,10 +427,10 @@ class Vdes1000AdvertiserTest {
 
         // Verify that a correct message was published
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
-        assertEquals(byte[].class, messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
+        assertEquals(String.class, messageArgument.getValue().getHeaders().get(MessageHeaders.CONTENT_TYPE));
         assertEquals(this.station.getIpAddress(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.ADDRESS.getHeader()));
         assertEquals(this.station.getMmsi(), messageArgument.getValue().getHeaders().get(PubSubMsgHeaders.MMSI.getHeader()));
-        assertArrayEquals("This is a test message".getBytes(StandardCharsets.UTF_8), (byte[]) messageArgument.getValue().getPayload());
+        assertEquals("RaUdP[v1,source->dest,DATA,id=0,seq=0/0,dev=1,ch=1] 01020E0F", messageArgument.getValue().getPayload());
 
         // Verify that no forwarding took place
         verify(this.fwdSocket, never()).send(any());

@@ -368,6 +368,7 @@ public class Vdes1000Advertiser implements VDES1000ConnListener {
         this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
                 .setHeader(MessageHeaders.CONTENT_TYPE, String.class)
                 .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
+                .setHeader(PubSubMsgHeaders.PORT.getHeader(), this.station.getPort())
                 .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
                 .build());
 
@@ -399,32 +400,13 @@ public class Vdes1000Advertiser implements VDES1000ConnListener {
      * @param message   The message to be handled.
      */
     public void handlePIBinaryMessage(IEC61162_450BinaryHeader header, AbstractPIBinaryMessage message) {
-        // Send the packet to our pub-sub messaging bus
-        this.publishSubscribeChannel.send(MessageBuilder.withPayload(message.getBinaryMessageBytes())
-                .setHeader(MessageHeaders.CONTENT_TYPE, byte[].class)
-                .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
-                .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
-                .setHeader(PubSubMsgHeaders.BIN_HEADER.getHeader(), header)
-                .build());
+        // Build the payload to be published
+        final String payload =  String.format("%s %s",
+                header.toString(),
+                HexFormat.of().withUpperCase().formatHex(message.getBinaryMessageBytes()));
 
-        // If we also have a forward address, send it there too
-        if(Objects.nonNull(this.getFwdSocket())) {
-            try {
-                this.getFwdSocket().send(new DatagramPacket(
-                        message.getBinaryMessageBytes(),
-                        message.getBinaryMessageBytes().length,
-                        Optional.of(this.station)
-                                .map(Station::getFwdIpAddress)
-                                .map(ip -> { try { return InetAddress.getByName(ip); } catch (UnknownHostException ex) { return null; } })
-                                .orElse(null),
-                        Optional.of(this.station)
-                                .map(Station::getFwdPort)
-                                .orElse(-1)
-                ));
-            } catch (IOException ex) {
-                this.log.error(ex.getMessage());
-            }
-        }
+        // And handle it normally
+        this.handleMessage(payload);
     }
 
     /**
