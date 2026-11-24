@@ -40,7 +40,9 @@ import org.grad.vdes1000.formats.generic.AbstractMessage;
 import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.comm.VDESBroadcastMethod;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
+import org.grad.vdes1000.formats.iec61162_450.IEC61162_450BinaryHeader;
 import org.grad.vdes1000.formats.iec63514.IEC63514TransmissionGroup;
+import org.grad.vdes1000.formats.iec63514.pi.AbstractPIBinaryMessage;
 import org.grad.vdes1000.formats.vde.messages.SignatureMessage;
 import org.grad.vdes1000.utils.GrAisUtils;
 import org.grad.vdes1000.utils.NetworkUtils;
@@ -396,20 +398,21 @@ public class Vdes1000Advertiser implements VDES1000ConnListener {
      *
      * @param message   The message to be handled.
      */
-    public void handleBinaryMessage(byte[] message) {
+    public void handlePIBinaryMessage(IEC61162_450BinaryHeader header, AbstractPIBinaryMessage message) {
         // Send the packet to our pub-sub messaging bus
-        this.publishSubscribeChannel.send(MessageBuilder.withPayload(message)
+        this.publishSubscribeChannel.send(MessageBuilder.withPayload(message.getBinaryMessageBytes())
                 .setHeader(MessageHeaders.CONTENT_TYPE, byte[].class)
                 .setHeader(PubSubMsgHeaders.ADDRESS.getHeader(), this.station.getIpAddress())
                 .setHeader(PubSubMsgHeaders.MMSI.getHeader(), this.station.getMmsi())
+                .setHeader(PubSubMsgHeaders.BIN_HEADER.getHeader(), header)
                 .build());
 
         // If we also have a forward address, send it there too
         if(Objects.nonNull(this.getFwdSocket())) {
             try {
                 this.getFwdSocket().send(new DatagramPacket(
-                        message,
-                        message.length,
+                        message.getBinaryMessageBytes(),
+                        message.getBinaryMessageBytes().length,
                         Optional.of(this.station)
                                 .map(Station::getFwdIpAddress)
                                 .map(ip -> { try { return InetAddress.getByName(ip); } catch (UnknownHostException ex) { return null; } })

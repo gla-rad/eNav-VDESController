@@ -24,7 +24,8 @@ package org.grad.eNav.vdesCtrl.models;
 public enum PubSubMsgHeaders {
     ADDRESS("ADDRESS"),
     PORT("PORT"),
-    MMSI("MMSI");
+    MMSI("MMSI"),
+    BIN_HEADER("BINARY_MSG_HEADER");
 
     // Enum Variables
     private String header;

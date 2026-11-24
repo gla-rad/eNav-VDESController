@@ -32,6 +32,10 @@ import org.grad.vdes1000.comm.VDES1000Conn;
 import org.grad.vdes1000.exceptions.VDES1000ConnException;
 import org.grad.vdes1000.formats.ais.messages.AISMessage21;
 import org.grad.vdes1000.formats.generic.*;
+import org.grad.vdes1000.formats.iec61162_450.IEC61162_450BinaryHeader;
+import org.grad.vdes1000.formats.iec61162_450.IEC61162_450BinaryType;
+import org.grad.vdes1000.formats.iec61162_450.IEC61162_450Token;
+import org.grad.vdes1000.formats.iec63514.pi.AbstractPIBinaryMessage;
 import org.grad.vdes1000.utils.NetworkUtils;
 import org.grad.vdes1000.utils.StringBinUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -405,6 +409,10 @@ class Vdes1000AdvertiserTest {
      */
     @Test
     void testHandleBinaryMessage() throws IOException, VDES1000ConnException {
+        // Initialise the transmitted message
+        final IEC61162_450BinaryHeader iec61162450BinaryHeader = new IEC61162_450BinaryHeader(IEC61162_450Token.RAUDP,1,"source","dest", IEC61162_450BinaryType.DATA,0,0,0,1, 1);
+        final AbstractPIBinaryMessage abstractPIBinaryMessage = mock(AbstractPIBinaryMessage.class);
+        doReturn("This is a test message".getBytes(StandardCharsets.UTF_8)).when(abstractPIBinaryMessage).getBinaryMessageBytes();
         // Initialise the vdes1000 advertiser
         doReturn(this.vdes1000Conn).when(vdes1000Advertiser).getVdes1000Conn();
         try (MockedStatic<NetworkUtils> mocked = mockNetworkUtils(this.station.getIpAddress())) {
@@ -415,7 +423,7 @@ class Vdes1000AdvertiserTest {
         ArgumentCaptor<Message> messageArgument = ArgumentCaptor.forClass(Message.class);
 
         // Perform the component call
-        this.vdes1000Advertiser.handleBinaryMessage("This is a test message".getBytes(StandardCharsets.UTF_8));
+        this.vdes1000Advertiser.handlePIBinaryMessage(iec61162450BinaryHeader, abstractPIBinaryMessage);
 
         // Verify that a correct message was published
         verify(this.publishSubscribeChannel, times(1)).send(messageArgument.capture());
